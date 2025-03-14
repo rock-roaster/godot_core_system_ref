@@ -1,35 +1,31 @@
 extends Node
 
 
-const ModuleBase: = preload("res://addons/godot_core_system/modules/module_base.gd")
-const ModuleTest: = preload("res://addons/godot_core_system/modules/module_test/test_manager.gd")
+const SETTING_SCRIPT: Script = preload("res://addons/godot_core_system/setting.gd")
+const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = SETTING_SCRIPT.SETTING_INFO_DICT
 
-const ModuleLog: = preload("res://addons/godot_core_system/modules/module_log/log_manager.gd")
-const ModuleAsyncIO: = preload("res://addons/godot_core_system/modules/module_serialization/module_io/async_io_manager.gd")
-const ModuleSave: = preload("res://addons/godot_core_system/modules/module_serialization/module_save/save_manager.gd")
-const ModuleConfig: = preload("res://addons/godot_core_system/modules/module_serialization/module_config/config_manager.gd")
+#region 导入模组脚本
+const ModuleBase = ModuleImport.ModuleBase
+const ModuleLog = ModuleImport.ModuleLog
+const ModuleAsyncIO = ModuleImport.ModuleAsyncIO
+const ModuleSave = ModuleImport.ModuleSave
+const ModuleConfig = ModuleImport.ModuleConfig
+const ModuleResource = ModuleImport.ModuleResource
+const ModuleEntity = ModuleImport.ModuleEntity
+const ModuleScene = ModuleImport.ModuleScene
+const ModuleAudio = ModuleImport.ModuleAudio
+const ModuleInput = ModuleImport.ModuleInput
+const ModuleTime = ModuleImport.ModuleTime
+const ModuleEvent = ModuleImport.ModuleEvent
+const ModuleState = ModuleImport.ModuleState
+const ModuleTag = ModuleImport.ModuleTag
+const ModuleTrigger = ModuleImport.ModuleTrigger
+#endregion
 
-const ModuleTime: = preload("res://addons/godot_core_system/modules/module_time/time_manager.gd")
-const ModuleInput: = preload("res://addons/godot_core_system/modules/module_input/input_manager.gd")
-const ModuleAudio: = preload("res://addons/godot_core_system/modules/module_audio/audio_manager.gd")
-
-const ModuleEntity: = preload("res://addons/godot_core_system/modules/module_entity/entity_manager.gd")
-const ModuleNode: = preload("res://addons/godot_core_system/modules/module_node/node_manager.gd")
-const ModuleResource: = preload("res://addons/godot_core_system/modules/module_resource/resource_manager.gd")
-const ModuleScene: = preload("res://addons/godot_core_system/modules/module_scene/scene_manager.gd")
-
-const ModuleEvent: = preload("res://addons/godot_core_system/modules/module_event/event_manager.gd")
-const ModuleState: = preload("res://addons/godot_core_system/modules/module_state/state_manager.gd")
-const ModuleTrigger: = preload("res://addons/godot_core_system/modules/module_trigger/trigger_manager.gd")
-const ModuleTag: = preload("res://addons/godot_core_system/modules/module_tag/tag_manager.gd")
-
-var test_manager: ModuleTest:
-	get: return get_module("test_manager")
-	set(value): push_error("test_manager is read-only.")
-
-var log_manager: ModuleLog:
-	get: return get_module("log_manager")
-	set(value): push_error("log_manager is read-only.")
+#region 模组变量与getset方法
+var logger: ModuleLog:
+	get: return get_module("logger")
+	set(value): push_error("logger is read-only.")
 
 var io_manager: ModuleAsyncIO:
 	get: return get_module("io_manager")
@@ -43,22 +39,6 @@ var config_manager: ModuleConfig:
 	get: return get_module("config_manager")
 	set(value): push_error("config_manager is read-only.")
 
-var time_manager: ModuleTime:
-	get: return get_module("time_manager")
-	set(value): push_error("time_manager is read-only.")
-
-var input_manager: ModuleInput:
-	get: return get_module("input_manager")
-	set(value): push_error("input_manager is read-only.")
-
-var audio_manager: ModuleAudio:
-	get: return get_module("audio_manager")
-	set(value): push_error("audio_manager is read-only.")
-
-var file_manager: ModuleTest:
-	get: return get_module("file_manager")
-	set(value): push_error("file_manager is read-only.")
-
 var resource_manager: ModuleResource:
 	get: return get_module("resource_manager")
 	set(value): push_error("resource_manager is read-only.")
@@ -67,13 +47,21 @@ var entity_manager: ModuleEntity:
 	get: return get_module("entity_manager")
 	set(value): push_error("entity_manager is read-only.")
 
-var node_manager: ModuleNode:
-	get: return get_module("node_manager")
-	set(value): push_error("node_manager is read-only.")
-
 var scene_manager: ModuleScene:
 	get: return get_module("scene_manager")
 	set(value): push_error("scene_manager is read-only.")
+
+var audio_manager: ModuleAudio:
+	get: return get_module("audio_manager")
+	set(value): push_error("audio_manager is read-only.")
+
+var input_manager: ModuleInput:
+	get: return get_module("input_manager")
+	set(value): push_error("input_manager is read-only.")
+
+var time_manager: ModuleTime:
+	get: return get_module("time_manager")
+	set(value): push_error("time_manager is read-only.")
 
 var event_manager: ModuleEvent:
 	get: return get_module("event_manager")
@@ -83,32 +71,31 @@ var state_manager: ModuleState:
 	get: return get_module("state_manager")
 	set(value): push_error("state_manager is read-only.")
 
-var trigger_manager: ModuleTrigger:
-	get: return get_module("trigger_manager")
-	set(value): push_error("trigger_manager is read-only.")
-
 var tag_manager: ModuleTag:
 	get: return get_module("tag_manager")
 	set(value): push_error("tag_manager is read-only.")
 
+var trigger_manager: ModuleTrigger:
+	get: return get_module("trigger_manager")
+	set(value): push_error("trigger_manager is read-only.")
+#endregion
+
 var _modules: Dictionary[StringName, ModuleBase]
 var _module_scripts: Dictionary[StringName, Script] = {
-	"test_manager": ModuleTest,
-	"log_manager": ModuleLog,
+	"logger": ModuleLog,
 	"io_manager": ModuleAsyncIO,
 	"save_manager": ModuleSave,
 	"config_manager": ModuleConfig,
-	"time_manager": ModuleTime,
-	"input_manager": ModuleInput,
-	"audio_manager": ModuleAudio,
 	"resource_manager": ModuleResource,
 	"entity_manager": ModuleEntity,
-	"node_manager": ModuleNode,
 	"scene_manager": ModuleScene,
+	"audio_manager": ModuleAudio,
+	"input_manager": ModuleInput,
+	"time_manager": ModuleTime,
 	"event_manager": ModuleEvent,
 	"state_manager": ModuleState,
-	"trigger_manager": ModuleTrigger,
 	"tag_manager": ModuleTag,
+	"trigger_manager": ModuleTrigger,
 }
 
 
@@ -158,7 +145,6 @@ func _create_module(module_id: StringName, data: Dictionary = {}) -> ModuleBase:
 		return null
 
 	_modules[module_id] = module
-	module._system = self
 	module._ready()
 	return module
 
@@ -174,3 +160,27 @@ func _unload_module(module_id: StringName) -> void:
 	module._exit()
 	_modules.erase(module_id)
 	print("卸载模块实例：%s id%s" % [module_id, instance_id])
+
+
+## 设置路径和字典名称里只要填对一个就能得到参数的傻瓜方法
+func get_setting_value(setting_name: StringName, default_value: Variant = null) -> Variant:
+	var setting_dict: Dictionary = {}
+
+	if SETTING_INFO_DICT.has(setting_name):
+		setting_dict = SETTING_INFO_DICT.get(setting_name)
+		setting_name = setting_dict.get("name")
+
+	if setting_dict.is_empty():
+		for dict in SETTING_INFO_DICT.values():
+			if dict.get("name") == setting_name:
+				setting_dict = dict
+				break
+
+	if setting_dict.is_empty():
+		push_error("setting path not exist: ", setting_name)
+		return default_value
+
+	if setting_dict.has("default") && default_value == null:
+		default_value = setting_dict.get("default")
+
+	return ProjectSettings.get_setting(setting_name, default_value)

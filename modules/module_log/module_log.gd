@@ -12,7 +12,7 @@ enum LogLevel {
 }
 
 ## 日志颜色配置
-const LOG_COLORS: Dictionary[LogLevel, Color] = {
+const LOG_COLORS = {
 	LogLevel.DEBUG: Color.DARK_GRAY,
 	LogLevel.INFO: Color.WHITE,
 	LogLevel.WARNING: Color.YELLOW,
@@ -94,9 +94,9 @@ func _log(level: LogLevel, message: String, context: Dictionary) -> void:
 	if level < _current_level:
 		return
 
-	var timestamp: String = Time.get_datetime_string_from_system()
-	var level_name: String = LogLevel.keys()[level]
-	var formatted_message: String = "[%s] [%s] %s" % [timestamp, level_name, message]
+	var timestamp = Time.get_datetime_string_from_system()
+	var level_name = LogLevel.keys()[level]
+	var formatted_message = "[%s] [%s] %s" % [timestamp, level_name, message]
 
 	if not context.is_empty():
 		formatted_message += " | Context: " + str(context)
@@ -110,8 +110,8 @@ func _log(level: LogLevel, message: String, context: Dictionary) -> void:
 
 ## 获取调用堆栈
 func print_stack() -> void:
-	var stack: Array = get_stack()
-	var stack_message: String = "\nCall Stack:"
+	var stack = get_stack()
+	var stack_message = "\nCall Stack:"
 	for frame in stack:
 		stack_message += "\n  at %s:%d - %s()" % [frame["source"], frame["line"], frame["function"]]
 	print(stack_message)
@@ -122,7 +122,7 @@ func _setup_file_logging() -> void:
 	if not _enable_file_logging:
 		return
 
-	var dir: DirAccess = DirAccess.open("user://")
+	var dir = DirAccess.open("user://")
 	if not dir.dir_exists("logs"):
 		dir.make_dir("logs")
 

@@ -1,5 +1,5 @@
 extends "res://addons/godot_core_system/modules/module_base.gd"
-#class_name GameplayTagManager
+
 
 ## 清理间隔时间(秒)
 const CLEANUP_INTERVAL := 30.0
@@ -18,21 +18,18 @@ var _object_to_tags: Dictionary = {}
 ## 清理定时器
 var _cleanup_timer: Timer
 
-
 func _ready() -> void:
 	# 创建并启动清理定时器
 	_cleanup_timer = Timer.new()
 	_cleanup_timer.wait_time = CLEANUP_INTERVAL
 	_cleanup_timer.timeout.connect(_on_cleanup_timer_timeout)
-	_system.add_child(_cleanup_timer)
+	_current_root.add_child(_cleanup_timer)
 	_cleanup_timer.start()
 
-
-func _exit() -> void:
+func _exit_tree() -> void:
 	if _cleanup_timer:
 		_cleanup_timer.queue_free()
 		_cleanup_timer = null
-
 
 ## 从路径注册标签
 func _register_tag_from_path(path: String) -> void:
@@ -53,7 +50,6 @@ func _register_tag_from_path(path: String) -> void:
 			_registered_tags[current_path] = tag
 
 		parent = _registered_tags[current_path]
-
 
 ## 获取标签
 ## 如果标签不存在，会自动注册
@@ -84,7 +80,6 @@ func get_matching_tags(tag_path: String) -> Array[GameplayTag]:
 
 	return result
 
-
 ## 创建标签容器
 ## owner: 容器所属的对象，用于自动注册
 func create_tag_container(owner: Object = null) -> GameplayTagContainer:
@@ -96,14 +91,12 @@ func create_tag_container(owner: Object = null) -> GameplayTagContainer:
 		_object_to_tags[owner.get_instance_id()] = weakref(container)
 	return container
 
-
 ## 从字符串数组创建标签容器
 func create_tag_container_from_strings(tag_strings: Array, owner: Object = null) -> GameplayTagContainer:
 	var container := create_tag_container(owner)
 	for tag_string in tag_strings:
 		container.add_tag(tag_string)
 	return container
-
 
 ## 获取具有指定标签的所有对象
 func get_objects_with_tag(tag_path: String, exact: bool = true) -> Array:
@@ -127,8 +120,8 @@ func get_objects_with_tag(tag_path: String, exact: bool = true) -> Array:
 					var object = object_ref.get_ref()
 					if object and not object in result:
 						result.append(object)
-	return result
 
+	return result
 
 ## 获取具有所有指定标签的对象
 func get_objects_with_all_tags(tag_paths: Array[String], exact: bool = true) -> Array:
@@ -151,7 +144,6 @@ func get_objects_with_all_tags(tag_paths: Array[String], exact: bool = true) -> 
 
 	return result
 
-
 ## 获取具有任意指定标签的对象
 func get_objects_with_any_tags(tag_paths: Array[String], exact: bool = true) -> Array:
 	_cleanup_invalid_refs()
@@ -164,7 +156,6 @@ func get_objects_with_any_tags(tag_paths: Array[String], exact: bool = true) -> 
 
 	return result
 
-
 ## 当容器添加标签时
 func _on_container_tag_added(tag: GameplayTag, owner: Object) -> void:
 	var object_id = owner.get_instance_id()
@@ -173,7 +164,6 @@ func _on_container_tag_added(tag: GameplayTag, owner: Object) -> void:
 	if not _tag_to_objects.has(tag_path):
 		_tag_to_objects[tag_path] = {}
 	_tag_to_objects[tag_path][object_id] = weakref(owner)
-
 
 ## 当容器移除标签时
 func _on_container_tag_removed(tag: GameplayTag, owner: Object) -> void:
@@ -185,11 +175,9 @@ func _on_container_tag_removed(tag: GameplayTag, owner: Object) -> void:
 		if _tag_to_objects[tag_path].is_empty():
 			_tag_to_objects.erase(tag_path)
 
-
 ## 当定时器超时时
 func _on_cleanup_timer_timeout() -> void:
 	_cleanup_invalid_refs()
-
 
 ## 清理无效引用
 func _cleanup_invalid_refs() -> void:

@@ -11,11 +11,10 @@ signal state_machine_started(id: StringName)
 ## 状态机停止
 signal state_machine_stopped(id: StringName)
 
-
 ## 状态机字典
 ## key: 状态机ID
 ## value: 状态机
-var _state_machines: Dictionary[StringName, StateMachine] = {}
+var _state_machines: Dictionary[StringName, BaseStateMachine] = {}
 
 
 func _process(delta: float) -> void:
@@ -23,12 +22,10 @@ func _process(delta: float) -> void:
 		if state_machine.is_active:
 			state_machine.update(delta)
 
-
 func _physics_process(delta: float) -> void:
 	for state_machine in _state_machines.values():
 		if state_machine.is_active:
 			state_machine.physics_update(delta)
-
 
 func _input(event: InputEvent) -> void:
 	for state_machine in _state_machines.values():
@@ -43,7 +40,7 @@ func _input(event: InputEvent) -> void:
 ## [param msg] 传递给状态机的消息
 func register_state_machine(
 		id: StringName,
-		state_machine: StateMachine,
+		state_machine: BaseStateMachine,
 		agent: Object = null,
 		initial_state: StringName = &"",
 		msg: Dictionary = {}) -> void:
@@ -58,7 +55,6 @@ func register_state_machine(
 		start_state_machine(id, initial_state, msg)
 	state_machine_registered.emit(id)
 
-
 ## 注销状态机
 ## [param id] 状态机ID
 func unregister_state_machine(id: StringName) -> void:
@@ -71,12 +67,10 @@ func unregister_state_machine(id: StringName) -> void:
 	state_machine.dispose()
 	state_machine_unregistered.emit(id)
 
-
 ## 获取状态机
 ## [param id] 状态机ID
-func get_state_machine(id: StringName) -> StateMachine:
+func get_state_machine(id: StringName) -> BaseStateMachine:
 	return _state_machines.get(id)
-
 
 ## 启动状态机
 ## [param id] 状态机ID
@@ -97,7 +91,6 @@ func start_state_machine(
 	state_machine.start(initial_state, msg)
 	state_machine_started.emit(id)
 
-
 ## 停止状态机
 ## [param id] 状态机ID
 func stop_state_machine(id: StringName) -> void:
@@ -109,18 +102,15 @@ func stop_state_machine(id: StringName) -> void:
 	state_machine.stop()
 	state_machine_stopped.emit(id)
 
-
 ## 获取所有状态机
 ## [return] 所有状态机的数组
-func get_all_state_machines() -> Array[StateMachine]:
+func get_all_state_machines() -> Array[BaseStateMachine]:
 	return _state_machines.values()
-
 
 ## 获取所有状态机ID
 ## [return] 所有状态机ID的数组
 func get_all_state_machine_ids() -> Array[StringName]:
 	return _state_machines.keys()
-
 
 ## 清除所有状态机
 func clear_state_machines() -> void:

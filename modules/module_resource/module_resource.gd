@@ -1,7 +1,7 @@
 extends "res://addons/godot_core_system/modules/module_base.gd"
+
 ## 资源管理器
 ## 负责管理资源的加载，缓存和对象池
-
 
 ## 资源加载模式
 enum LOAD_MODE {
@@ -27,11 +27,13 @@ var _lazy_load_time: float = 0.0
 ## 待加载资源数量
 var _loading_count: int = 0
 
+var _logger: System.ModuleLog:
+	get:
+		return System.logger
 
 ## 处理懒加载
 func _process(delta: float) -> void:
 	_lazy_load(delta)
-
 
 ## 加载资源
 ## [param path] 资源路径
@@ -56,7 +58,6 @@ func load_resource(path: String, mode: LOAD_MODE = LOAD_MODE.IMMEDIATE) -> Resou
 		resource_loaded.emit(path, resource)
 	return resource
 
-
 ## 获取缓存资源
 ## [param path] 资源路径
 ## [return] 缓存中的资源
@@ -65,10 +66,9 @@ func get_cached_resource(path: String) -> Resource:
 		# 如果资源正在加载，则这里调用直接加载
 		_loading_count -= 1
 	if _resource_cache.get(path, null) == null:
-		_system.log_manager.warning("[ResourceManager]cannot get cached resource on {0}, reload it!".format([path]))
+		_logger.warning("[ResourceManager]cannot get cached resource on {0}, reload it!".format([path]))
 		return load_resource(path)
 	return _resource_cache.get(path)
-
 
 ## 清空资源缓存
 ## [param path] 资源路径，如果为空，则清空所有资源
@@ -80,7 +80,6 @@ func clear_resource_cache(path: String = "") -> void:
 		_resource_cache.erase(path)
 		resource_unloaded.emit(path)
 
-
 ## 从对象池获取实例，如果不存在则返回空
 ## [param id] 实例ID
 ## [return] 池中的实例
@@ -88,7 +87,6 @@ func get_instance(id: StringName) -> Node:
 	if _instance_pools.has(id):
 		return _instance_pools[id].pop_back()
 	return null
-
 
 ## 回收实例到对象池
 ## [param id] 实例ID
@@ -99,7 +97,6 @@ func recycle_instance(id: StringName, instance: Node) -> void:
 	if instance.get_parent():
 		instance.get_parent().remove_child(instance)
 	_instance_pools[id].append(instance)
-
 
 ## 获取对象池中实例的数量，如果为空，计算所有对象池中的实例数量
 ## [param id] 实例ID
@@ -114,7 +111,6 @@ func get_instance_count(id: StringName = "") -> int:
 		return 0
 	return _instance_pools[id].size()
 
-
 ## 清空对象池，如果为空，清空所有对象池
 ## [param id] 实例ID
 func clear_instance_pool(id: StringName = "") -> void:
@@ -126,12 +122,10 @@ func clear_instance_pool(id: StringName = "") -> void:
 	else:
 		push_error("Instance pool for id " + id + " does not exist.")
 
-
 ## 设置懒加载时间间隔
 ## [param interval] 时间间隔
 func set_lazy_load_interval(interval: float) -> void:
 	_lazy_load_interval = interval
-
 
 ## 处理懒加载
 ## [param delta] 时间间隔

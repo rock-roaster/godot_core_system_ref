@@ -10,24 +10,25 @@ signal config_saved
 ## 配置重置
 signal config_reset
 
-const SETTING_CONFIG_PATH: String = "godot_core_system/config_system/config_path"
-const SETTING_AUTO_SAVE: String = "godot_core_system/config_system/auto_save"
+const DefaultConfig = preload(
+	"res://addons/godot_core_system/modules/module_serialization/module_config/default_config.gd")
 
-const DefaultConfig = preload("res://addons/godot_core_system/modules/module_serialization/module_config/default_config.gd")
+const SETTING_SCRIPT: Script = preload("res://addons/godot_core_system/setting.gd")
+const SETTING_MODULE_CONFIG := SETTING_SCRIPT.SETTING_MODULE_CONFIG
+
+## 项目设置路径常量
+const SETTING_CONFIG_PATH: String = SETTING_MODULE_CONFIG + "config_path"
+const SETTING_AUTO_SAVE_ENABLED: String = SETTING_MODULE_CONFIG + "auto_save_enabled"
 
 ## 配置文件路径
 @export var config_path: String:
-	get:
-		return ProjectSettings.get_setting(SETTING_CONFIG_PATH, "user://config.cfg")
-	set(_value):
-		System.log_manager.error("read-only")
+	get: return System.get_setting_value(SETTING_CONFIG_PATH)
+	set(value): System.logger.error("read-only")
 
 ## 是否自动保存
 @export var auto_save: bool:
-	get:
-		return ProjectSettings.get_setting(SETTING_AUTO_SAVE, true)
-	set(_value):
-		System.log_manager.error("read-only")
+	get: return System.get_setting_value(SETTING_AUTO_SAVE_ENABLED)
+	set(value): System.logger.error("read-only")
 
 ## 当前配置
 var _config: Dictionary = {}

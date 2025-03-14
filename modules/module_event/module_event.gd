@@ -3,11 +3,15 @@ extends "res://addons/godot_core_system/modules/module_base.gd"
 
 ## 事件优先级枚举
 enum Priority {
-	LOW = 0,
-	NORMAL = 1,
-	HIGH = 2,
+	LOW = 0,			## 低优先级
+	NORMAL = 1,		## 普通优先级
+	HIGH = 2,		## 高优先级
 }
 
+## 事件订阅字典 {事件名: [Subscription]}
+var _subscriptions: Dictionary = {}
+## 事件历史记录
+var _event_history: Array[Dictionary] = []
 ## 是否记录事件历史
 @export var enable_history: bool = false
 ## 历史记录最大长度
@@ -15,16 +19,10 @@ enum Priority {
 ## 调试模式
 @export var debug_mode: bool = false
 
-## 事件订阅字典 {事件名: [Subscription]}
-var _subscriptions: Dictionary = {}
-## 事件历史记录
-var _event_history: Array[Dictionary] = []
-
 ## 信号：事件被推送时触发
 signal event_pushed(event_name: String, payload: Array)
 ## 信号：事件处理完成时触发
 signal event_handled(event_name: String, payload: Array)
-
 
 ## 推送事件
 ## [param event_name] 事件名
@@ -80,7 +78,6 @@ func push_event(event_name: String, payload : Variant = [], immediate: bool = tr
 
 	event_handled.emit(event_name, payload)
 
-
 ## 订阅事件
 ## [param event_name] 事件名
 ## [param callback] 回调函数
@@ -112,7 +109,6 @@ func subscribe(
 	if debug_mode:
 		print("[EventBus] Subscribed to event: %s with priority: %s" % [event_name, priority])
 
-
 ## 取消订阅事件
 ## [param event_name] 事件名
 ## [param callback] 回调函数
@@ -131,7 +127,6 @@ func unsubscribe(event_name: String, callback: Callable) -> void:
 		if debug_mode:
 			print("[EventBus] Unsubscribed from event: %s" % event_name)
 
-
 ## 订阅一次性事件
 ## [param event_name] 事件名
 ## [param callback] 回调函数
@@ -145,20 +140,17 @@ func subscribe_once(
 ) -> void:
 	subscribe(event_name, callback, priority, true, filter)
 
-
 ## 取消订阅所有事件
 ## [param callback] 回调函数
 func unsubscribe_all(callback: Callable) -> void:
 	for event_name in _subscriptions:
 		unsubscribe(event_name, callback)
 
-
 ## 清除所有订阅
 func clear_subscriptions() -> void:
 	_subscriptions.clear()
 	if debug_mode:
 		print("[EventBus] All subscriptions cleared")
-
 
 ## 获取事件订阅者数量
 ## [param event_name] 事件名
@@ -167,17 +159,14 @@ func get_subscriber_count(event_name: String) -> int:
 		return 0
 	return _subscriptions[event_name].size()
 
-
 ## 获取事件历史记录
 ## [return] 事件历史记录
 func get_event_history() -> Array[Dictionary]:
 	return _event_history.duplicate()
 
-
 ## 清除事件历史记录
 func clear_event_history() -> void:
 	_event_history.clear()
-
 
 ## 记录事件
 ## [param event_name] 事件名
@@ -193,14 +182,12 @@ func _record_event(event_name: String, payload: Array) -> void:
 	if _event_history.size() > max_history_length:
 		_event_history.pop_back()
 
-
 ## 延迟调用回调
 ## [param subscription] 订阅对象
 ## [param payload] 事件负载
 func _deferred_call(subscription: WeakSubscription, payload: Array) -> void:
 	if subscription.is_valid():
 		subscription.call_subscribed(payload)
-
 
 ## 事件订阅信息
 class Subscription:
@@ -221,7 +208,6 @@ class Subscription:
 
 	func call_subscribed(args: Array) -> void:
 		callback.callv(args)
-
 
 ## 使用弱引用避免内存移除情况
 class WeakSubscription:
@@ -245,7 +231,7 @@ class WeakSubscription:
 		filter = f
 
 	func is_valid() -> bool:
-		var obj: Variant = callback_object.get_ref()
+		var obj = callback_object.get_ref()
 		if not obj:
 			return false
 		if is_anonymous:
@@ -253,11 +239,11 @@ class WeakSubscription:
 		return true
 
 	func call_subscribed(args: Array) -> void:
-		var obj: Variant = callback_object.get_ref()
+		var obj = callback_object.get_ref()
 		if obj:
 			if is_anonymous:
 				if not callback.is_valid():
-					System.log_manager.error("callback is not valid, can't call subscribed!")
+					System.logger.error("callback is not valid, cant call subscribed!")
 					return
 				callback.callv(args)  # 匿名方法使用完整的 Callable
 			else:

@@ -1,7 +1,7 @@
 extends "res://addons/godot_core_system/modules/module_base.gd"
+
 ## 实体管理器
 ## 负责管理实体的生命周期和资源加载
-
 
 ## 实体加载完成信号
 signal entity_loaded(entity_id: StringName, entity: PackedScene)
@@ -15,8 +15,8 @@ var _entity_resource_cache: Dictionary[StringName, PackedScene] = {}
 ## 实体ID路径映射
 var _entity_path_map: Dictionary[StringName, String] = {}
 
-var _resource_manager : System.ModuleResource:
-	get: return _system.resource_manager
+var _resource_manager: System.ModuleResource:
+	get: return System.resource_manager
 
 
 func _ready() -> void:
@@ -68,6 +68,7 @@ func load_entity(entity_id: StringName, scene_path: String,
 	entity_loaded.emit(entity_id, scene)
 	return scene
 
+
 ## 卸载实体
 ## [param entity_id] 实体ID
 func unload_entity(entity_id: StringName) -> void:
@@ -75,6 +76,7 @@ func unload_entity(entity_id: StringName) -> void:
 		push_warning("实体不存在: %s" % entity_id)
 		return
 	_resource_manager.unload_resource(_entity_path_map[entity_id])
+
 
 ## 创建实体
 ## [param entity_id] 实体ID
@@ -99,12 +101,14 @@ func create_entity(entity_id: StringName, entity_config: Resource, parent : Node
 	entity_created.emit(entity_id, instance)
 	return instance
 
+
 ## 更新实体
 ## [param entity_id] 实体ID
 ## [param instance] 要更新的实体
 func update_entity(instance : Node, entity_config: Resource) -> void:
 	if instance.has_method("update"):
 		instance.update(entity_config)
+
 
 ## 销毁实体
 ## [param entity_id] 实体ID
@@ -114,6 +118,7 @@ func destroy_entity(entity_id: StringName, instance : Node) -> void:
 		instance.destroy()
 	_resource_manager.recycle_instance(_entity_path_map[entity_id], instance)
 	entity_destroyed.emit(entity_id, instance)
+
 
 ## 清理所有实体
 func clear_entities() -> void:

@@ -1,8 +1,9 @@
 extends RefCounted
-class_name StateBase
+class_name BaseState
+
 ## 基础状态类
 
-
+# 信号
 ## 状态进入
 signal state_entered(msg: Dictionary)
 ## 状态退出
@@ -10,7 +11,7 @@ signal state_exited
 
 var state_id : StringName = &""
 ## 状态机引用
-var state_machine: StateMachine = null
+var state_machine : BaseStateMachine = null
 ## 代理者
 var agent: Object = null
 
@@ -19,10 +20,11 @@ var is_active: bool = false
 var _is_ready
 
 var is_debug: bool = false
+var _logger: System.ModuleLog = System.logger
 
 func ready() -> void:
 	if _is_ready:
-		System.log_manager.warning("State is already ready!")
+		_logger.warning("State is already ready!")
 		return
 	_ready()
 	_is_ready = true
@@ -34,7 +36,7 @@ func dispose() -> void:
 ## 进入状态
 func enter(msg: Dictionary = {}) -> bool:
 	if is_active:
-		System.log_manager.warning("State is already active!")
+		_logger.warning("State is already active!")
 		return false
 	is_active = true
 	_enter(msg)
@@ -45,7 +47,7 @@ func enter(msg: Dictionary = {}) -> bool:
 ## 退出状态
 func exit() -> bool:
 	if not is_active:
-		System.log_manager.warning("State is not active!")
+		_logger.warning("State is not active!")
 		return false
 	is_active = false
 	_exit()
@@ -123,5 +125,6 @@ func _handle_input(_event: InputEvent) -> void:
 
 
 func _debug(debug: String) -> void:
-	if not is_debug: return
-	System.log_manager.debug("[State] " + state_id + ": " + debug)
+	if not is_debug:
+		return
+	_logger.debug("[State] " + state_id + ": " + debug)

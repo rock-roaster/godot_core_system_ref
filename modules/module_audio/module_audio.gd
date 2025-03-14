@@ -9,7 +9,6 @@ enum AudioType {
 	AMBIENT,			## 环境音
 }
 
-
 ## 音频通道配置
 const DEFAULT_BUSES = {
 	AudioType.MUSIC: "Music",			## 背景音乐通道
@@ -18,21 +17,21 @@ const DEFAULT_BUSES = {
 	AudioType.AMBIENT: "Ambient",		## 环境音通道
 }
 
-
 ## 音频节点根节点
 var audio_node_root: Node = null
 ## 音频播放器池
-var _audio_players: Dictionary[AudioType, Array] = {}
+var _audio_players: Dictionary = {}
 ## 当前播放的音乐
 var _current_music: AudioStreamPlayer = null
 ## 音频资源缓存
-var _audio_cache: Dictionary[String, Dictionary] = {}
+var _audio_cache: Dictionary = {}
 ## 音量设置
-var _volumes: Dictionary[AudioType, float] = {}
+var _volumes: Dictionary = {}
 
 
-func _init(_data: Dictionary):
+func _ready() -> void:
 	# 设置默认值
+	#audio_node_root = _current_root
 	_setup_audio_buses()
 
 	for type in AudioType.values():
@@ -42,12 +41,6 @@ func _init(_data: Dictionary):
 
 func _exit() -> void:
 	if audio_node_root == null: return
-	# 释放播放器池中的所有播放器
-	for player_array in _audio_players.values() as Array[Array]:
-		for player in player_array as Array[AudioStreamPlayer]:
-			player.stop()
-			player.queue_free()
-
 	audio_node_root.queue_free()
 
 
@@ -162,22 +155,16 @@ func _get_audio_player(type: AudioType) -> AudioStreamPlayer:
 		if not player.playing:
 			return player
 
-	# 添加音频播放器根节点
 	if audio_node_root == null:
-		_add_audio_node_root()
+		audio_node_root = Node.new()
+		audio_node_root.set_name("AudioNodeRoot")
+		_current_root.add_child(audio_node_root)
 
 	# 创建新的播放器
 	var new_player = AudioStreamPlayer.new()
 	audio_node_root.add_child(new_player)
 	_audio_players[type].append(new_player)
 	return new_player
-
-
-func _add_audio_node_root() -> void:
-	if audio_node_root != null: return
-	audio_node_root = Node.new()
-	audio_node_root.set_name("AudioNodeRoot")
-	_system.add_child(audio_node_root)
 
 
 ## 淡出音乐

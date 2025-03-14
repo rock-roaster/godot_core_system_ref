@@ -4,21 +4,12 @@ extends RefCounted
 const SETTING_MODULE_ENABLE: String = "godot_core_system/module_enable/"
 const SETTING_MODULE_SAVE: String = "godot_core_system/module_save/"
 const SETTING_MODULE_CONFIG: String = "godot_core_system/module_config/"
+const SETTING_MODULE_TRIGGER: String = "godot_core_system/module_trigger/"
 
 const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
-	"module_enable/test_manager":
+	"module_enable/logger":
 	{
-		"name": SETTING_MODULE_ENABLE + "test_manager",
-		"type": TYPE_BOOL,
-		"hint": PROPERTY_HINT_NONE,
-		"hint_string": "",
-		"basic": true,
-		"default": true,
-	},
-
-	"module_enable/log_manager":
-	{
-		"name": SETTING_MODULE_ENABLE + "log_manager",
+		"name": SETTING_MODULE_ENABLE + "logger",
 		"type": TYPE_BOOL,
 		"hint": PROPERTY_HINT_NONE,
 		"hint_string": "",
@@ -56,46 +47,6 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"default": true,
 	},
 
-	"module_enable/time_manager":
-	{
-		"name": SETTING_MODULE_ENABLE + "time_manager",
-		"type": TYPE_BOOL,
-		"hint": PROPERTY_HINT_NONE,
-		"hint_string": "",
-		"basic": true,
-		"default": true,
-	},
-
-	"module_enable/input_manager":
-	{
-		"name": SETTING_MODULE_ENABLE + "input_manager",
-		"type": TYPE_BOOL,
-		"hint": PROPERTY_HINT_NONE,
-		"hint_string": "",
-		"basic": true,
-		"default": true,
-	},
-
-	"module_enable/audio_manager":
-	{
-		"name": SETTING_MODULE_ENABLE + "audio_manager",
-		"type": TYPE_BOOL,
-		"hint": PROPERTY_HINT_NONE,
-		"hint_string": "",
-		"basic": true,
-		"default": true,
-	},
-
-	"module_enable/file_manager":
-	{
-		"name": SETTING_MODULE_ENABLE + "file_manager",
-		"type": TYPE_BOOL,
-		"hint": PROPERTY_HINT_NONE,
-		"hint_string": "",
-		"basic": true,
-		"default": true,
-	},
-
 	"module_enable/resource_manager":
 	{
 		"name": SETTING_MODULE_ENABLE + "resource_manager",
@@ -116,9 +67,9 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"default": true,
 	},
 
-	"module_enable/node_manager":
+	"module_enable/scene_manager":
 	{
-		"name": SETTING_MODULE_ENABLE + "node_manager",
+		"name": SETTING_MODULE_ENABLE + "scene_manager",
 		"type": TYPE_BOOL,
 		"hint": PROPERTY_HINT_NONE,
 		"hint_string": "",
@@ -126,9 +77,29 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"default": true,
 	},
 
-	"module_enable/scene_manager":
+	"module_enable/audio_manager":
 	{
-		"name": SETTING_MODULE_ENABLE + "scene_manager",
+		"name": SETTING_MODULE_ENABLE + "audio_manager",
+		"type": TYPE_BOOL,
+		"hint": PROPERTY_HINT_NONE,
+		"hint_string": "",
+		"basic": true,
+		"default": true,
+	},
+
+	"module_enable/input_manager":
+	{
+		"name": SETTING_MODULE_ENABLE + "input_manager",
+		"type": TYPE_BOOL,
+		"hint": PROPERTY_HINT_NONE,
+		"hint_string": "",
+		"basic": true,
+		"default": true,
+	},
+
+	"module_enable/time_manager":
+	{
+		"name": SETTING_MODULE_ENABLE + "time_manager",
 		"type": TYPE_BOOL,
 		"hint": PROPERTY_HINT_NONE,
 		"hint_string": "",
@@ -156,9 +127,9 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"default": true,
 	},
 
-	"module_enable/trigger_manager":
+	"module_enable/tag_manager":
 	{
-		"name": SETTING_MODULE_ENABLE + "trigger_manager",
+		"name": SETTING_MODULE_ENABLE + "tag_manager",
 		"type": TYPE_BOOL,
 		"hint": PROPERTY_HINT_NONE,
 		"hint_string": "",
@@ -166,9 +137,9 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"default": true,
 	},
 
-	"module_enable/tag_manager":
+	"module_enable/trigger_manager":
 	{
-		"name": SETTING_MODULE_ENABLE + "tag_manager",
+		"name": SETTING_MODULE_ENABLE + "trigger_manager",
 		"type": TYPE_BOOL,
 		"hint": PROPERTY_HINT_NONE,
 		"hint_string": "",
@@ -245,4 +216,14 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"basic": true,
 		"default": true,
 	},
+
+	"module_trigger/subscribe_event_bus":
+	{
+		"name": SETTING_MODULE_TRIGGER + "subscribe_event_bus",
+		"type": TYPE_BOOL,
+		"hint": PROPERTY_HINT_NONE,
+		"hint_string": "",
+		"basic": true,
+		"default": true,
+	}
 }

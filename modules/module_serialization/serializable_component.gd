@@ -1,7 +1,6 @@
 @tool
 extends Node
 class_name SerializableComponent
-
 ## 可序列化组件
 ## 提供节点级别的序列化支持，可用于存档系统和配置系统
 
@@ -23,7 +22,7 @@ var _serialize_callbacks: Dictionary = {}
 ## 反序列化回调
 var _deserialize_callbacks: Dictionary = {}
 
-var _save_manager : System.ModuleSave = System.save_manager
+var _save_manager: System.ModuleSave = System.save_manager
 
 
 func _ready() -> void:

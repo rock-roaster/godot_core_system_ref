@@ -1,5 +1,4 @@
 extends "res://addons/godot_core_system/modules/module_base.gd"
-
 ## 异步IO管理器
 ## 提供三个层次的API：
 ## 1. 基础API - 简单的异步读写操作
@@ -47,19 +46,16 @@ var encryption_provider: EncryptionProvider:
 ## 内部加密提供者实例
 var _encryption_provider: EncryptionProvider = null
 
-
 func _init(_data:Dictionary = {}):
 	_semaphore = Semaphore.new()
 	_mutex = Mutex.new()
 	_thread = Thread.new()
 	_thread.start(_thread_function)
 
-
 func _exit() -> void:
 	_running = false
 	_semaphore.post()
 	_thread.wait_to_finish()
-
 
 ### 基础API ###
 
@@ -70,7 +66,6 @@ func _exit() -> void:
 func read_file(path: String, callback: Callable = func(_s, _r): pass) -> String:
 	return read_file_advanced(path, false, callback)
 
-
 ## 异步写入文件（基础版本）
 ## [param path] 文件路径
 ## [param data] 要写入的数据
@@ -79,14 +74,12 @@ func read_file(path: String, callback: Callable = func(_s, _r): pass) -> String:
 func write_file(path: String, data: Variant, callback: Callable = func(_s, _r): pass) -> String:
 	return write_file_advanced(path, data, false, callback)
 
-
 ## 异步删除文件（基础版本）
 ## [param path] 文件路径
 ## [param callback] 回调函数，接收(success: bool, result: Variant)
 ## [return] 任务ID
 func delete_file(path: String, callback: Callable = func(_s, _r): pass) -> String:
 	return delete_file_async(path, callback)
-
 
 ### 进阶API ###
 
@@ -98,7 +91,6 @@ func delete_file(path: String, callback: Callable = func(_s, _r): pass) -> Strin
 func read_file_advanced(path: String, use_compression: bool = false, callback: Callable = func(_s, _r): pass) -> String:
 	return read_file_async(path, use_compression,  "", callback)
 
-
 ## 异步写入文件（进阶版本）
 ## [param path] 文件路径
 ## [param data] 要写入的数据
@@ -107,7 +99,6 @@ func read_file_advanced(path: String, use_compression: bool = false, callback: C
 ## [return] 任务ID
 func write_file_advanced(path: String, data: Variant, use_compression: bool = false, callback: Callable = func(_s, _r): pass) -> String:
 	return write_file_async(path, data, use_compression,  "", callback)
-
 
 ### 完整API ###
 
@@ -137,7 +128,6 @@ func read_file_async(
 	_add_task(task)
 	return task_id
 
-
 ## 异步写入文件（完整版本）
 ## [param path] 文件路径
 ## [param data] 数据
@@ -166,7 +156,6 @@ func write_file_async(
 	_add_task(task)
 	return task_id
 
-
 ## 异步删除文件
 ## [param path] 文件路径
 ## [param callback] 回调函数
@@ -185,7 +174,6 @@ func delete_file_async(path: String, callback: Callable = func(_s, _r): pass) ->
 
 	_add_task(task)
 	return task_id
-
 
 ### 私有方法 ###
 
@@ -221,7 +209,6 @@ func _thread_function() -> void:
 			print("[AsyncIOManager] Posting semaphore for next task.")
 			_semaphore.post()
 
-
 ## 添加任务到队列
 func _add_task(task: IOTask) -> void:
 	if not _running:
@@ -236,7 +223,6 @@ func _add_task(task: IOTask) -> void:
 	if was_empty:
 		print("[AsyncIOManager] Task queue was empty, posting semaphore.")
 		_semaphore.post()  # 只在队列从空变为非空时发送信号
-
 
 ## 处理写入任务
 func _handle_write_task(task: IOTask) -> void:
@@ -267,7 +253,6 @@ func _handle_write_task(task: IOTask) -> void:
 	else:
 		call_deferred("_complete_task", task, false, null, "File was not written successfully")
 
-
 ## 处理读取任务
 func _handle_read_task(task: IOTask) -> void:
 	if not FileAccess.file_exists(task.path):
@@ -289,7 +274,6 @@ func _handle_read_task(task: IOTask) -> void:
 
 	call_deferred("_complete_task", task, true, processed_data)
 
-
 ## 处理删除任务
 func _handle_delete_task(task: IOTask) -> void:
 	if not FileAccess.file_exists(task.path):
@@ -302,7 +286,6 @@ func _handle_delete_task(task: IOTask) -> void:
 		return
 
 	call_deferred("_complete_task", task, true, null)
-
 
 ## 完成任务
 ## [param task] 任务
@@ -322,7 +305,6 @@ func _complete_task(task: IOTask, success: bool, result: Variant = null, error: 
 
 	if task.callback.is_valid():
 		task.callback.call(success, result)
-
 
 ## 处理数据（写入）
 ## [param data] 数据
@@ -344,7 +326,6 @@ func _process_data_for_write(data: Variant, compression: bool, encryption_key: S
 		byte_array = _encrypt_data(byte_array, key)
 
 	return byte_array
-
 
 ## 处理数据（读取）
 ## [param byte_array] 数据
@@ -369,14 +350,12 @@ func _process_data_for_read(byte_array: PackedByteArray, compression: bool, encr
 		return json.get_data()
 	return null
 
-
 ## 加密数据
 ## [param data] 要加密的数据
 ## [param key] 密钥
 ## [return] 加密后的数据
 func _encrypt_data(data: PackedByteArray, key: PackedByteArray) -> PackedByteArray:
 	return encryption_provider.encrypt(data, key)
-
 
 ## 解密数据
 ## [param data] 要解密的数据
@@ -385,12 +364,10 @@ func _encrypt_data(data: PackedByteArray, key: PackedByteArray) -> PackedByteArr
 func _decrypt_data(data: PackedByteArray, key: PackedByteArray) -> PackedByteArray:
 	return encryption_provider.decrypt(data, key)
 
-
 ## 设置加密提供者
 ## [param provider] 加密提供者实例
 func set_encryption_provider(provider: EncryptionProvider) -> void:
 	encryption_provider = provider
-
 
 ## 生成唯一的任务ID
 func _generate_task_id() -> String:
@@ -399,7 +376,6 @@ func _generate_task_id() -> String:
 	var counter = _task_counter
 	_mutex.unlock()
 	return "%d_%d" % [Time.get_ticks_msec(), counter]
-
 
 ## IO任务
 class IOTask:
@@ -421,7 +397,6 @@ class IOTask:
 	var compression: bool
 	## 加密密钥, 为空表示不加密
 	var encryption_key: String
-
 
 	func _init(
 		_id: String,

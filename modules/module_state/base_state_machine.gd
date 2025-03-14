@@ -1,29 +1,28 @@
-extends StateBase
-class_name StateMachine
+extends BaseState
+class_name BaseStateMachine
+
 ## 基础状态机类, 状态机本身也是一个状态。
 
-
+# 信号
 ## 状态改变
-signal state_changed(from_state: StateBase, to_state: StateBase)
+signal state_changed(from_state: BaseState, to_state: BaseState)
 
 ## 当前状态
-var current_state: StateBase = null
+var current_state: BaseState = null
 ## 状态字典
-var states: Dictionary[StringName, StateBase] = {}
+var states: Dictionary[StringName, BaseState] = {}
 ## 变量字典
 var values: Dictionary = {}
 ## 上一个状态
 var previous_state: StringName = &""
 
-
 func enter(msg: Dictionary = {}) -> bool:
 	if not super(msg):
 		return false
 	if current_state == null:
-		System.log_manager.error("Entering null state!")
+		_logger.error("Entering null state!")
 		return false
 	return current_state.enter(msg)
-
 
 ## 更新
 func update(delta: float) -> void:
@@ -31,19 +30,16 @@ func update(delta: float) -> void:
 		current_state.update(delta)
 	super(delta)
 
-
 ## 物理更新
 func physics_update(delta: float) -> void:
 	if is_active and current_state:
 		current_state.physics_update(delta)
 	super(delta)
 
-
 func handle_input(event: InputEvent) -> void:
 	if is_active and current_state:
 		current_state.handle_input(event)
 	super(event)
-
 
 func exit() -> bool:
 	if not super():
@@ -53,18 +49,15 @@ func exit() -> bool:
 		current_state = null
 	return true
 
-
 func ready() -> void:
 	super()
 	for state in states.values():
 		state.ready()
 
-
 func dispose() -> void:
 	for state in states.values():
 		state.dispose()
 	super()
-
 
 ## 启动状态机
 ## [param initial_state] 初始状态ID
@@ -72,7 +65,7 @@ func dispose() -> void:
 ## [param resume] 是否恢复到上一个状态
 func start(initial_state: StringName = &"", msg: Dictionary = {}, resume: bool = false) -> void:
 	if current_state != null:
-		System.log_manager.warning("State machine is already running!")
+		_logger.warning("State machine is already running!")
 		return
 
 	var target_state = initial_state
@@ -95,7 +88,6 @@ func start(initial_state: StringName = &"", msg: Dictionary = {}, resume: bool =
 	is_active = true
 	_debug("Starting state: %s" % target_state)
 
-
 ## 停止状态机
 func stop() -> void:
 	if current_state:
@@ -110,14 +102,12 @@ func stop() -> void:
 func pause() -> void:
 	is_active = false
 
-
 ## 恢复状态机
 func resume() -> void:
 	is_active = true
 
-
 ## 添加状态
-func add_state(state_id: StringName, new_state: StateBase) -> StateBase:
+func add_state(state_id: StringName, new_state: BaseState) -> BaseState:
 	states[state_id] = new_state
 	new_state.state_machine = self
 	new_state.agent = agent
@@ -126,7 +116,6 @@ func add_state(state_id: StringName, new_state: StateBase) -> StateBase:
 	_debug("Adding state: %s" % state_id)
 	return new_state
 
-
 ## 移除状态
 func remove_state(state_id: StringName) -> void:
 	if current_state == states.get(state_id):
@@ -134,7 +123,6 @@ func remove_state(state_id: StringName) -> void:
 		current_state = null
 	_debug("Removing state: %s" % state_id)
 	states.erase(state_id)
-
 
 ## 切换状态
 func switch(state_id: StringName, msg: Dictionary = {}) -> void:
@@ -155,21 +143,17 @@ func switch(state_id: StringName, msg: Dictionary = {}) -> void:
 	current_state.enter(msg)
 	state_changed.emit(from_state, current_state)
 
-
 ## 获取变量
 func get_variable(key: StringName) -> Variant:
 	return values.get(key)
-
 
 ## 设置变量
 func set_variable(key: StringName, value: Variant) -> void:
 	values[key] = value
 
-
 ## 检查变量是否存在
 func has_variable(key: StringName) -> bool:
 	return values.has(key)
-
 
 ## 获取当前状态名称
 func get_current_state_name() -> StringName:

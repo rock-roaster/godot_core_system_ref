@@ -1,4 +1,5 @@
 extends RefCounted
+class_name LiteTimer
 ## 计时器数据结构
 
 

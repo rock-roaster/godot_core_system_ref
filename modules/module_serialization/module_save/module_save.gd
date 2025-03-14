@@ -1,50 +1,48 @@
 extends "res://addons/godot_core_system/modules/module_base.gd"
 
+
 ## 存档管理器，负责存档的创建、加载、删除等操作
 
 ## 存档数据
-const GameStateData = preload("res://addons/godot_core_system/modules/module_serialization/module_save/game_state_data.gd")
+const GameStateData = preload(
+	"res://addons/godot_core_system/modules/module_serialization/module_save/game_state_data.gd")
+
+const SETTING_SCRIPT: Script = preload("res://addons/godot_core_system/setting.gd")
+const SETTING_SAVE_SYSTEM := SETTING_SCRIPT.SETTING_MODULE_SAVE
 
 ## 项目设置路径常量
-const SETTING_SAVE_DIR = "core_system/save_system/save_directory"
-const SETTING_SAVE_EXT = "core_system/save_system/save_extension"
-const SETTING_AUTO_SAVE_INTERVAL = "core_system/save_system/auto_save_interval"
-const SETTING_MAX_AUTO_SAVES = "core_system/save_system/max_auto_saves"
-const SETTING_AUTO_SAVE_ENABLED = "core_system/save_system/auto_save_enabled"
-
+const SETTING_SAVE_DIR =  SETTING_SAVE_SYSTEM + "save_directory"
+const SETTING_SAVE_EXT = SETTING_SAVE_SYSTEM + "save_extension"
+const SETTING_AUTO_SAVE_INTERVAL = SETTING_SAVE_SYSTEM + "auto_save_interval"
+const SETTING_MAX_AUTO_SAVES = SETTING_SAVE_SYSTEM + "max_auto_saves"
+const SETTING_AUTO_SAVE_ENABLED = SETTING_SAVE_SYSTEM + "auto_save_enabled"
 
 ## 存档目录
 var save_directory: String:
-	get:
-		return ProjectSettings.get_setting(SETTING_SAVE_DIR, "user://saves")
+	get: return System.get_setting_value(SETTING_SAVE_DIR)
 
 ## 存档扩展名
 var save_extension: String:
-	get:
-		return ProjectSettings.get_setting(SETTING_SAVE_EXT, "save")
+	get: return System.get_setting_value(SETTING_SAVE_EXT)
 
 ## 自动存档间隔（秒）
 var auto_save_interval: float:
-	get:
-		return ProjectSettings.get_setting(SETTING_AUTO_SAVE_INTERVAL, 300)
+	get: return System.get_setting_value(SETTING_AUTO_SAVE_INTERVAL)
 
 ## 自动存档最大数量
 var max_auto_saves: int:
-	get:
-		return ProjectSettings.get_setting(SETTING_MAX_AUTO_SAVES, 3)
+	get: return System.get_setting_value(SETTING_MAX_AUTO_SAVES)
 
 ## 是否启用自动存档
 var auto_save_enabled: bool:
-	get:
-		return ProjectSettings.get_setting(SETTING_AUTO_SAVE_ENABLED, true)
+	get: return System.get_setting_value(SETTING_AUTO_SAVE_ENABLED)
 
 ## 当前存档
 var _current_save: GameStateData = null
 
 ## 异步IO管理器
-var _io_manager: System.ModuleAsyncIO:
-	get:
-		return System.io_manager
+var _io_manager: ModuleImport.ModuleAsyncIO:
+	get: return System.io_manager
 
 ## 自动存档计时器
 var _auto_save_timer: float = 0
@@ -63,6 +61,7 @@ signal auto_save_created
 ## 自动存档清理完成
 signal auto_save_cleaned
 
+
 # 每帧判断是否需要自动存档
 func _process(delta: float) -> void:
 	_update_auto_save(delta)
@@ -71,7 +70,7 @@ func _process(delta: float) -> void:
 ## 注册可序列化组件
 func register_serializable_component(component: SerializableComponent) -> void:
 	if _serializable_components.has(component):
-		System.log_manager.warning("Serializable component already registered: " + component.name)
+		System.logger.warning("Serializable component already registered: " + component.name)
 		return
 	_serializable_components.append(component)
 
@@ -79,7 +78,7 @@ func register_serializable_component(component: SerializableComponent) -> void:
 ## 注销可序列化组件
 func unregister_serializable_component(component: SerializableComponent) -> void:
 	if not _serializable_components.has(component):
-		System.log_manager.warning("Serializable component not registered: " + component.name)
+		System.logger.warning("Serializable component not registered: " + component.name)
 		return
 	_serializable_components.erase(component)
 
@@ -112,6 +111,7 @@ func create_save(save_name: String, callback: Callable = func(_success: bool): p
 			callback.call(success)
 	)
 
+
 ## 加载存档
 ## [param save_name] 存档名称
 ## [param callback] 回调函数,用于通知加载结果
@@ -130,13 +130,14 @@ func load_save(save_name: String, callback: Callable = func(_success: bool): pas
 				# 恢复所有可序列化组件的数据
 				var serialized_data = _current_save.get_data("nodes", {})
 				for node_path in serialized_data.keys():
-					var node = _system.get_node_or_null(node_path)
+					var node = _current_root.get_node_or_null(node_path)
 					if node is SerializableComponent:
 						node.deserialize(serialized_data[node_path])
 
 				save_loaded.emit(save_name)
 			callback.call(success)
 	)
+
 
 ## 删除存档
 ## [param save_name] 存档名称
@@ -153,6 +154,7 @@ func delete_save(save_name: String, callback: Callable = func(_success: bool): p
 				save_deleted.emit(save_name)
 			callback.call(success)
 	)
+
 
 ## 创建自动存档
 func create_auto_save() -> void:
@@ -171,6 +173,7 @@ func create_auto_save() -> void:
 			)
 	)
 
+
 ## 获取存档列表
 ## [param callback] 回调函数
 func get_save_list(callback: Callable = Callable()) -> void:
@@ -188,10 +191,12 @@ func get_save_list(callback: Callable = Callable()) -> void:
 			file_name = dir.get_next()
 	callback.call(saves)
 
+
 ## 获取当前存档
 ## [return] 当前存档
 func get_current_save() -> GameStateData:
 	return _current_save
+
 
 ## 清理旧的自动存档
 ## [param callback] 回调函数，在清理完成后调用
@@ -218,11 +223,13 @@ func _clean_old_auto_saves(callback: Callable = Callable()) -> void:
 			)
 	)
 
+
 ## 获取存档路径
 ## [param save_name] 存档名称
 ## [return] 存档路径
 func _get_save_path(save_name: String) -> String:
 	return save_directory.path_join(save_name + "." + save_extension)
+
 
 ## 更新自动存档计时器并在需要时创建自动存档
 ## [param delta] 时间增量

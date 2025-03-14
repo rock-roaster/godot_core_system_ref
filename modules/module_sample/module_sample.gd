@@ -1,13 +1,4 @@
-extends RefCounted
-
-
-var _current_tree: SceneTree:
-	get: return System.get_tree()
-	set(value): push_error("_current_root is read only.")
-
-var _current_root: Window:
-	get: return _current_tree.get_root()
-	set(value): push_error("_current_root is read only.")
+extends "res://addons/godot_core_system/modules/module_base.gd"
 
 
 func _init(_data: Dictionary = {}) -> void:

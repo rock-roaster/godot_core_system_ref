@@ -7,10 +7,8 @@ class_name HMACEncryptionProvider
 
 var _crypto: Crypto
 
-
 func _init():
 	_crypto = Crypto.new()
-
 
 ## 使用HMAC-SHA256进行加密
 ## 这实际上是在计算HMAC，不是真正的加密
@@ -28,7 +26,6 @@ func encrypt(data: PackedByteArray, key: PackedByteArray) -> PackedByteArray:
 
 	# 组合IV、HMAC和原始数据
 	return iv + hmac + data
-
 
 ## 验证HMAC并提取原始数据
 func decrypt(data: PackedByteArray, key: PackedByteArray) -> PackedByteArray:
