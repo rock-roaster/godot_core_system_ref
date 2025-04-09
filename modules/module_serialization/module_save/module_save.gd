@@ -41,7 +41,7 @@ var auto_save_enabled: bool:
 var _current_save: GameStateData = null
 
 ## 异步IO管理器
-var _io_manager: ModuleImport.ModuleAsyncIO:
+var _io_manager: System.ModuleAsyncIO:
 	get: return System.io_manager
 
 ## 自动存档计时器

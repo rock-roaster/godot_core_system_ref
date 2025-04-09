@@ -1,5 +1,5 @@
 extends RefCounted
-class_name ModuleImport
+class_name ModuleClass
 
 
 const ModuleBase: = preload(
@@ -46,3 +46,9 @@ const ModuleTag: = preload(
 
 const ModuleTrigger: = preload(
 	"res://addons/godot_core_system/modules/module_trigger/module_trigger.gd")
+
+const ModuleThread: = preload(
+	"res://addons/godot_core_system/modules/module_thread/module_thread.gd")
+
+const ModuleDialogue: = preload(
+	"res://addons/godot_core_system/modules/module_dialogue/module_dialogue.gd")

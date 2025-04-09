@@ -18,7 +18,7 @@ const DEFAULT_BUSES = {
 }
 
 ## 音频节点根节点
-var audio_node_root: Node = null
+var _audio_node_root: Node = null
 ## 音频播放器池
 var _audio_players: Dictionary = {}
 ## 当前播放的音乐
@@ -40,8 +40,9 @@ func _ready() -> void:
 
 
 func _exit() -> void:
-	if audio_node_root == null: return
-	audio_node_root.queue_free()
+	if _audio_node_root != null:
+		_current_root.remove_child(_audio_node_root)
+		_audio_node_root.queue_free()
 
 
 ## 预加载音频资源
@@ -155,14 +156,14 @@ func _get_audio_player(type: AudioType) -> AudioStreamPlayer:
 		if not player.playing:
 			return player
 
-	if audio_node_root == null:
-		audio_node_root = Node.new()
-		audio_node_root.set_name("AudioNodeRoot")
-		_current_root.add_child(audio_node_root)
+	if _audio_node_root == null:
+		_audio_node_root = Node.new()
+		_audio_node_root.set_name("AudioNodeRoot")
+		_current_root.add_child(_audio_node_root)
 
 	# 创建新的播放器
 	var new_player = AudioStreamPlayer.new()
-	audio_node_root.add_child(new_player)
+	_audio_node_root.add_child(new_player)
 	_audio_players[type].append(new_player)
 	return new_player
 
@@ -171,7 +172,7 @@ func _get_audio_player(type: AudioType) -> AudioStreamPlayer:
 ## [param duration] 淡出持续时间
 func _fade_out_music(duration: float) -> void:
 	if _current_music:
-		var tween = audio_node_root.create_tween()
+		var tween = _audio_node_root.create_tween()
 		tween.tween_property(_current_music, "volume_db", -80.0, duration)
 		tween.tween_callback(_current_music.stop)
 
@@ -181,7 +182,7 @@ func _fade_out_music(duration: float) -> void:
 func _fade_in_music(duration: float) -> void:
 	if _current_music:
 		_current_music.volume_db = -80.0
-		var tween = audio_node_root.create_tween()
+		var tween = _audio_node_root.create_tween()
 		tween.tween_property(_current_music, "volume_db",
 			linear_to_db(_volumes[AudioType.MUSIC]), duration)
 

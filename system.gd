@@ -5,21 +5,23 @@ const SETTING_SCRIPT: Script = preload("res://addons/godot_core_system/setting.g
 const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = SETTING_SCRIPT.SETTING_INFO_DICT
 
 #region 导入模组脚本
-const ModuleBase = ModuleImport.ModuleBase
-const ModuleLog = ModuleImport.ModuleLog
-const ModuleAsyncIO = ModuleImport.ModuleAsyncIO
-const ModuleSave = ModuleImport.ModuleSave
-const ModuleConfig = ModuleImport.ModuleConfig
-const ModuleResource = ModuleImport.ModuleResource
-const ModuleEntity = ModuleImport.ModuleEntity
-const ModuleScene = ModuleImport.ModuleScene
-const ModuleAudio = ModuleImport.ModuleAudio
-const ModuleInput = ModuleImport.ModuleInput
-const ModuleTime = ModuleImport.ModuleTime
-const ModuleEvent = ModuleImport.ModuleEvent
-const ModuleState = ModuleImport.ModuleState
-const ModuleTag = ModuleImport.ModuleTag
-const ModuleTrigger = ModuleImport.ModuleTrigger
+const ModuleBase = ModuleClass.ModuleBase
+const ModuleLog = ModuleClass.ModuleLog
+const ModuleAsyncIO = ModuleClass.ModuleAsyncIO
+const ModuleSave = ModuleClass.ModuleSave
+const ModuleConfig = ModuleClass.ModuleConfig
+const ModuleResource = ModuleClass.ModuleResource
+const ModuleEntity = ModuleClass.ModuleEntity
+const ModuleScene = ModuleClass.ModuleScene
+const ModuleAudio = ModuleClass.ModuleAudio
+const ModuleInput = ModuleClass.ModuleInput
+const ModuleTime = ModuleClass.ModuleTime
+const ModuleEvent = ModuleClass.ModuleEvent
+const ModuleState = ModuleClass.ModuleState
+const ModuleTag = ModuleClass.ModuleTag
+const ModuleTrigger = ModuleClass.ModuleTrigger
+const ModuleThread = ModuleClass.ModuleThread
+const ModuleDialogue = ModuleClass.ModuleDialogue
 #endregion
 
 #region 模组变量与getset方法
@@ -78,6 +80,14 @@ var tag_manager: ModuleTag:
 var trigger_manager: ModuleTrigger:
 	get: return get_module("trigger_manager")
 	set(value): push_error("trigger_manager is read-only.")
+
+var thread: ModuleThread:
+	get: return get_module("thread_manager")
+	set(value): push_error("thread_manager is read-only.")
+
+var dialogue_manager: ModuleDialogue:
+	get: return get_module("dialogue_manager")
+	set(value): push_error("dialogue_manager is read-only.")
 #endregion
 
 var _modules: Dictionary[StringName, ModuleBase]
@@ -96,6 +106,8 @@ var _module_scripts: Dictionary[StringName, Script] = {
 	"state_manager": ModuleState,
 	"tag_manager": ModuleTag,
 	"trigger_manager": ModuleTrigger,
+	"thread_manager": ModuleThread,
+	"dialogue_manager": ModuleDialogue,
 }
 
 
@@ -139,6 +151,7 @@ func _create_module(module_id: StringName, data: Dictionary = {}) -> ModuleBase:
 		push_error("无法加载模块脚本：" + module_id)
 		return null
 
+
 	var module: ModuleBase = script.new(data)
 	if not module:
 		push_error("无法创建模块实例：" + module_id)
@@ -164,23 +177,4 @@ func _unload_module(module_id: StringName) -> void:
 
 ## 设置路径和字典名称里只要填对一个就能得到参数的傻瓜方法
 func get_setting_value(setting_name: StringName, default_value: Variant = null) -> Variant:
-	var setting_dict: Dictionary = {}
-
-	if SETTING_INFO_DICT.has(setting_name):
-		setting_dict = SETTING_INFO_DICT.get(setting_name)
-		setting_name = setting_dict.get("name")
-
-	if setting_dict.is_empty():
-		for dict in SETTING_INFO_DICT.values():
-			if dict.get("name") == setting_name:
-				setting_dict = dict
-				break
-
-	if setting_dict.is_empty():
-		push_error("setting path not exist: ", setting_name)
-		return default_value
-
-	if setting_dict.has("default") && default_value == null:
-		default_value = setting_dict.get("default")
-
-	return ProjectSettings.get_setting(setting_name, default_value)
+	return SETTING_SCRIPT.get_setting_value(setting_name, default_value)

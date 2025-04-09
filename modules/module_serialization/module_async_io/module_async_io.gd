@@ -27,12 +27,12 @@ enum TaskStatus {
 }
 
 # 私有变量
-var _tasks: Array[IOTask] = []
-var _thread: Thread
-var _semaphore: Semaphore
-var _running: bool = true
 var _mutex: Mutex
+var _semaphore: Semaphore
+var _thread: Thread
+var _running: bool = true
 var _task_counter: int = 0  # 任务计数器
+var _tasks: Array[IOTask] = []
 
 ## 加密提供者
 var encryption_provider: EncryptionProvider:
@@ -313,7 +313,7 @@ func _complete_task(task: IOTask, success: bool, result: Variant = null, error: 
 ## [return] 处理后的数据
 func _process_data_for_write(data: Variant, compression: bool, encryption_key: String = "") -> PackedByteArray:
 	# 将数据转换为JSON字符串
-	var json_str := JSON.stringify(data)
+	var json_str := JSON.stringify(data, "\t", false)
 	var byte_array := json_str.to_utf8_buffer()
 
 	# 压缩

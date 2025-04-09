@@ -15,31 +15,33 @@ var _entity_resource_cache: Dictionary[StringName, PackedScene] = {}
 ## 实体ID路径映射
 var _entity_path_map: Dictionary[StringName, String] = {}
 
-var _resource_manager: System.ModuleResource:
+var _resource_manager: ModuleClass.ModuleResource:
 	get: return System.resource_manager
 
 
 func _ready() -> void:
-	_resource_manager.resource_loaded.connect(
-		func(resource_path: String, resource: Resource):
-			if resource is PackedScene:
-				var entity_id := _entity_path_map.find_key(resource_path)
-				if not entity_id:
-					return
-				if _entity_resource_cache.has(entity_id):
-					return
-				_entity_resource_cache[entity_id] = resource
-				var scene := resource
-				entity_loaded.emit(entity_id, scene)
-	)
-	_resource_manager.resource_unloaded.connect(
-		func(resource_path: String):
-			var entity_id: StringName = _entity_path_map.find_key(resource_path)
-			if not entity_id:
-				return
-			_entity_resource_cache.erase(entity_id)
-			entity_unloaded.emit(entity_id)
-	)
+	_resource_manager.resource_loaded.connect(_on_resource_loaded)
+	_resource_manager.resource_unloaded.connect(_on_resource_unloaded)
+
+
+func _on_resource_loaded(resource_path: String, resource: Resource) -> void:
+	if resource is PackedScene:
+		var entity_id := _entity_path_map.find_key(resource_path)
+		if not entity_id:
+			return
+		if _entity_resource_cache.has(entity_id):
+			return
+		_entity_resource_cache[entity_id] = resource
+		var scene := resource
+		entity_loaded.emit(entity_id, scene)
+
+
+func _on_resource_unloaded(resource_path: String) -> void:
+	var entity_id: StringName = _entity_path_map.find_key(resource_path)
+	if not entity_id:
+		return
+	_entity_resource_cache.erase(entity_id)
+	entity_unloaded.emit(entity_id)
 
 
 ## 获取实体场景
@@ -53,7 +55,9 @@ func get_entity_scene(entity_id: StringName) -> PackedScene:
 ## [param load_mode] 加载模式
 ## [return] 加载的实体
 func load_entity(entity_id: StringName, scene_path: String,
-		load_mode: System.ModuleResource.LOAD_MODE = System.ModuleResource.LOAD_MODE.IMMEDIATE) -> PackedScene:
+		load_mode: ModuleClass.ModuleResource.LoadMode = ModuleClass.ModuleResource.LoadMode.IMMEDIATE,
+	) -> PackedScene:
+
 	if _entity_resource_cache.has(entity_id):
 		push_warning("实体已存在: %s" % entity_id)
 		return _entity_resource_cache[entity_id]
@@ -82,7 +86,7 @@ func unload_entity(entity_id: StringName) -> void:
 ## [param entity_id] 实体ID
 ## [param parent] 父节点
 func create_entity(entity_id: StringName, entity_config: Resource, parent : Node = null) -> Node:
-	var instance : Node =  _resource_manager.get_instance(_entity_path_map[entity_id])
+	var instance: Node = _resource_manager.get_instance(_entity_path_map[entity_id])
 	if not instance:
 		instance = get_entity_scene(entity_id).instantiate()
 

@@ -10,84 +10,75 @@ signal config_saved
 ## 配置重置
 signal config_reset
 
-const DefaultConfig = preload(
+const DefaultConfig: Script = preload(
 	"res://addons/godot_core_system/modules/module_serialization/module_config/default_config.gd")
-
-const SETTING_SCRIPT: Script = preload("res://addons/godot_core_system/setting.gd")
-const SETTING_MODULE_CONFIG := SETTING_SCRIPT.SETTING_MODULE_CONFIG
-
-## 项目设置路径常量
-const SETTING_CONFIG_PATH: String = SETTING_MODULE_CONFIG + "config_path"
-const SETTING_AUTO_SAVE_ENABLED: String = SETTING_MODULE_CONFIG + "auto_save_enabled"
 
 ## 配置文件路径
 @export var config_path: String:
-	get: return System.get_setting_value(SETTING_CONFIG_PATH)
+	get: return System.get_setting_value("module_config/save_path")
 	set(value): System.logger.error("read-only")
 
 ## 是否自动保存
 @export var auto_save: bool:
-	get: return System.get_setting_value(SETTING_AUTO_SAVE_ENABLED)
+	get: return System.get_setting_value("module_config/auto_save_enabled")
 	set(value): System.logger.error("read-only")
 
-## 当前配置
-var _config: Dictionary = {}
-## 异步IO管理器
-var _io_manager: System.ModuleAsyncIO = System.io_manager
 ## 是否已修改
-var _modified: bool = false
+var _modified: bool
+## 当前配置
+var _config_file: ConfigFile
+## 异步IO管理器
+var _thread_manager: ModuleClass.ModuleThread
 
 
 func _init(_data: Dictionary = {}):
-	_config = DefaultConfig.get_default_config()
+	_modified = false
+	_config_file = DefaultConfig.get_default_config_file()
+	_thread_manager = System.thread
 
 
 func _exit() -> void:
 	if auto_save and _modified:
 		save_config()
 
+	_thread_manager.unload_thread("save_config")
+	_thread_manager.unload_thread("load_config")
+
+
 ## 加载配置
 ## [param callback] 回调函数
 func load_config(callback: Callable = Callable()) -> void:
-	_io_manager.read_file_async(
-		config_path,
-		true,
-		"",
-		func(success: bool, result: Variant):
-			if success:
-				# 合并加载的配置和默认配置
-				var default_config = DefaultConfig.get_default_config()
-				_merge_config(default_config, result)
-				_config = default_config
-			else:
-				# 使用默认配置
-				_config = DefaultConfig.get_default_config()
-			_modified = false
-			config_loaded.emit()
-			if callback.is_valid():
-				callback.call(success)
-	)
+	_thread_manager.add_task("load_config", load_config_async, callback)
+
+
+func load_config_async() -> void:
+	var error: Error = _config_file.load(config_path)
+	if error != OK:
+		_config_file = DefaultConfig.get_default_config_file()
+	_modified = false
+	config_loaded.emit()
+	_thread_manager.next_step("load_config")
+
 
 ## 保存配置
 ## [param callback] 回调函数
 func save_config(callback: Callable = Callable()) -> void:
-	_io_manager.write_file_async(
-		config_path,
-		_config,
-		true,
-		"",
-		func(success: bool, _result: Variant):
-			if success:
-				_modified = false
-				config_saved.emit()
-			if callback.is_valid():
-				callback.call(success)
-	)
+	_thread_manager.add_task("save_config", save_config_async, callback)
+
+
+func save_config_async() -> void:
+	var error: Error = _config_file.save(config_path)
+	if error == OK:
+		_modified = false
+		config_saved.emit()
+	_thread_manager.next_step("save_config")
+
 
 ## 重置配置
 ## [param callback] 回调函数
 func reset_config(callback: Callable = Callable()) -> void:
-	_config = DefaultConfig.get_default_config()
+	_config_file = DefaultConfig.get_default_config_file()
+
 	_modified = true
 	config_reset.emit()
 
@@ -95,20 +86,19 @@ func reset_config(callback: Callable = Callable()) -> void:
 		save_config(callback)
 	else:
 		if callback.is_valid():
-			callback.call(true)
+			callback.call()
+
 
 ## 设置配置值
 ## [param section] 配置段
 ## [param key] 键
 ## [param value] 值
 func set_value(section: String, key: String, value: Variant) -> void:
-	if not _config.has(section):
-		_config[section] = {}
-	_config[section][key] = value
+	_config_file.set_value(section, key, value)
 	_modified = true
-
 	if auto_save:
 		save_config()
+
 
 ## 获取配置值
 ## [param section] 配置段
@@ -116,52 +106,15 @@ func set_value(section: String, key: String, value: Variant) -> void:
 ## [param default_value] 默认值
 ## [return] 值
 func get_value(section: String, key: String, default_value: Variant = null) -> Variant:
-	var value = default_value
-
-	if _config.has(section) and _config[section].has(key):
-		value = _config[section][key]
-	else:
-		# 从默认配置获取
-		var default_config = DefaultConfig.get_default_config()
-		if default_config.has(section) and default_config[section].has(key):
-			value = default_config[section][key]
-
-	# 处理特殊类型转换
-	if value is String:
-		# 尝试将字符串转换为Vector2
-		if value.begins_with("(") and value.ends_with(")"):
-			var components = value.trim_prefix("(").trim_suffix(")").split(",")
-			if components.size() == 2:
-				var x = components[0].to_float()
-				var y = components[1].to_float()
-				return Vector2(x, y)
-
+	var value: Variant = _config_file.get_value(section, key, default_value)
 	return value
+
 
 ## 删除配置值
 ## [param section] 配置段
 ## [param key] 键
 func erase_value(section: String, key: String) -> void:
-	if _config.has(section):
-		_config[section].erase(key)
-		_modified = true
-
-		if auto_save:
-			save_config()
-
-## 获取配置段
-## [param section] 配置段
-## [return] 配置段
-func get_section(section: String) -> Dictionary:
-	return _config.get(section, {}).duplicate()
-
-## 合并配置
-## [param target] 目标配置
-## [param source] 源配置
-func _merge_config(target: Dictionary, source: Dictionary) -> void:
-	for key in source:
-		if target.has(key):
-			if source[key] is Dictionary and target[key] is Dictionary:
-				_merge_config(target[key], source[key])
-			else:
-				target[key] = source[key]
+	if not _config_file.has_section_key(section, key): return
+	_config_file.set_value(section, key, null)
+	if auto_save:
+		save_config()
