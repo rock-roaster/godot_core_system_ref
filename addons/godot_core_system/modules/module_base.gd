@@ -3,7 +3,7 @@ extends RefCounted
 
 var _current_tree: SceneTree:
 	get: return System.get_tree()
-	set(value): push_error("_current_root is read only.")
+	set(value): push_error("_current_tree is read only.")
 
 var _current_root: Window:
 	get: return _current_tree.get_root()

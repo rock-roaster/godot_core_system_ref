@@ -4,12 +4,10 @@ extends "res://addons/godot_core_system/modules/module_base.gd"
 ## 负责管理资源的加载，缓存和对象池
 
 ## 资源加载模式
-enum LoadMode {
-	## 立即加载
-	IMMEDIATE,
-	## 懒加载
-	LAZY,
-}
+#enum LoadMode {
+	#IMMEDIATE,    ## 立即加载
+	#LAZY,         ## 懒加载
+#}
 
 ## 资源加载信号
 signal resource_loaded(path: String, resource: Resource)
@@ -40,34 +38,31 @@ func _process(delta: float) -> void:
 ## [param path] 为资源路径；
 ## [param mode] 为加载模式；
 ## 返回加载的资源
-func load_resource(path: String, mode: LoadMode = LoadMode.IMMEDIATE) -> Resource:
+func load_resource(path: String) -> Resource:
 	if _resource_cache.has(path) and _resource_cache[path] != null:
 		# 如果资源已经加载过了
 		return _resource_cache[path]
-	var resource: Resource = null
+
 	if not ResourceLoader.exists(path):
-		push_error("资源地址无效: " + path)
+		push_error("resource path not existed: ", path)
 		return null
-	match mode:
-		LoadMode.IMMEDIATE:
-			resource = ResourceLoader.load(path)
-		LoadMode.LAZY:
-			ResourceLoader.load_threaded_request(path)
-			_loading_count += 1
+
+	var resource: Resource = ResourceLoader.load(path)
 	_resource_cache[path] = resource
+
 	if resource:
 		resource_loaded.emit(path, resource)
 	return resource
 
 
 ## 以懒加载模式预载资源
-func load_resource_lazy(path: String, type_hint: String = "") -> void:
-	if not ResourceLoader.exists(path):
-		push_error("resource path not existed: ", path)
-		return
-
+func preload_resource(path: String, type_hint: String = "") -> void:
 	if _resource_cache.has(path) and _resource_cache[path] != null:
 		print("resource already loaded: ", path)
+		return
+
+	if not ResourceLoader.exists(path):
+		push_error("resource path not existed: ", path)
 		return
 
 	ResourceLoader.load_threaded_request(path, type_hint)
@@ -157,8 +152,8 @@ func _lazy_load(delta: float) -> void:
 	# 判断是否需要处理懒加载
 	if _loading_count <= 0: return
 	_lazy_load_time += delta
-	if _lazy_load_time < _lazy_load_interval:
-		return
+
+	if _lazy_load_time < _lazy_load_interval: return
 	_lazy_load_time -= _lazy_load_interval
 
 	var loading_paths: Array[String] = []

@@ -81,7 +81,7 @@ func _exit() -> void:
 ## @param scene_path 场景路径
 func preload_scene(scene_path: String) -> void:
 	_preloaded_scenes.append(scene_path)
-	_resource_manager.load_resource(scene_path, ModuleClass.ModuleResource.LoadMode.LAZY)
+	_resource_manager.preload_resource(scene_path)
 
 
 ## 确保所有栈中的孤儿节点均被释放

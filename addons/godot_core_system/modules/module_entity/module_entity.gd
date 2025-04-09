@@ -54,16 +54,13 @@ func get_entity_scene(entity_id: StringName) -> PackedScene:
 ## [param scene_path] 场景路径
 ## [param load_mode] 加载模式
 ## [return] 加载的实体
-func load_entity(entity_id: StringName, scene_path: String,
-		load_mode: ModuleClass.ModuleResource.LoadMode = ModuleClass.ModuleResource.LoadMode.IMMEDIATE,
-	) -> PackedScene:
-
+func load_entity(entity_id: StringName, scene_path: String) -> PackedScene:
 	if _entity_resource_cache.has(entity_id):
 		push_warning("实体已存在: %s" % entity_id)
 		return _entity_resource_cache[entity_id]
 
 	_entity_path_map[entity_id] = scene_path
-	var scene: PackedScene = _resource_manager.load_resource(scene_path, load_mode)
+	var scene: PackedScene = _resource_manager.load_resource(scene_path)
 	if not scene:
 		# push_error("无法加载实体场景: %s" % scene_path)
 		return null
