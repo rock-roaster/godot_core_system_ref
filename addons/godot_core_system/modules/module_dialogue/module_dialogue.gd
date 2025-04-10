@@ -88,6 +88,6 @@ func _add_history_line(line: DialogueLine) -> void:
 
 
 func _dialogue_line_process_callable(line: DialogueLine) -> void:
-	var dialogue_callable: Callable = line.dialogue_callable
+	var dialogue_callable: Callable = line.dialogue_data.get("callable")
 	if dialogue_callable.is_valid():
-		dialogue_callable.call()
+		await dialogue_callable.call()

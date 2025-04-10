@@ -8,5 +8,11 @@ enum DialogueType {
 }
 
 var dialogue_type: DialogueType
-var dialogue_text: String
-var dialogue_callable: Callable
+var dialogue_data: Dictionary
+
+
+func _init() -> void:
+	dialogue_data = {
+		"text": "",
+		"callable": Callable(),
+	}

@@ -46,10 +46,11 @@ signal progress_changed(progress: float)
 signal completed
 
 ## 每帧处理的默认数量
-var items_pre_frame = 100
+var items_per_frame = 100
 ## 每帧默认最大执行时间（毫秒）
 ## 默认为 8ms，假设目标 60FPS (16.67ms)，留出足够余量给其他操作
-var max_ms_pre_frame = 8.0
+var max_ms_per_frame:
+	get = _get_max_ms_per_frame
 
 ## 当前帧开始时间
 var _frame_start_time: int = 0
@@ -61,15 +62,21 @@ var _current_items_per_frame: int = 0
 ## 构造函数
 ## [param p_items_per_frame] 每帧初始处理数量，默认100
 ## [param p_max_ms_per_frame] 每帧最大执行时间（毫秒），默认8ms
-func _init(p_items_per_frame: int = items_pre_frame, p_max_ms_per_frame: float = max_ms_pre_frame) -> void:
-	items_pre_frame = p_items_per_frame
-	max_ms_pre_frame = p_max_ms_per_frame
-	_current_items_per_frame = items_pre_frame
+func _init(p_items_per_frame: int = items_per_frame, p_max_ms_per_frame: float = max_ms_per_frame) -> void:
+	items_per_frame = p_items_per_frame
+	max_ms_per_frame = p_max_ms_per_frame
+	_current_items_per_frame = items_per_frame
 
 ## 开始新的一帧，重置计数器
 func _begin_frame() -> void:
 	_frame_start_time = Time.get_ticks_msec()
 	_frame_items = 0
+
+func _get_max_ms_per_frame() -> float:
+	var max_fps: int = ProjectSettings.get_setting("application/run/max_fps", 0)
+	if max_fps <= 0: max_fps = 60
+	var result: float = 1000.0 / max_fps * 0.5
+	return result
 
 ## 检查是否应该结束当前帧
 ## 当达到以下条件之一时返回true：
@@ -77,7 +84,7 @@ func _begin_frame() -> void:
 ## 2. 当前帧执行时间超过限制
 func _should_end_frame() -> bool:
 	return _frame_items >= _current_items_per_frame or \
-		   (Time.get_ticks_msec() - _frame_start_time) >= max_ms_pre_frame
+		   (Time.get_ticks_msec() - _frame_start_time) >= max_ms_per_frame
 
 ## 更新每帧处理数量
 ## 根据实际执行时间动态调整：
@@ -86,10 +93,10 @@ func _should_end_frame() -> bool:
 func _update_items_per_frame() -> void:
 	var frame_time = Time.get_ticks_msec() - _frame_start_time
 	if frame_time > 0:
-		if frame_time > max_ms_pre_frame:
-			_current_items_per_frame = max(1, int(float(_frame_items) * max_ms_pre_frame / frame_time))
-		elif frame_time < max_ms_pre_frame * 0.8:  # 留出20%余量
-			_current_items_per_frame = min(_current_items_per_frame * 2, items_pre_frame)
+		if frame_time > max_ms_per_frame:
+			_current_items_per_frame = max(1, int(float(_frame_items) * max_ms_per_frame / frame_time))
+		elif frame_time < max_ms_per_frame * 0.8:  # 留出20%余量
+			_current_items_per_frame = min(_current_items_per_frame * 2, items_per_frame)
 
 ## 等待下一帧
 func _wait_next_frame() -> void:

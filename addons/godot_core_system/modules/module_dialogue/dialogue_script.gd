@@ -34,12 +34,12 @@ func get_next_line() -> DialogueLine:
 func add_text(text: String) -> void:
 	var new_line: DialogueLine = DialogueLine.new()
 	new_line.dialogue_type = DialogueLine.DialogueType.TEXT
-	new_line.dialogue_text = text
+	new_line.dialogue_data.set("text", text)
 	_dialogue_lines.append(new_line)
 
 
 func add_callable(callable: Callable) -> void:
 	var new_line: DialogueLine = DialogueLine.new()
 	new_line.dialogue_type = DialogueLine.DialogueType.CALLABLE
-	new_line.dialogue_callable = callable
+	new_line.dialogue_data.set("callable", callable)
 	_dialogue_lines.append(new_line)

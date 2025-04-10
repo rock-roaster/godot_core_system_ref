@@ -3,27 +3,25 @@ extends "res://addons/godot_core_system/modules/module_base.gd"
 ## 资源管理器
 ## 负责管理资源的加载，缓存和对象池
 
-## 资源加载模式
-#enum LoadMode {
-	#IMMEDIATE,    ## 立即加载
-	#LAZY,         ## 懒加载
-#}
-
 ## 资源加载信号
 signal resource_loaded(path: String, resource: Resource)
 ## 资源卸载信号
 signal resource_unloaded(path: String)
 
 ## 资源缓存
-var _resource_cache: Dictionary = {}
+var _resource_cache: Dictionary[String, Resource] = {}
 ## 对象池
-var _instance_pools: Dictionary = {}
+var _instance_pools: Dictionary[StringName, Array] = {}
 ## 懒加载时间间隔
-var _lazy_load_interval: float = 1.0
+var _lazy_load_interval: float = 0.5
 ## 当前懒加载时间
 var _lazy_load_time: float = 0.0
 ## 待加载资源数量
 var _loading_count: int = 0
+var _max_loading_count: int = 100
+
+var _loading_path_list: Array[String]
+var _pending_path_list: Array[Dictionary]
 
 var _logger: ModuleClass.ModuleLog:
 	get: return System.logger
@@ -31,6 +29,7 @@ var _logger: ModuleClass.ModuleLog:
 
 ## 处理懒加载
 func _process(delta: float) -> void:
+	_check_pending()
 	_lazy_load(delta)
 
 
@@ -38,7 +37,7 @@ func _process(delta: float) -> void:
 ## [param path] 为资源路径；
 ## [param mode] 为加载模式；
 ## 返回加载的资源
-func load_resource(path: String) -> Resource:
+func load_resource(path: String, type_hint: String = "") -> Resource:
 	if _resource_cache.has(path) and _resource_cache[path] != null:
 		# 如果资源已经加载过了
 		return _resource_cache[path]
@@ -47,10 +46,10 @@ func load_resource(path: String) -> Resource:
 		push_error("resource path not existed: ", path)
 		return null
 
-	var resource: Resource = ResourceLoader.load(path)
+	var resource: Resource = ResourceLoader.load(path, type_hint)
 	_resource_cache[path] = resource
 
-	if resource:
+	if resource != null:
 		resource_loaded.emit(path, resource)
 	return resource
 
@@ -65,9 +64,11 @@ func preload_resource(path: String, type_hint: String = "") -> void:
 		push_error("resource path not existed: ", path)
 		return
 
-	ResourceLoader.load_threaded_request(path, type_hint)
-	_loading_count += 1
-	_resource_cache[path] = null
+	var dict: Dictionary = {
+		"path": path,
+		"type_hint": type_hint,
+	}
+	_pending_path_list.append(dict)
 
 
 ## 获取缓存资源
@@ -78,7 +79,7 @@ func get_cached_resource(path: String) -> Resource:
 		# 如果资源正在加载，则这里调用直接加载
 		_loading_count -= 1
 	if _resource_cache.get(path, null) == null:
-		_logger.warning("[ResourceManager]cannot get cached resource on {0}, reload it!".format([path]))
+		_logger.warning("[ResourceManager] cannot get cached resource on {0}, reload it!".format([path]))
 		return load_resource(path)
 	return _resource_cache.get(path)
 
@@ -146,36 +147,53 @@ func set_lazy_load_interval(interval: float) -> void:
 	_lazy_load_interval = interval
 
 
+func _check_pending() -> void:
+	if _pending_path_list.is_empty(): return
+	if _loading_count >= _max_loading_count: return
+
+	for dict in _pending_path_list:
+		if _loading_count >= _max_loading_count:
+			break
+
+		var path: String = dict["path"]
+		var type_hint: String = dict["type_hint"]
+
+		ResourceLoader.load_threaded_request(path, type_hint)
+		_loading_count += 1
+		_resource_cache[path] = null
+		_pending_path_list.erase(dict)
+		_loading_path_list.append(path)
+
+
 ## 处理懒加载
 ## [param delta] 时间间隔
 func _lazy_load(delta: float) -> void:
-	# 判断是否需要处理懒加载
 	if _loading_count <= 0: return
-	_lazy_load_time += delta
 
-	if _lazy_load_time < _lazy_load_interval: return
-	_lazy_load_time -= _lazy_load_interval
+	# 判断是否需要处理懒加载
+	#_lazy_load_time += delta
+	#if _lazy_load_time < _lazy_load_interval: return
+	#_lazy_load_time -= _lazy_load_interval
 
-	var loading_paths: Array[String] = []
-	for path in _resource_cache:
-		if _resource_cache[path] == null:
-			loading_paths.append(path)
-
-	for path in loading_paths:
+	for path in _loading_path_list:
 		var status: ResourceLoader.ThreadLoadStatus = ResourceLoader.load_threaded_get_status(path)
 		match status:
 			ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:
 				push_error("Invalid resource: " + path)
 				_resource_cache.erase(path)
+				_loading_path_list.erase(path)
 				_loading_count -= 1
 			ResourceLoader.THREAD_LOAD_IN_PROGRESS:
 				pass
 			ResourceLoader.THREAD_LOAD_FAILED:
 				push_error("Failed to load resource: " + path)
 				_resource_cache.erase(path)
+				_loading_path_list.erase(path)
 				_loading_count -= 1
 			ResourceLoader.THREAD_LOAD_LOADED:
 				var resource: Resource = ResourceLoader.load_threaded_get(path)
+				print("Lazy load finished: ", path)
 				_resource_cache[path] = resource
+				_loading_path_list.erase(path)
 				_loading_count -= 1
 				resource_loaded.emit(path, resource)
