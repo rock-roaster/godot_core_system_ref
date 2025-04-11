@@ -5,10 +5,11 @@ class_name DialogueLine
 enum DialogueType {
 	TEXT,
 	CALLABLE,
+	TIMER,
 }
 
 var dialogue_type: DialogueType
-var dialogue_data: Dictionary
+var dialogue_data: Dictionary[StringName, Variant]
 
 
 func _init() -> void:
@@ -17,6 +18,7 @@ func _init() -> void:
 		"callable": Callable(),
 		"await": false,
 		"auto_advance": false,
+		"wait_time": 0.0,
 	}
 
 

@@ -27,10 +27,6 @@ func _dialogue_process() -> void:
 	pass
 
 
-func _dialogue_exit() -> void:
-	pass
-
-
 func get_next_line() -> DialogueLine:
 	var next_line: DialogueLine = _dialogue_lines.pop_back()
 	return next_line
@@ -51,7 +47,7 @@ func add_text(
 func add_callable(
 		callable: Callable,
 		await_call: bool = false,
-		auto_advance: bool = true
+		auto_advance: bool = true,
 		) -> void:
 
 	var new_line: DialogueLine = DialogueLine.new()
@@ -59,4 +55,14 @@ func add_callable(
 	new_line.dialogue_data.set("callable", callable)
 	new_line.dialogue_data.set("await", await_call)
 	new_line.dialogue_data.set("auto_advance", auto_advance)
+	_dialogue_lines.append(new_line)
+
+
+func add_timer(
+		wait_time: float,
+		) -> void:
+
+	var new_line: DialogueLine = DialogueLine.new()
+	new_line.dialogue_type = DialogueLine.DialogueType.TIMER
+	new_line.dialogue_data.set("wait_time", wait_time)
 	_dialogue_lines.append(new_line)

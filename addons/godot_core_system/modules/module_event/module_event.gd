@@ -3,7 +3,7 @@ extends "res://addons/godot_core_system/modules/module_base.gd"
 
 ## 事件优先级枚举
 enum Priority {
-	LOW = 0,			## 低优先级
+	LOW = 0,		## 低优先级
 	NORMAL = 1,		## 普通优先级
 	HIGH = 2,		## 高优先级
 }

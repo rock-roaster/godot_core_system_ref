@@ -40,7 +40,6 @@ func _process(delta: float) -> void:
 
 ## 加载资源；
 ## [param path] 为资源路径；
-## [param mode] 为加载模式；
 ## 返回加载的资源
 func load_resource(path: String, type_hint: String = "") -> Resource:
 	if _resource_cache.has(path) and _resource_cache[path] != null:

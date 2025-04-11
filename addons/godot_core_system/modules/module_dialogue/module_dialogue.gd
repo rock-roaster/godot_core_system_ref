@@ -13,10 +13,6 @@ var _ready_to_push: bool
 var _maximum_history_line: int = 100
 var _dialogue_line_history: Array[DialogueLine]
 
-var _resource_manager: ModuleClass.ModuleResource:
-	get: return System.resource_manager
-	set(value): push_error("read only.")
-
 
 func _init(_data: Dictionary = {}) -> void:
 	_ready_to_push = false
@@ -27,7 +23,7 @@ func load_dialogue_script(
 		node_dict: Dictionary[StringName, Node] = {},
 		func_dict: Dictionary[StringName, Callable] = {},
 		) -> void:
-	var new_script_resource: GDScript = _resource_manager.load_resource(path)
+	var new_script_resource: GDScript = ResourceLoader.load(path, "GDScript")
 	var new_dialogue_script: DialogueScript = new_script_resource.new(node_dict, func_dict)
 
 	if new_dialogue_script is not DialogueScript: return
@@ -39,27 +35,29 @@ func get_next_line() -> DialogueLine:
 	if not _ready_to_push: return
 	if _dialogue_script_processing == null: return
 
+	_ready_to_push = false
 	var next_line: DialogueLine = _dialogue_script_processing.get_next_line()
+	_dialogue_line_processing = next_line
 
 	# 当对话脚本运行完毕
 	if next_line == null:
-		_ready_to_push = false
 		dialogue_script_finished.emit(_dialogue_script_processing)
-		_dialogue_script_processing._dialogue_exit()
 		_dialogue_script_processing = null
 		return
 
-	_ready_to_push = false
 	dialogue_line_pushed.emit(next_line)
 
 	# 将推出的对话行保存至运行对话行
 	_dialogue_line_process(next_line)
-	_dialogue_line_processing = next_line
 
 	return next_line
 
 
-func finish_line() -> void:
+## 在每个对话行运行完成后调用该函数以允许推进对话，不建议通过input输入手动调用。
+func _finish_line() -> void:
+	if _ready_to_push: return
+	if _dialogue_line_processing == null: return
+
 	_ready_to_push = true
 	dialogue_line_finished.emit(_dialogue_line_processing)
 
@@ -70,6 +68,8 @@ func _dialogue_line_process(line: DialogueLine) -> void:
 			_dialogue_line_process_text(line)
 		DialogueLine.DialogueType.CALLABLE:
 			_dialogue_line_process_callable(line)
+		DialogueLine.DialogueType.TIMER:
+			_dialogue_line_process_timer(line)
 
 
 func _dialogue_line_process_text(line: DialogueLine) -> void:
@@ -79,7 +79,7 @@ func _dialogue_line_process_text(line: DialogueLine) -> void:
 	if line_auto_advance:
 		var signal_awaiter: SignalAwaiter = SignalAwaiter.new(
 			dialogue_line_finished,
-			func(value: DialogueLine): return value == line
+			func(value: DialogueLine): return value == line,
 		)
 
 		await signal_awaiter.check_out()
@@ -109,5 +109,12 @@ func _dialogue_line_process_callable(line: DialogueLine) -> void:
 		else:
 			line_callable.call()
 
-	finish_line()
+	_finish_line()
 	if line_auto_advance: get_next_line()
+
+
+func _dialogue_line_process_timer(line: DialogueLine) -> void:
+	var wait_time: float = line.dialogue_data.get("wait_time")
+	await _current_tree.create_timer(wait_time).timeout
+	_finish_line()
+	get_next_line()
