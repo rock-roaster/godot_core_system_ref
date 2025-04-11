@@ -43,13 +43,14 @@ func get_next_line() -> DialogueLine:
 
 	# 当对话脚本运行完毕
 	if next_line == null:
-		dialogue_script_finished.emit(_dialogue_script_processing)
 		_ready_to_push = false
+		dialogue_script_finished.emit(_dialogue_script_processing)
+		_dialogue_script_processing._dialogue_exit()
 		_dialogue_script_processing = null
 		return
 
-	dialogue_line_pushed.emit(next_line)
 	_ready_to_push = false
+	dialogue_line_pushed.emit(next_line)
 
 	# 将推出的对话行保存至运行对话行
 	_dialogue_line_process(next_line)
@@ -59,8 +60,8 @@ func get_next_line() -> DialogueLine:
 
 
 func finish_line() -> void:
-	dialogue_line_finished.emit(_dialogue_line_processing)
 	_ready_to_push = true
+	dialogue_line_finished.emit(_dialogue_line_processing)
 
 
 func _dialogue_line_process(line: DialogueLine) -> void:
@@ -72,7 +73,17 @@ func _dialogue_line_process(line: DialogueLine) -> void:
 
 
 func _dialogue_line_process_text(line: DialogueLine) -> void:
+	var line_auto_advance: bool = line.dialogue_data.get("auto_advance")
 	_add_history_line(line)
+
+	if line_auto_advance:
+		var signal_awaiter: SignalAwaiter = SignalAwaiter.new(
+			dialogue_line_finished,
+			func(value: DialogueLine): return value == line
+		)
+
+		await signal_awaiter.check_out()
+		get_next_line()
 
 
 ## 将对话行添加至历史对话行
@@ -88,6 +99,15 @@ func _add_history_line(line: DialogueLine) -> void:
 
 
 func _dialogue_line_process_callable(line: DialogueLine) -> void:
-	var dialogue_callable: Callable = line.dialogue_data.get("callable")
-	if dialogue_callable.is_valid():
-		await dialogue_callable.call()
+	var line_callable: Callable = line.dialogue_data.get("callable")
+	var line_await: bool = line.dialogue_data.get("await")
+	var line_auto_advance: bool = line.dialogue_data.get("auto_advance")
+
+	if line_callable.is_valid():
+		if line_await:
+			await line_callable.call()
+		else:
+			line_callable.call()
+
+	finish_line()
+	if line_auto_advance: get_next_line()

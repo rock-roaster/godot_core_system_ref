@@ -12,16 +12,21 @@ signal resource_unloaded(path: String)
 var _resource_cache: Dictionary[String, Resource] = {}
 ## 对象池
 var _instance_pools: Dictionary[StringName, Array] = {}
+
 ## 懒加载时间间隔
 var _lazy_load_interval: float = 0.5
 ## 当前懒加载时间
 var _lazy_load_time: float = 0.0
-## 待加载资源数量
-var _loading_count: int = 0
-var _max_loading_count: int = 100
 
-var _loading_path_list: Array[String]
+## 待加载地址列表
 var _pending_path_list: Array[Dictionary]
+## 加载中地址列表
+var _loading_path_list: Array[String]
+
+## 加载中资源数量
+var _loading_count: int = 0
+## 最大加载中资源数量
+var _max_loading_count: int = 100
 
 var _logger: ModuleClass.ModuleLog:
 	get: return System.logger
@@ -64,11 +69,11 @@ func preload_resource(path: String, type_hint: String = "") -> void:
 		push_error("resource path not existed: ", path)
 		return
 
-	var dict: Dictionary = {
+	var load_dict: Dictionary = {
 		"path": path,
 		"type_hint": type_hint,
 	}
-	_pending_path_list.append(dict)
+	_pending_path_list.append(load_dict)
 
 
 ## 获取缓存资源
@@ -171,9 +176,9 @@ func _lazy_load(delta: float) -> void:
 	if _loading_count <= 0: return
 
 	# 判断是否需要处理懒加载
-	#_lazy_load_time += delta
-	#if _lazy_load_time < _lazy_load_interval: return
-	#_lazy_load_time -= _lazy_load_interval
+	_lazy_load_time += delta
+	if _lazy_load_time < _lazy_load_interval: return
+	_lazy_load_time -= _lazy_load_interval
 
 	for path in _loading_path_list:
 		var status: ResourceLoader.ThreadLoadStatus = ResourceLoader.load_threaded_get_status(path)
