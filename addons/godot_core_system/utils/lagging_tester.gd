@@ -1,4 +1,5 @@
 extends TextureRect
+class_name LaggingTester
 
 
 func _init() -> void:
