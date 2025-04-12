@@ -12,12 +12,17 @@ enum LogLevel {
 }
 
 ## 默认日志颜色配置
-const DEFAULT_LOG_COLORS = {
-	LogLevel.DEBUG: Color.DARK_GRAY,
-	LogLevel.INFO: Color.WHITE,
-	LogLevel.WARNING: Color.YELLOW,
-	LogLevel.ERROR: Color.RED,
-	LogLevel.FATAL: Color(0.5, 0, 0)  # 深红色
+var default_log_colors: Dictionary = {
+	LogLevel.DEBUG:
+		System.get_setting_value("module_log/color_debug"),
+	LogLevel.INFO:
+		System.get_setting_value("module_log/color_info"),
+	LogLevel.WARNING:
+		System.get_setting_value("module_log/color_warning"),
+	LogLevel.ERROR:
+		System.get_setting_value("module_log/color_error"),
+	LogLevel.FATAL:
+		System.get_setting_value("module_log/color_fatal"),
 }
 
 ## 当前日志级别
@@ -29,21 +34,25 @@ var _log_file_path: String = "user://logs/game.log"
 ## 日志文件对象
 var _log_file: FileAccess = null
 ## 当前日志颜色配置
-var _log_colors: Dictionary = DEFAULT_LOG_COLORS.duplicate()
+var _log_colors: Dictionary = default_log_colors.duplicate()
+
 
 func _init() -> void:
 	_setup_file_logging()
+
 
 ## 设置日志级别
 ## [param level] 日志级别
 func set_level(level: LogLevel) -> void:
 	_current_level = level
 
+
 ## 设置指定级别的日志颜色
 ## [param level] 日志级别
 ## [param color] 颜色
 func set_color(level: LogLevel, color: Color) -> void:
 	_log_colors[level] = color
+
 
 ## 设置多个日志级别的颜色
 ## [param colors] 颜色配置字典
@@ -52,13 +61,16 @@ func set_colors(colors: Dictionary) -> void:
 		if level is LogLevel and colors[level] is Color:
 			_log_colors[level] = colors[level]
 
+
 ## 重置所有日志颜色为默认值
 func reset_colors() -> void:
-	_log_colors = DEFAULT_LOG_COLORS.duplicate()
+	_log_colors = default_log_colors.duplicate()
+
 
 ## 获取当前日志颜色配置
 func get_colors() -> Dictionary:
 	return _log_colors.duplicate()
+
 
 ## 设置是否启用文件日志
 ## [param enable] 是否启用
@@ -67,11 +79,13 @@ func enable_file_logging(enable: bool) -> void:
 	if enable:
 		_setup_file_logging()
 
+
 ## 记录调试日志
 ## [param message] 消息
 ## [param context] 上下文
 func debug(message: String, context: Dictionary = {}) -> void:
 	_log(LogLevel.DEBUG, message, context)
+
 
 ## 记录信息日志
 ## [param message] 消息
@@ -79,12 +93,14 @@ func debug(message: String, context: Dictionary = {}) -> void:
 func info(message: String, context: Dictionary = {}) -> void:
 	_log(LogLevel.INFO, message, context)
 
+
 ## 记录警告日志
 ## [param message] 消息
 ## [param context] 上下文
 func warning(message: String, context: Dictionary = {}) -> void:
 	_log(LogLevel.WARNING, message, context)
 	push_warning(message)
+
 
 ## 记录错误日志
 ## [param message] 消息
@@ -94,6 +110,7 @@ func error(message: String, context: Dictionary = {}) -> void:
 	print_stack()
 	push_error(message)
 
+
 ## 记录致命错误日志
 ## [param message] 消息
 ## [param context] 上下文
@@ -101,6 +118,7 @@ func fatal(message: String, context: Dictionary = {}) -> void:
 	_log(LogLevel.FATAL, message, context)
 	print_stack()
 	push_error(message)
+
 
 ## 内部日志记录方法
 ## [param level] 日志级别
@@ -128,6 +146,7 @@ func _log(level: LogLevel, message: String, context: Dictionary) -> void:
 	if _enable_file_logging and _log_file:
 		_log_file.store_line(formatted_message)
 
+
 ## 获取调用堆栈
 func print_stack() -> void:
 	var stack = get_stack()
@@ -135,6 +154,7 @@ func print_stack() -> void:
 	for frame in stack:
 		stack_message += "\n  at %s:%d - %s()" % [frame["source"], frame["line"], frame["function"]]
 	print_rich("[color=%s]%s[/color]" % [_log_colors[LogLevel.ERROR].to_html(), stack_message])
+
 
 ## 设置文件日志
 func _setup_file_logging() -> void:
