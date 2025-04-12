@@ -27,51 +27,33 @@ const DefaultConfig: Script = preload(
 var _modified: bool
 ## 当前配置
 var _config_file: ConfigFile
-## 异步IO管理器
-var _thread_manager: ModuleClass.ModuleThread
+## 线程管理器
+var _thread_manager: ModuleClass.ModuleThread:
+	get: return System.thread
 
 
-func _init(_data: Dictionary = {}):
+func _init():
 	_modified = false
 	_config_file = DefaultConfig.get_default_config_file()
-	_thread_manager = System.thread
 
 
 func _exit() -> void:
 	if auto_save and _modified:
 		save_config()
 
-	_thread_manager.unload_thread("save_config")
-	_thread_manager.unload_thread("load_config")
+	_thread_manager.unload_thread("config_thread")
 
 
 ## 加载配置
 ## [param callback] 回调函数
 func load_config(callback: Callable = Callable()) -> void:
-	_thread_manager.add_task("load_config", load_config_async, callback)
-
-
-func load_config_async() -> void:
-	var error: Error = _config_file.load(config_path)
-	if error != OK:
-		_config_file = DefaultConfig.get_default_config_file()
-	_modified = false
-	config_loaded.emit()
-	_thread_manager.next_step("load_config")
+	_thread_manager.add_task("config_thread", _load_config_async, callback)
 
 
 ## 保存配置
 ## [param callback] 回调函数
 func save_config(callback: Callable = Callable()) -> void:
-	_thread_manager.add_task("save_config", save_config_async, callback)
-
-
-func save_config_async() -> void:
-	var error: Error = _config_file.save(config_path)
-	if error == OK:
-		_modified = false
-		config_saved.emit()
-	_thread_manager.next_step("save_config")
+	_thread_manager.add_task("config_thread", _save_config_async, callback)
 
 
 ## 重置配置
@@ -118,3 +100,20 @@ func erase_value(section: String, key: String) -> void:
 	_config_file.set_value(section, key, null)
 	if auto_save:
 		save_config()
+
+
+func _load_config_async() -> void:
+	var error: Error = _config_file.load(config_path)
+	if error != OK:
+		_config_file = DefaultConfig.get_default_config_file()
+	_modified = false
+	config_loaded.emit()
+	_thread_manager.next_step("config_thread")
+
+
+func _save_config_async() -> void:
+	var error: Error = _config_file.save(config_path)
+	if error == OK:
+		_modified = false
+		config_saved.emit()
+	_thread_manager.next_step("config_thread")

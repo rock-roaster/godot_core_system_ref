@@ -127,10 +127,10 @@ func _physics_process(delta: float) -> void:
 
 
 ## 获取模块
-func get_module(module_id: StringName, data: Dictionary = {}) -> ModuleBase:
+func get_module(module_id: StringName) -> ModuleBase:
 	if not _modules.has(module_id):
 		if is_module_enabled(module_id):
-			_modules[module_id] = _create_module(module_id, data)
+			_modules[module_id] = _create_module(module_id)
 		else:
 			push_error("模块未启用：" + module_id)
 			return null
@@ -145,14 +145,14 @@ func is_module_enabled(module_id: StringName) -> bool:
 
 
 ## 创建模块实例
-func _create_module(module_id: StringName, data: Dictionary = {}) -> ModuleBase:
+func _create_module(module_id: StringName) -> ModuleBase:
 	var script: Script = _module_scripts[module_id]
 	if not script:
 		push_error("无法加载模块脚本：" + module_id)
 		return null
 
 
-	var module: ModuleBase = script.new(data)
+	var module: ModuleBase = script.new()
 	if not module:
 		push_error("无法创建模块实例：" + module_id)
 		return null

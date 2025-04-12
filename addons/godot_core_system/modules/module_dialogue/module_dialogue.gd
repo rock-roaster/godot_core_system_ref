@@ -14,7 +14,7 @@ var _maximum_history_line: int = 100
 var _dialogue_line_history: Array[DialogueLine]
 
 
-func _init(_data: Dictionary = {}) -> void:
+func _init() -> void:
 	_ready_to_push = false
 
 

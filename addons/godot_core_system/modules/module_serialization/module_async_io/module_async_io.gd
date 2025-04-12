@@ -46,7 +46,7 @@ var encryption_provider: EncryptionProvider:
 ## 内部加密提供者实例
 var _encryption_provider: EncryptionProvider = null
 
-func _init(_data:Dictionary = {}):
+func _init():
 	_semaphore = Semaphore.new()
 	_mutex = Mutex.new()
 	_thread = Thread.new()

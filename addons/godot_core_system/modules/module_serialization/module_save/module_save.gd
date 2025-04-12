@@ -7,35 +7,25 @@ extends "res://addons/godot_core_system/modules/module_base.gd"
 const GameStateData = preload(
 	"res://addons/godot_core_system/modules/module_serialization/module_save/game_state_data.gd")
 
-const SETTING_SCRIPT: Script = preload("res://addons/godot_core_system/setting.gd")
-const SETTING_SAVE_SYSTEM := SETTING_SCRIPT.SETTING_MODULE_SAVE
-
-## 项目设置路径常量
-const SETTING_SAVE_DIR =  SETTING_SAVE_SYSTEM + "save_directory"
-const SETTING_SAVE_EXT = SETTING_SAVE_SYSTEM + "save_extension"
-const SETTING_AUTO_SAVE_INTERVAL = SETTING_SAVE_SYSTEM + "auto_save_interval"
-const SETTING_MAX_AUTO_SAVES = SETTING_SAVE_SYSTEM + "max_auto_saves"
-const SETTING_AUTO_SAVE_ENABLED = SETTING_SAVE_SYSTEM + "auto_save_enabled"
-
 ## 存档目录
 var save_directory: String:
-	get: return System.get_setting_value(SETTING_SAVE_DIR)
+	get: return System.get_setting_value("module_save/save_directory")
 
 ## 存档扩展名
 var save_extension: String:
-	get: return System.get_setting_value(SETTING_SAVE_EXT)
+	get: return System.get_setting_value("module_save/save_extension")
 
 ## 自动存档间隔（秒）
 var auto_save_interval: float:
-	get: return System.get_setting_value(SETTING_AUTO_SAVE_INTERVAL)
+	get: return System.get_setting_value("module_save/auto_save_interval")
 
 ## 自动存档最大数量
 var max_auto_saves: int:
-	get: return System.get_setting_value(SETTING_MAX_AUTO_SAVES)
+	get: return System.get_setting_value("module_save/max_auto_saves")
 
 ## 是否启用自动存档
 var auto_save_enabled: bool:
-	get: return System.get_setting_value(SETTING_AUTO_SAVE_ENABLED)
+	get: return System.get_setting_value("module_save/auto_save_enabled")
 
 ## 当前存档
 var _current_save: GameStateData = null
@@ -83,6 +73,24 @@ func unregister_serializable_component(component: SerializableComponent) -> void
 	_serializable_components.erase(component)
 
 
+func update_current_save(callback: Callable = func(_success: bool): pass) -> void:
+	if _current_save == null:
+		return
+
+	var save_name: String = _current_save.metadata.get("save_name")
+	var save_path: String = _get_save_path(save_name)
+	_io_manager.write_file_async(
+		save_path,
+		_current_save.serialize(),
+		false,
+		"",
+		func(success: bool, _result: Variant):
+			if success:
+				save_created.emit(save_name)
+			callback.call(success)
+	)
+
+
 ## 创建存档
 ## [param save_name] 存档名称
 ## [param callback] 回调函数，用于通知创建结果
@@ -99,12 +107,12 @@ func create_save(save_name: String, callback: Callable = func(_success: bool): p
 	_current_save.set_data("nodes", serialized_data)
 
 	# 保存到文件
-	var save_path = _get_save_path(save_name)
+	var save_path: String = _get_save_path(save_name)
 	_io_manager.write_file_async(
 		save_path,
 		_current_save.serialize(),
-		true,
-		"12345",
+		false,
+		"",
 		func(success: bool, _result: Variant):
 			if success:
 				save_created.emit(save_name)
@@ -120,8 +128,8 @@ func load_save(save_name: String, callback: Callable = func(_success: bool): pas
 
 	_io_manager.read_file_async(
 		save_path,
-		true,
-		"12345",
+		false,
+		"",
 		func(success: bool, result: Variant):
 			if success:
 				_current_save = GameStateData.new()

@@ -10,7 +10,7 @@ var _current_root: Window:
 	set(value): push_error("_current_root is read only.")
 
 
-func _init(_data: Dictionary = {}) -> void:
+func _init() -> void:
 	pass
 
 
