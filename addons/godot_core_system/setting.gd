@@ -2,10 +2,10 @@ extends RefCounted
 
 
 const SETTING_MODULE_ENABLE: String = "godot_core_system/module_enable/"
+const SETTING_MODULE_LOG: String = "godot_core_system/module_log/"
 const SETTING_MODULE_SAVE: String = "godot_core_system/module_save/"
 const SETTING_MODULE_CONFIG: String = "godot_core_system/module_config/"
 const SETTING_MODULE_TRIGGER: String = "godot_core_system/module_trigger/"
-const SETTING_MODULE_LOG: String = "godot_core_system/module_log/"
 
 const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 	"module_enable/logger":
@@ -148,6 +148,56 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"default": true,
 	},
 
+	"module_log/color_debug":
+	{
+		"name": SETTING_MODULE_LOG + "color_debug",
+		"type": TYPE_COLOR,
+		"hint": PROPERTY_HINT_NONE,
+		"hint_string": "",
+		"basic": true,
+		"default": Color.DARK_GRAY,
+	},
+
+	"module_log/color_info":
+	{
+		"name": SETTING_MODULE_LOG + "color_info",
+		"type": TYPE_COLOR,
+		"hint": PROPERTY_HINT_NONE,
+		"hint_string": "",
+		"basic": true,
+		"default": Color.WHITE,
+	},
+
+	"module_log/color_warning":
+	{
+		"name": SETTING_MODULE_LOG + "color_warning",
+		"type": TYPE_COLOR,
+		"hint": PROPERTY_HINT_NONE,
+		"hint_string": "",
+		"basic": true,
+		"default": Color.YELLOW,
+	},
+
+	"module_log/color_error":
+	{
+		"name": SETTING_MODULE_LOG + "color_error",
+		"type": TYPE_COLOR,
+		"hint": PROPERTY_HINT_NONE,
+		"hint_string": "",
+		"basic": true,
+		"default": Color.RED,
+	},
+
+	"module_log/color_fatal":
+	{
+		"name": SETTING_MODULE_LOG + "color_fatal",
+		"type": TYPE_COLOR,
+		"hint": PROPERTY_HINT_NONE,
+		"hint_string": "",
+		"basic": true,
+		"default": Color(0.5, 0, 0),
+	},
+
 	"module_save/save_directory":
 	{
 		"name": SETTING_MODULE_SAVE + "save_directory",
@@ -226,56 +276,6 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"hint_string": "",
 		"basic": true,
 		"default": true,
-	},
-
-	"module_log/color_debug":
-	{
-		"name": SETTING_MODULE_LOG + "color_debug",
-		"type": TYPE_COLOR,
-		"hint": PROPERTY_HINT_NONE,
-		"hint_string": "",
-		"basic": true,
-		"default": Color.DARK_GRAY,
-	},
-
-	"module_log/color_info":
-	{
-		"name": SETTING_MODULE_LOG + "color_info",
-		"type": TYPE_COLOR,
-		"hint": PROPERTY_HINT_NONE,
-		"hint_string": "",
-		"basic": true,
-		"default": Color.WHITE,
-	},
-
-	"module_log/color_warning":
-	{
-		"name": SETTING_MODULE_LOG + "color_warning",
-		"type": TYPE_COLOR,
-		"hint": PROPERTY_HINT_NONE,
-		"hint_string": "",
-		"basic": true,
-		"default": Color.YELLOW,
-	},
-
-	"module_log/color_error":
-	{
-		"name": SETTING_MODULE_LOG + "color_error",
-		"type": TYPE_COLOR,
-		"hint": PROPERTY_HINT_NONE,
-		"hint_string": "",
-		"basic": true,
-		"default": Color.RED,
-	},
-
-	"module_log/color_fatal":
-	{
-		"name": SETTING_MODULE_LOG + "color_fatal",
-		"type": TYPE_COLOR,
-		"hint": PROPERTY_HINT_NONE,
-		"hint_string": "",
-		"basic": true,
-		"default": Color(0.5, 0, 0),
 	},
 }
 

@@ -49,6 +49,3 @@ const ModuleTrigger: = preload(
 
 const ModuleThread: = preload(
 	"res://addons/godot_core_system/modules/module_thread/module_thread.gd")
-
-const ModuleDialogue: = preload(
-	"res://addons/godot_core_system/modules/module_dialogue/module_dialogue.gd")

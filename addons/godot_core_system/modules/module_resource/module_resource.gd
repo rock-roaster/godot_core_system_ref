@@ -38,6 +38,15 @@ func _process(delta: float) -> void:
 	_lazy_load(delta)
 
 
+## 获得文件夹中的所有资源路径
+func get_file_list(dir_path: String) -> Array[String]:
+	var file_list: Array[String] = []
+	if not dir_path.ends_with("/"): dir_path += "/"
+	for file_name in ResourceLoader.list_directory(dir_path):
+		file_list.append(dir_path + file_name)
+	return file_list
+
+
 ## 加载资源；
 ## [param path] 为资源路径；
 ## 返回加载的资源
@@ -46,7 +55,7 @@ func load_resource(path: String, type_hint: String = "") -> Resource:
 		# 如果资源已经加载过了
 		return _resource_cache[path]
 
-	if not ResourceLoader.exists(path):
+	if not ResourceLoader.exists(path, type_hint):
 		push_error("resource path not existed: ", path)
 		return null
 
@@ -64,7 +73,7 @@ func preload_resource(path: String, type_hint: String = "") -> void:
 		print("resource already loaded: ", path)
 		return
 
-	if not ResourceLoader.exists(path):
+	if not ResourceLoader.exists(path, type_hint):
 		push_error("resource path not existed: ", path)
 		return
 

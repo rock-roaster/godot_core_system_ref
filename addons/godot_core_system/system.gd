@@ -21,7 +21,6 @@ const ModuleState = ModuleClass.ModuleState
 const ModuleTag = ModuleClass.ModuleTag
 const ModuleTrigger = ModuleClass.ModuleTrigger
 const ModuleThread = ModuleClass.ModuleThread
-const ModuleDialogue = ModuleClass.ModuleDialogue
 #endregion
 
 #region 模组变量与getset方法
@@ -84,10 +83,6 @@ var trigger_manager: ModuleTrigger:
 var thread: ModuleThread:
 	get: return get_module("thread_manager")
 	set(value): push_error("thread_manager is read-only.")
-
-var dialogue_manager: ModuleDialogue:
-	get: return get_module("dialogue_manager")
-	set(value): push_error("dialogue_manager is read-only.")
 #endregion
 
 var _modules: Dictionary[StringName, ModuleBase]
@@ -107,7 +102,6 @@ var _module_scripts: Dictionary[StringName, Script] = {
 	"tag_manager": ModuleTag,
 	"trigger_manager": ModuleTrigger,
 	"thread_manager": ModuleThread,
-	"dialogue_manager": ModuleDialogue,
 }
 
 
