@@ -54,9 +54,11 @@ func _remove_setting_dict(info_dict: Dictionary) -> void:
 
 
 func copy_dir(from: String, to: String) -> void:
+	if not from.ends_with("/"): from += "/"
 	var dir_access: DirAccess = DirAccess.open(from)
 	if dir_access == null: return
 	dir_access.set_include_hidden(true)
+	if not to.ends_with("/"): to += "/"
 	dir_access.make_dir_recursive(to)
 	for file_name in dir_access.get_files():
 		dir_access.copy("%s/%s" % [from, file_name], "%s/%s" % [to, file_name])
@@ -65,6 +67,7 @@ func copy_dir(from: String, to: String) -> void:
 
 
 func remove_dir(path: String) -> void:
+	if not path.ends_with("/"): path += "/"
 	var dir_access: DirAccess = DirAccess.open(path)
 	if dir_access == null: return
 	dir_access.set_include_hidden(true)
@@ -73,3 +76,9 @@ func remove_dir(path: String) -> void:
 	for dir_name in dir_access.get_directories():
 		remove_dir(path + dir_name)
 	dir_access.remove(".")
+
+
+func hide_dir(path: String) -> void:
+	if not path.ends_with("/"): path += "/"
+	if not DirAccess.dir_exists_absolute(path): return
+	FileAccess.open(path + ".gdignore", FileAccess.WRITE).store_8(0)
