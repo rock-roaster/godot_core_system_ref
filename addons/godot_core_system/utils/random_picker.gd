@@ -2,30 +2,36 @@ extends RefCounted
 class_name RandomPicker
 
 
+signal item_picked(item_data: Variant)
+signal pool_emptied
+
 var _item_pool: Array[Dictionary]
-var _logger : ModuleClass.ModuleLog = System.logger
 
 var _alias: Array[int] = []
 var _prob: Array[float] = []
 var _total_weight: float = 0.0
 
-signal item_picked(item_data: Variant)
-signal pool_emptied
+var _logger: ModuleClass.ModuleLog = System.logger
 
 
 ## 初始化物品池
 ## [param items] 初始物品数组，格式支持Array或Dictionary
-func _init(items: Array = [],check_repeat:bool = true) -> void:
-	if items.is_empty():
-		return
-	add_items(items,true,check_repeat)
+func _init(items: Array = [], check_repeat: bool = true) -> void:
+	if items.is_empty(): return
+	add_items(items, true, check_repeat)
 
 ## 添加单个随机项
 ## [param item_data] 要添加的物品数据
 ## [param item_weight] 物品权重值（必须为正数）
 ## [param rebuild] 是否立即重建别名表（默认true）
 ## [return] 是否添加成功
-func add_item(item_data: Variant, item_weight: float, rebuild: bool = true, check_repeat:bool= true) -> bool:
+func add_item(
+	item_data: Variant,
+	item_weight: float,
+	rebuild: bool = true,
+	check_repeat: bool= true,
+	) -> bool:
+
 	if item_weight <= 0:
 		_logger.error("道具权重必须为正数 %s" % str(item_data))
 		return false
@@ -41,7 +47,7 @@ func add_item(item_data: Variant, item_weight: float, rebuild: bool = true, chec
 ## 批量添加随机项
 ## [param items] 要添加的物品数组（支持多种格式）
 ## [return] 成功添加的数量
-func add_items(items: Array, rebuild: bool = true, check_repeat:bool= true) -> int:
+func add_items(items: Array, rebuild: bool = true, check_repeat: bool= true) -> int:
 	var unified_items: Array[Dictionary] = convert_to_unified_format(items)
 	var success_count := 0
 	for item in unified_items:

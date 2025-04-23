@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://8sl8iuvvb7wm"]
+
+[ext_resource type="Script" uid="uid://deb8x6kjbj2v4" path="res://addons/godot_core_system/tester/save_manager_tester/save_manager_tester.gd" id="1_b8e2r"]
+
+[node name="SaveManagerTester" type="Node"]
+script = ExtResource("1_b8e2r")
