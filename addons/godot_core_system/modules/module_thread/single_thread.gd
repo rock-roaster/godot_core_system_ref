@@ -1,4 +1,5 @@
 extends RefCounted
+class_name SingleThread
 
 
 enum TaskStatus {
@@ -17,11 +18,15 @@ var _thread_running: bool
 var _task_index: int
 var _task_can_advance: bool
 
+var _auto_advance: bool
+
 var _task_pending_list: Array[Task]
 var _task_running_list: Array[Task]
 
 
-func _init() -> void:
+func _init(auto_advance: bool = false) -> void:
+	_auto_advance = auto_advance
+
 	_mutex = Mutex.new()
 	_semaphore = Semaphore.new()
 
@@ -66,11 +71,16 @@ func _thread_function():
 		_task_running_list.append(next_task)
 		_mutex.unlock()
 
-		next_task.task_finished.connect(_on_task_finished, CONNECT_ONE_SHOT)
+		next_task.task_function_finished.connect(_on_task_function_finished, CONNECT_ONE_SHOT)
+		next_task.task_callback_finished.connect(_on_task_callback_finished, CONNECT_ONE_SHOT)
 		next_task.process_task()
 
 
-func _on_task_finished(task: Task) -> void:
+func _on_task_function_finished(task: Task) -> void:
+	if task.auto_advance: next_step()
+
+
+func _on_task_callback_finished(task: Task) -> void:
 	_mutex.lock()
 	_task_running_list.erase(task)
 	_mutex.unlock()
@@ -87,13 +97,15 @@ func _generate_task_id() -> String:
 func add_task(
 	task_function: Callable,
 	task_callback: Callable = func(_result: Variant): pass,
+	auto_advance: bool = _auto_advance,
 	call_deferred: bool = true,
-) -> void:
+	) -> void:
 
 	var new_task: Task = Task.new(
 		_generate_task_id(),
 		task_function,
 		task_callback,
+		auto_advance,
 		call_deferred,
 	)
 
@@ -125,25 +137,29 @@ func get_index() -> int:
 
 
 class Task:
-	signal task_finished (task: Task)
+	signal task_function_finished (task: Task)
+	signal task_callback_finished (task: Task)
 
 	var id: String
 	var status: TaskStatus
 	var task_function: Callable
 	var task_callback: Callable
+	var auto_advance: bool
 	var call_deferred: bool
 
 	func _init(
 		_id: String,
 		_task_function: Callable = Callable(),
 		_task_callback: Callable = func(_result: Variant): pass,
+		_auto_advance: bool = false,
 		_call_deferred: bool = true,
-	) -> void:
+		) -> void:
 
 		status = TaskStatus.PENDING
 		id = _id
 		task_function = _task_function
 		task_callback = _task_callback
+		auto_advance = _auto_advance
 		call_deferred = _call_deferred
 
 	func process_task() -> void:
@@ -156,18 +172,19 @@ class Task:
 		if not function.is_valid():
 			print("task not valid: ", id)
 			status = TaskStatus.ERROR
-			task_finished.emit(self)
+			task_function_finished.emit(self)
+			task_callback_finished.emit(self)
 			return
 
 		print("task function: ", id)
 		status = TaskStatus.RUNNING
 		var result: Variant = await function.call()
-		status = TaskStatus.COMPLETED
+		task_function_finished.emit(self)
 
+		status = TaskStatus.COMPLETED
 		if callback.is_valid():
 			await match_result_process(callback, result)
-
-		task_finished.emit(self)
+		task_callback_finished.emit(self)
 
 	func match_result_process(callable: Callable, argument: Variant) -> void:
 		var argument_count: int = callable.get_argument_count()

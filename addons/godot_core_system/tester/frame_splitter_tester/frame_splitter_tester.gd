@@ -1,7 +1,7 @@
 extends Control
 
 
-@export_dir var manga_dir: String = "res://manga/"
+@export_dir var manga_dir: String
 
 var frame_array: Array[String]
 var frame_splitter: FrameSplitter = FrameSplitter.new()

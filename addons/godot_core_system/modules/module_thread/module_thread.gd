@@ -1,9 +1,6 @@
 extends "res://addons/godot_core_system/modules/module_base.gd"
 
 
-const SingleThread: = preload(
-	"res://addons/godot_core_system/modules/module_thread/single_thread.gd")
-
 var _thread_dictionary: Dictionary[StringName, SingleThread]
 
 
@@ -11,6 +8,7 @@ func add_task(
 	name: StringName,
 	function: Callable,
 	callback: Callable = func(_result: Variant): pass,
+	auto_advance: bool = false,
 	call_deferred: bool = true,
 ) -> void:
 
@@ -18,7 +16,7 @@ func add_task(
 		create_thread(name)
 
 	var target_thread: SingleThread = _thread_dictionary.get(name) as SingleThread
-	target_thread.add_task(function, callback, call_deferred)
+	target_thread.add_task(function, callback, auto_advance, call_deferred)
 
 
 func next_step(name: StringName) -> void:
