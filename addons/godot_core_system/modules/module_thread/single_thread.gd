@@ -176,7 +176,7 @@ class Task:
 			task_callback_finished.emit(self)
 			return
 
-		print("task function: ", id)
+		#print("task function: ", id)
 		status = TaskStatus.RUNNING
 		var result: Variant = await function.call()
 		task_function_finished.emit(self)
