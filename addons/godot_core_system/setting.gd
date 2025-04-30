@@ -8,6 +8,7 @@ const SETTING_MODULE_CONFIG: String = "godot_core_system/module_config/"
 const SETTING_MODULE_TRIGGER: String = "godot_core_system/module_trigger/"
 
 const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
+#region ModuleEnable
 	"module_enable/logger":
 	{
 		"name": SETTING_MODULE_ENABLE + "logger",
@@ -147,7 +148,9 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"basic": true,
 		"default": true,
 	},
+#endregion
 
+#region ModuleLog
 	"module_log/color_debug":
 	{
 		"name": SETTING_MODULE_LOG + "color_debug",
@@ -197,50 +200,32 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"basic": true,
 		"default": Color(0.5, 0, 0),
 	},
+#endregion
 
+#region ModuleSave
 	"module_save/save_directory":
 	{
 		"name": SETTING_MODULE_SAVE + "save_directory",
 		"type": TYPE_STRING,
 		"hint": PROPERTY_HINT_DIR,
-		"hint_string": "存档目录路径",
+		"hint_string": "存档路径",
 		"basic": true,
-		"default": "user://saves",
+		"default": "user://saves",  # 添加默认值
 	},
 
-	"module_save/save_extension":
+	"module_save/save_group":
 	{
-		"name": SETTING_MODULE_SAVE + "save_extension",
+		"name": SETTING_MODULE_SAVE + "save_group",
 		"type": TYPE_STRING,
 		"hint": PROPERTY_HINT_NONE,
 		"hint_string": "",
 		"basic": true,
-		"default": "sav",
+		"default": "saveable",
 	},
 
-	"module_save/max_auto_saves":
+	"module_save/auto_save/enabled":
 	{
-		"name": SETTING_MODULE_SAVE + "max_auto_saves",
-		"type": TYPE_INT,
-		"hint": PROPERTY_HINT_RANGE,
-		"hint_string": "1, 100, 1, or_greater",
-		"basic": true,
-		"default": 3,
-	},
-
-	"module_save/auto_save_interval":
-	{
-		"name": SETTING_MODULE_SAVE + "auto_save_interval",
-		"type": TYPE_FLOAT,
-		"hint": PROPERTY_HINT_RANGE,
-		"hint_string": "0, 3600, 1, or_greater",
-		"basic": true,
-		"default": 300.0,
-	},
-
-	"module_save/auto_save_enabled":
-	{
-		"name": SETTING_MODULE_SAVE + "auto_save_enabled",
+		"name": SETTING_MODULE_SAVE + "auto_save/" + "enabled",
 		"type": TYPE_BOOL,
 		"hint": PROPERTY_HINT_NONE,
 		"hint_string": "",
@@ -248,6 +233,48 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"default": true,
 	},
 
+	"module_save/auto_save/interval_seconds":
+	{
+		"name": SETTING_MODULE_SAVE + "auto_save/" + "interval_seconds",
+		"type": TYPE_FLOAT,
+		"hint": PROPERTY_HINT_NONE,
+		"hint_string": "",
+		"basic": true,
+		"default": 300.0,
+	},
+
+	"module_save/auto_save/max_saves":
+	{
+		"name": SETTING_MODULE_SAVE + "auto_save/" + "max_saves",
+		"type": TYPE_INT,
+		"hint": PROPERTY_HINT_NONE,
+		"hint_string": "",
+		"basic": true,
+		"default": 3,
+	},
+
+	"module_save/auto_save/name_prefix":
+	{
+		"name": SETTING_MODULE_SAVE + "auto_save/" + "name_prefix",
+		"type": TYPE_STRING,
+		"hint": PROPERTY_HINT_NONE,
+		"hint_string": "",
+		"basic": true,
+		"default": "auto_",
+	},
+
+	"module_save/defaults/serialization_format":
+	{
+		"name": SETTING_MODULE_SAVE + "defaults/" + "serialization_format",
+		"type": TYPE_STRING,
+		"hint": PROPERTY_HINT_ENUM,
+		"hint_string": "binary,json,resource",
+		"basic": true,
+		"default": "",
+	},
+#endregion
+
+#region ModuleConfig
 	"module_config/save_path":
 	{
 		"name": SETTING_MODULE_CONFIG + "save_path",
@@ -267,7 +294,9 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"basic": true,
 		"default": true,
 	},
+#endregion
 
+#region ModuleTrigger
 	"module_trigger/subscribe_event_bus":
 	{
 		"name": SETTING_MODULE_TRIGGER + "subscribe_event_bus",
@@ -277,6 +306,7 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"basic": true,
 		"default": true,
 	},
+#endregion
 }
 
 

@@ -10,8 +10,7 @@ signal config_saved
 ## 配置重置
 signal config_reset
 
-const DefaultConfig: Script = preload(
-	"res://addons/godot_core_system/modules/module_serialization/module_config/default_config.gd")
+const DefaultConfig: Script = preload("./default_config.gd")
 
 ## 配置文件路径
 @export var config_path: String:
