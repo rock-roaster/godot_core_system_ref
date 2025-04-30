@@ -268,9 +268,9 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"name": SETTING_MODULE_SAVE + "defaults/" + "serialization_format",
 		"type": TYPE_STRING,
 		"hint": PROPERTY_HINT_ENUM,
-		"hint_string": "binary,json,resource",
+		"hint_string": "resource,binary,json",
 		"basic": true,
-		"default": "",
+		"default": "resource",
 	},
 #endregion
 

@@ -6,8 +6,6 @@ const ModuleBase: = preload("./module_base.gd")
 
 const ModuleLog: = preload("./module_log/module_log.gd")
 
-#const ModuleAsyncIO: = preload("./module_async_io/module_async_io.gd")
-
 const ModuleSave: = preload("./module_save/save_manager.gd")
 
 const ModuleConfig: = preload("./module_config/module_config.gd")

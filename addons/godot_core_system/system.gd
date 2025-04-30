@@ -7,7 +7,6 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = SETTING_SCRIPT.SET
 #region 导入模组脚本
 const ModuleBase = ModuleClass.ModuleBase
 const ModuleLog = ModuleClass.ModuleLog
-#const ModuleAsyncIO = ModuleClass.ModuleAsyncIO
 const ModuleSave = ModuleClass.ModuleSave
 const ModuleConfig = ModuleClass.ModuleConfig
 const ModuleResource = ModuleClass.ModuleResource
@@ -21,6 +20,7 @@ const ModuleState = ModuleClass.ModuleState
 const ModuleTag = ModuleClass.ModuleTag
 const ModuleTrigger = ModuleClass.ModuleTrigger
 const ModuleThread = ModuleClass.ModuleThread
+
 const AsyncIOManager = preload("./utils/async_io_manager/async_io_manager.gd")
 #endregion
 
@@ -28,10 +28,6 @@ const AsyncIOManager = preload("./utils/async_io_manager/async_io_manager.gd")
 var logger: ModuleLog:
 	get: return get_module("logger")
 	set(value): push_error("logger is read-only.")
-
-#var io_manager: ModuleAsyncIO:
-	#get: return get_module("io_manager")
-	#set(value): push_error("io_manager is read-only.")
 
 var save_manager: ModuleSave:
 	get: return get_module("save_manager")
@@ -89,7 +85,6 @@ var thread: ModuleThread:
 var _modules: Dictionary[StringName, ModuleBase]
 var _module_scripts: Dictionary[StringName, Script] = {
 	"logger": ModuleLog,
-	#"io_manager": ModuleAsyncIO,
 	"save_manager": ModuleSave,
 	"config_manager": ModuleConfig,
 	"resource_manager": ModuleResource,
@@ -145,7 +140,6 @@ func _create_module(module_id: StringName) -> ModuleBase:
 	if not script:
 		push_error("无法加载模块脚本：" + module_id)
 		return null
-
 
 	var module: ModuleBase = script.new()
 	if not module:
