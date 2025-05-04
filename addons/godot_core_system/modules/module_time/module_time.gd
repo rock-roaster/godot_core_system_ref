@@ -5,6 +5,7 @@ signal time_scale_changed(new_scale: float)
 signal timer_completed(timer_id: String)
 signal time_state_changed(is_paused: bool)
 
+const TimerData: = preload("./timer_data.gd")
 
 var _time_scale: float = 1.0
 var _paused: bool = false
@@ -70,7 +71,7 @@ func create_timer(id: String, duration: float, loop: bool = false,
 	if has_timer(id):
 		push_warning("Timer with id '%s' already exists. Overwriting..." % id)
 
-	_timers[id] = LiteTimer.new(id, duration, loop, callback)
+	_timers[id] = TimerData.new(id, duration, loop, callback)
 
 ## 暂停计时器
 func pause_timer(timer_id: String) -> bool:
