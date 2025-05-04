@@ -1,12 +1,12 @@
 extends "./save_format_strategy.gd"
 
 
-var _io_manager: System.AsyncIOManager
+var _io_manager: AsyncIOManager
 var _encryption_key: String = ""
 
 
 func _init() -> void:
-	_io_manager = System.AsyncIOManager.new()
+	_io_manager = AsyncIOManager.new()
 
 
 ## 设置加密密钥

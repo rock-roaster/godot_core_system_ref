@@ -21,7 +21,7 @@ const ModuleTag = ModuleClass.ModuleTag
 const ModuleTrigger = ModuleClass.ModuleTrigger
 const ModuleThread = ModuleClass.ModuleThread
 
-const AsyncIOManager = preload("./utils/async_io_manager/async_io_manager.gd")
+#const AsyncIOManager = preload("./utils/async_io_manager/async_io_manager.gd")
 #endregion
 
 #region 模组变量与getset方法

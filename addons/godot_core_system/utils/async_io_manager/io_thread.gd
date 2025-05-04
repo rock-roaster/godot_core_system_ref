@@ -10,8 +10,8 @@ var _thread: Thread
 var _mutex: Mutex
 var _semaphore: Semaphore
 var _is_running: bool = true
-var _task_queue = []
-var _task_id_counter = 0
+var _task_queue: Array[Dictionary] = []
+var _task_id_counter: int = 0
 
 func _init():
 	_mutex = Mutex.new()
@@ -26,7 +26,7 @@ func _notification(what):
 ## 添加任务到队列
 func add_task(task_func: Callable) -> int:
 	_mutex.lock()
-	var task_id = _task_id_counter
+	var task_id: int = _task_id_counter
 	_task_id_counter += 1
 	_task_queue.append({"id": task_id, "func": task_func})
 	_mutex.unlock()
@@ -37,7 +37,7 @@ func add_task(task_func: Callable) -> int:
 ## 获取待处理任务数
 func get_pending_task_count() -> int:
 	_mutex.lock()
-	var count = _task_queue.size()
+	var count: int = _task_queue.size()
 	_mutex.unlock()
 	return count
 
@@ -83,7 +83,7 @@ func _emit_task_completed(result, task_id):
 
 	# 检查是否所有任务已完成
 	_mutex.lock()
-	var queue_empty : bool = _task_queue.is_empty()
+	var queue_empty: bool = _task_queue.is_empty()
 	_mutex.unlock()
 
 	if queue_empty:

@@ -1,10 +1,10 @@
 extends "./async_io_strategy.gd"
 
 func _init() -> void:
-	_io_manager = System.AsyncIOManager.new(
-		System.AsyncIOManager.JSONSerializationStrategy.new(),
-		System.AsyncIOManager.GzipCompressionStrategy.new(),
-		System.AsyncIOManager.XOREncryptionStrategy.new()
+	_io_manager = AsyncIOManager.new(
+		AsyncIOManager.JSONSerializationStrategy.new(),
+		AsyncIOManager.GzipCompressionStrategy.new(),
+		AsyncIOManager.XOREncryptionStrategy.new()
 		)
 
 ## 是否为有效存档

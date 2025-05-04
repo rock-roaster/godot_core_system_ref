@@ -1,4 +1,6 @@
 extends RefCounted
+class_name AsyncIOManager
+
 
 const SerializationStrategy = preload("./io_strategies/serialization/serialization_strategy.gd")
 const JSONSerializationStrategy = preload("./io_strategies/serialization/json_serialization_strategy.gd")
@@ -16,7 +18,8 @@ const IOThread = preload("./io_thread.gd")
 
 ## IO操作完成信号
 signal io_completed(task_id: String, success: bool, result: Variant)
-## IO操作错误信号
+
+# IO操作错误信号
 # signal io_error(task_id: String, error: String)
 
 # Task Management

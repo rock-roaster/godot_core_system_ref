@@ -4,6 +4,7 @@ extends TextureRect
 func _init() -> void:
 	texture = load("res://icon.svg")
 	set_process_mode(Node.PROCESS_MODE_ALWAYS)
+	z_index = 99
 
 
 func _ready() -> void:
