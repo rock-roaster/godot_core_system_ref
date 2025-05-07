@@ -13,12 +13,14 @@ func _init() -> void:
 func set_encryption_key(key: String) -> void:
 	_encryption_key = key
 
+
 ## 保存数据
 func save(path: String, data: Dictionary) -> bool:
 	var processed_data = _process_data_for_save(data)
 	var task_id = _io_manager.write_file_async(path, processed_data, _encryption_key)
 	var result = await _io_manager.io_completed
 	return result[1] if result[0] == task_id else false
+
 
 ## 加载数据
 func load_save(path: String) -> Dictionary:
@@ -29,16 +31,18 @@ func load_save(path: String) -> Dictionary:
 
 	return {}
 
+
 ## 加载元数据
 func load_metadata(path: String) -> Dictionary:
 	var data : Dictionary = await load_save(path)
 	return data.get("metadata", {}) if data.has("metadata") else {}
 
+
 ## 处理数据保存
 func _process_data_for_save(data: Dictionary) -> Dictionary:
-	var result = {}
+	var result: Dictionary = {}
 	for key in data:
-		var value = data[key]
+		var value: Variant = data[key]
 		if value is Vector2:
 			result[key] = {
 				"__type": "Vector2",
@@ -68,6 +72,7 @@ func _process_data_for_save(data: Dictionary) -> Dictionary:
 			result[key] = value
 	return result
 
+
 ## 处理数组保存
 func _process_array_for_save(array: Array) -> Array:
 	var result = []
@@ -77,10 +82,11 @@ func _process_array_for_save(array: Array) -> Array:
 		elif item is Array:
 			result.append(_process_array_for_save(item))
 		elif item is Vector2 or item is Vector3 or item is Color:
-			result.append(_process_data_for_save({ "_": item })["_"])
+			result.append(_process_data_for_save({"_": item})["_"])
 		else:
 			result.append(item)
 	return result
+
 
 ## 处理数据加载
 func _process_data_for_load(data: Dictionary) -> Dictionary:
@@ -102,6 +108,7 @@ func _process_data_for_load(data: Dictionary) -> Dictionary:
 		else:
 			result[key] = value
 	return result
+
 
 ## 处理数组加载
 func _process_array_for_load(array: Array) -> Array:

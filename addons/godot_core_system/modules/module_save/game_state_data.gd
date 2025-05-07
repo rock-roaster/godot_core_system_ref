@@ -3,7 +3,7 @@ extends Resource
 ## 游戏状态数据
 
 ## 存档元数据
-@export var metadata : Dictionary = {
+@export var metadata: Dictionary = {
 	"save_id": "",
 	"timestamp": 0,
 	"save_date": "",
@@ -11,7 +11,7 @@ extends Resource
 	"playtime": 0.0,
 }
 ## 节点状态
-@export var nodes_state : Array[Dictionary] = []
+@export var nodes_state: Array[Dictionary] = []
 
 func _init(
 		p_save_id: StringName = "",

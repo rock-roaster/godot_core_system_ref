@@ -4,10 +4,10 @@ extends "res://addons/godot_core_system/modules/module_base.gd"
 
 # 引用类型
 const GameStateData = preload("./game_state_data.gd")
+const SaveFormatStrategy = preload("./save_format_strategy/save_format_strategy.gd")
 const ResourceSaveStrategy = preload("./save_format_strategy/resource_save_strategy.gd")
 const BinarySaveStrategy = preload("./save_format_strategy/binary_save_strategy.gd")
 const JSONSaveStrategy = preload("./save_format_strategy/json_save_strategy.gd")
-const SaveFormatStrategy = preload("./save_format_strategy/save_format_strategy.gd")
 
 # 信号
 signal save_created(save_id: String, metadata: Dictionary)		# 存档创建
@@ -16,33 +16,33 @@ signal save_deleted(save_id: String)							# 存档删除
 signal auto_save_created(save_id: String)						# 自动存档创建
 
 # 配置属性
-@export var save_directory: String:
+var save_directory: String:
 	get: return System.get_setting_value("module_save/save_directory", "user://saves")
-	set(_value): System.logger.error("read-only")
+	set(value): System.logger.error("read-only")
 
-@export var save_group: String:
+var save_group: String:
 	get: return System.get_setting_value("module_save/save_group", "saveable")
-	set(_value): System.logger.error("read-only")
+	set(value): System.logger.error("read-only")
 
-@export var default_format: String:
+var default_format: String:
 	get: return System.get_setting_value("module_save/defaults/serialization_format", "resource")
-	set(_value): System.logger.error("read-only")
+	set(value): System.logger.error("read-only")
 
-@export var auto_save_enabled: bool:
+var auto_save_enabled: bool:
 	get: return System.get_setting_value("module_save/auto_save/enabled", true)
-	set(_value): System.logger.error("read-only")
+	set(value): System.logger.error("read-only")
 
-@export var auto_save_interval: float:
+var auto_save_interval: float:
 	get: return System.get_setting_value("module_save/auto_save/interval_seconds", 300.0)
-	set(_value): System.logger.error("read-only")
+	set(value): System.logger.error("read-only")
 
-@export var auto_save_prefix: String:
+var auto_save_prefix: String:
 	get: return System.get_setting_value("module_save/auto_save/name_prefix", "auto_save_")
-	set(_value): System.logger.error("read-only")
+	set(value): System.logger.error("read-only")
 
-@export var max_auto_saves: int:
+var max_auto_saves: int:
 	get: return System.get_setting_value("module_save/auto_save/max_saves", 5)
-	set(_value): System.logger.error("read-only")
+	set(value): System.logger.error("read-only")
 
 # 私有变量
 var _current_save_id: String = ""
