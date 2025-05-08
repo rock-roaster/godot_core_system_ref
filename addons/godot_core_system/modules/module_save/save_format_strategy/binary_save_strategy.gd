@@ -5,7 +5,7 @@ func _init() -> void:
 	_io_manager = AsyncIOManager.new(
 		AsyncIOManager.JSONSerializationStrategy.new(),
 		AsyncIOManager.GzipCompressionStrategy.new(),
-		AsyncIOManager.XOREncryptionStrategy.new(),
+		AsyncIOManager.NoEncryptionStrategy.new(),
 	)
 
 

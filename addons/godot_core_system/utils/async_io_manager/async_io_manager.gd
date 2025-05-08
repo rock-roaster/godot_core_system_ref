@@ -2,6 +2,8 @@ extends RefCounted
 class_name AsyncIOManager
 
 
+const IOThread = preload("./io_thread.gd")
+
 const SerializationStrategy = preload("./io_strategies/serialization/serialization_strategy.gd")
 const JSONSerializationStrategy = preload("./io_strategies/serialization/json_serialization_strategy.gd")
 
@@ -12,8 +14,6 @@ const GzipCompressionStrategy = preload("./io_strategies/compression/gzip_compre
 const EncryptionStrategy = preload("./io_strategies/encryption/encryption_strategy.gd")
 const NoEncryptionStrategy = preload("./io_strategies/encryption/no_encryption_strategy.gd")
 const XOREncryptionStrategy = preload("./io_strategies/encryption/xor_encryption_strategy.gd")
-
-const IOThread = preload("./io_thread.gd")
 
 
 ## IO操作完成信号
@@ -104,16 +104,16 @@ func _shutdown() -> void:
 ## [param encryption_key] 加密密钥
 ## [return] 唯一任务ID字符串
 func read_file_async(path: String, encryption_key: String = "") -> String:
-	var public_task_id := _generate_task_id() # 生成 String ID
-	var key_bytes := encryption_key.to_utf8_buffer()
+	var public_task_id: String = _generate_task_id() # 生成 String ID
+	var key_bytes: PackedByteArray = encryption_key.to_utf8_buffer()
 
 	# Create the read task callable
-	var read_task := func() -> Dictionary:
-		var result_data = _execute_read_operation(path, key_bytes)
-		return { "success": result_data != null, "result": result_data }
+	var read_task: Callable = func() -> Dictionary:
+		var result_data: Variant = _execute_read_operation(path, key_bytes)
+		return {"success": result_data != null, "result": result_data}
 
 	# Submit the task to the IO thread
-	var internal_task_id = _io_thread.add_task(read_task)
+	var internal_task_id: int = _io_thread.add_task(read_task)
 	# 存储映射
 	_task_id_map[internal_task_id] = public_task_id
 
@@ -125,16 +125,16 @@ func read_file_async(path: String, encryption_key: String = "") -> String:
 ## [param encryption_key] 加密密钥
 ## [return] 唯一任务ID字符串
 func write_file_async(path: String, data: Variant, encryption_key: String = "") -> String:
-	var public_task_id := _generate_task_id()
-	var key_bytes := encryption_key.to_utf8_buffer()
+	var public_task_id: String = _generate_task_id()
+	var key_bytes: PackedByteArray = encryption_key.to_utf8_buffer()
 
 	# Create the write task callable
-	var write_task := func() -> Dictionary:
+	var write_task: Callable = func() -> Dictionary:
 		var success = _execute_write_operation(path, data, key_bytes)
-		return { "success": success, "result": null } # Write result is just success/fail
+		return {"success": success, "result": null} # Write result is just success/fail
 
 	# Submit the task to the IO thread
-	var internal_task_id = _io_thread.add_task(write_task)
+	var internal_task_id: int = _io_thread.add_task(write_task)
 	# 存储映射
 	_task_id_map[internal_task_id] = public_task_id
 	return public_task_id
@@ -143,15 +143,15 @@ func write_file_async(path: String, data: Variant, encryption_key: String = "") 
 ## [param path] The path to the file to delete.
 ## [return] A unique task ID string.
 func delete_file_async(path: String) -> String:
-	var public_task_id := _generate_task_id()
+	var public_task_id: String = _generate_task_id()
 
 	# Create the delete task callable
-	var delete_task := func() -> Dictionary:
-		var success = _execute_delete_operation(path)
+	var delete_task: Callable = func() -> Dictionary:
+		var success: bool = _execute_delete_operation(path)
 		return { "success": success, "result": null } # Delete result is just success/fail
 
 	# Submit the task to the IO thread
-	var internal_task_id = _io_thread.add_task(delete_task)
+	var internal_task_id: int = _io_thread.add_task(delete_task)
 	# 存储映射
 	_task_id_map[internal_task_id] = public_task_id
 	return public_task_id
@@ -160,17 +160,17 @@ func delete_file_async(path: String) -> String:
 ## [param path] The directory path.
 ## [return] A unique task ID string.
 func list_files_async(path: String) -> String:
-	var public_task_id := _generate_task_id()
+	var public_task_id: String = _generate_task_id()
 
 	# Create the list task callable
-	var list_task := func() -> Dictionary:
-		var files = _get_file_list(path)
+	var list_task: Callable = func() -> Dictionary:
+		var files: Array = _get_file_list(path)
 		# Check if _get_file_list indicates error (e.g., returns null)
-		var success = files != null
-		return { "success": success, "result": files if success else [] }
+		var success: bool = files != null
+		return {"success": success, "result": files if success else []}
 
 	# Submit the task to the IO thread
-	var internal_task_id = _io_thread.add_task(list_task)
+	var internal_task_id: int = _io_thread.add_task(list_task)
 	# 存储映射
 	_task_id_map[internal_task_id] = public_task_id
 	return public_task_id
@@ -183,12 +183,12 @@ func list_files_async(path: String) -> String:
 ## [param key_bytes] 密钥
 ## [return] 读取的数据
 func _execute_read_operation(path: String, key_bytes: PackedByteArray) -> Variant:
-	var file = FileAccess.open(path, FileAccess.READ)
+	var file: FileAccess = FileAccess.open(path, FileAccess.READ)
 	if not file:
 		_logger.error("AsyncIO: Failed to open file for reading: %s, Error: %s" % [path, FileAccess.get_open_error()])
 		return null
 
-	var content_bytes := file.get_buffer(file.get_length())
+	var content_bytes: PackedByteArray = file.get_buffer(file.get_length())
 	file.close()
 
 	# Process data using strategies
@@ -203,21 +203,21 @@ func _execute_read_operation(path: String, key_bytes: PackedByteArray) -> Varian
 func _execute_write_operation(path: String, data: Variant, key_bytes: PackedByteArray) -> bool:
 	var processed_bytes: PackedByteArray = _process_data_for_write(data, key_bytes)
 
-	var dir_path = path.get_base_dir()
-	var dir = DirAccess.open(dir_path.get_base_dir())
+	var dir_path: String = path.get_base_dir()
+	var dir: DirAccess = DirAccess.open(dir_path.get_base_dir())
 	if not dir.dir_exists(dir_path):
-		var err = DirAccess.make_dir_recursive_absolute(dir_path)
+		var err: Error = DirAccess.make_dir_recursive_absolute(dir_path)
 		if err != OK:
 			_logger.error("AsyncIO: Failed to create directory: %s, Error code: %d" % [dir_path, err])
 			return false
 
 	# Open and write file
-	var file = FileAccess.open(path, FileAccess.WRITE)
+	var file: FileAccess = FileAccess.open(path, FileAccess.WRITE)
 	if not file:
 		_logger.error("AsyncIO: Failed to open file for writing: %s, Error: %s" % [path, FileAccess.get_open_error()])
 		return false
 
-	var ok := file.store_buffer(processed_bytes)
+	var ok: bool = file.store_buffer(processed_bytes)
 	if not ok:
 		_logger.error("AsyncIO: Failed to write file: %s" % path)
 	file.close()
@@ -231,12 +231,12 @@ func _execute_delete_operation(path: String) -> bool:
 		_logger.warning("AsyncIO: File to delete does not exist: %s" % path)
 		return true
 
-	var dir = DirAccess.open(path.get_base_dir())
+	var dir: DirAccess = DirAccess.open(path.get_base_dir())
 	if not dir:
 		_logger.error("AsyncIO: Could not access directory for deletion: %s" % path.get_base_dir())
 		return false
 
-	var err := dir.remove(path.get_file())
+	var err: Error = dir.remove(path.get_file())
 	if err != OK:
 		_logger.error("AsyncIO: Failed to delete file: %s, Error code: %d" % [path, err])
 		return false
@@ -245,15 +245,15 @@ func _execute_delete_operation(path: String) -> bool:
 
 ## Gets the file list in the background thread.
 func _get_file_list(directory_path: String) -> Array:
-	var files := []
-	var dir := DirAccess.open(directory_path)
+	var files: Array = []
+	var dir: DirAccess = DirAccess.open(directory_path)
 
 	if not dir:
 		_logger.error("AsyncIO: Cannot access directory: %s" % directory_path)
 		return []
 
 	dir.list_dir_begin()
-	var file_name := dir.get_next()
+	var file_name: String = dir.get_next()
 	while not file_name.is_empty():
 		if file_name != "." and file_name != "..": # Skip . and ..
 			# Consider adding option to include directories or get full paths
@@ -292,7 +292,7 @@ func _process_data_for_write(data: Variant, key_bytes: PackedByteArray) -> Packe
 ## [param key_bytes] 密钥
 ## [return] 处理后的数据
 func _process_data_for_read(bytes: PackedByteArray, key_bytes: PackedByteArray) -> Variant:
-	var current_bytes := bytes
+	var current_bytes: PackedByteArray = bytes
 	var result_data: Variant = null
 
 	if _encryptor:

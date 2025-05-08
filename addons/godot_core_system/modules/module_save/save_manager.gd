@@ -47,7 +47,7 @@ var max_auto_saves: int:
 # 私有变量
 var _current_save_id: String = ""
 var _auto_save_timer: float = 0
-var _encryption_key: String = "123456"
+var _encryption_key: String = ""
 var _save_strategy: SaveFormatStrategy
 var _pending_node_states: Dictionary = {}
 
@@ -101,9 +101,14 @@ func set_save_format(format: StringName) -> void:
 	_set_save_format(format)
 
 
+func update_save() -> void:
+	if _current_save_id != "":
+		create_save(_current_save_id)
+
+
 # 创建存档
 func create_save(save_id: String = "") -> bool:
-	var actual_id = _generate_save_id() if save_id.is_empty() else save_id
+	var actual_id: String = _generate_save_id() if save_id.is_empty() else save_id
 
 	# 收集数据
 	var save_data: Dictionary = {
@@ -118,8 +123,8 @@ func create_save(save_id: String = "") -> bool:
 	}
 
 	# 存储数据
-	var save_path = _get_save_path(actual_id)
-	var success = await _save_strategy.save(save_path, save_data)
+	var save_path: String = _get_save_path(actual_id)
+	var success: bool = await _save_strategy.save(save_path, save_data)
 	if success:
 		_current_save_id = actual_id
 		save_created.emit(actual_id, save_data.metadata)
@@ -132,9 +137,9 @@ func load_save(save_id: String) -> bool:
 	if save_id.is_empty():
 		return false
 
-	var save_path = _get_save_path(save_id)
+	var save_path: String = _get_save_path(save_id)
 
-	var result = await _save_strategy.load_save(save_path)
+	var result: Dictionary = await _save_strategy.load_save(save_path)
 	if not result.is_empty():
 		_current_save_id = save_id
 		if result.has("nodes"):
@@ -291,11 +296,11 @@ func _generate_save_id() -> String:
 
 # 收集Node状态
 func _collect_node_states() -> Array[Dictionary]:
-	var nodes : Array[Dictionary] = []
+	var nodes: Array[Dictionary] = []
 	var saveables = _current_tree.get_nodes_in_group(save_group)
 	for saveable in saveables:
-		if saveable.has_method("save"):
-			var node_data: Dictionary = saveable.save()
+		if saveable.has_method("_save_data"):
+			var node_data: Dictionary = saveable.call("_save_data")
 			node_data["node_path"] = saveable.get_path()
 			nodes.append(node_data)
 		else:
@@ -306,14 +311,15 @@ func _collect_node_states() -> Array[Dictionary]:
 # 应用Node状态
 func _apply_node_states(nodes: Array) -> void:
 	for node_data: Dictionary in nodes:
-		var node_path : String = node_data.get("node_path", "")
+		var node_path: String = node_data.get("node_path", "")
 		if node_path.is_empty():
 			_logger.error("节点路径为空！%s" % str(node_data))
 			continue
-		var node = _current_root.get_node_or_null(node_path)
-		if node:
-			if node.has_method("load_data"):
-				node.load_data(node_data)
+		var node: Node = _current_root.get_node_or_null(node_path)
+		if node != null:
+			if node.has_method("_load_data"):
+				node_data.erase("node_path")
+				node.call("_load_data", node_data)
 			else:
 				_logger.warning("缺少 load_data 方法！%s" % str(node))
 		else:

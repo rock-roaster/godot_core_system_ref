@@ -5,18 +5,20 @@ extends Node
 
 
 func _ready() -> void:
-	label.text = str(SaveData.save_data[1])
+	label.text = str(GameData.get_data("001"))
 
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"ui_accept"): _on_accept_pressed()
 	if event.is_action_pressed(&"ui_cancel"): _on_cancel_pressed()
+
 	if event.is_action_pressed(&"ui_up"):
-		SaveData.save_data[1] += 1
-		label.text = str(SaveData.save_data[1])
+		GameData._data["001"] += 1
+		label.text = str(GameData.get_data("001"))
+
 	if event.is_action_pressed(&"ui_down"):
-		SaveData.save_data[1] -= 1
-		label.text = str(SaveData.save_data[1])
+		GameData._data["001"] -= 1
+		label.text = str(GameData.get_data("001"))
 
 
 func _on_accept_pressed() -> void:
@@ -24,5 +26,5 @@ func _on_accept_pressed() -> void:
 
 
 func _on_cancel_pressed() -> void:
-	System.save_manager.load_save("save_01")
-	label.text = str(SaveData.save_data[1])
+	await System.save_manager.load_save("save_01")
+	label.text = str(GameData.get_data("001"))

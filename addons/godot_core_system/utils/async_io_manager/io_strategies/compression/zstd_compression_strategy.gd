@@ -2,7 +2,7 @@ extends "./compression_strategy.gd"
 
 
 # 压缩模式常量
-const COMPRESSION_MODE: int = FileAccess.COMPRESSION_GZIP
+const COMPRESSION_MODE: int = FileAccess.COMPRESSION_ZSTD
 
 # 估算解压缩缓冲区大小的乘数 (如果经常出错，需要调整)
 const DECOMPRESSION_BUFFER_MULTIPLIER: int = 10
@@ -33,6 +33,6 @@ func decompress(bytes: PackedByteArray) -> PackedByteArray:
 	# 可能只返回部分数据或空数组，而不会抛出异常。
 	# 无法完美检测解压是否完全成功，只能依赖后续数据校验。
 	if decompressed_bytes.is_empty() and not bytes.is_empty():
-		push_warning("Gzip Decompression resulted in empty bytes. Buffer size (%d) might be insufficient or data corrupted." % estimated_size)
+		push_warning("ZSTD Decompression resulted in empty bytes. Buffer size (%d) might be insufficient or data corrupted." % estimated_size)
 
 	return decompressed_bytes
