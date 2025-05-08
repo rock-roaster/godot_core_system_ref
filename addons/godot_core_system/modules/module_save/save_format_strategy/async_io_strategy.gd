@@ -89,14 +89,15 @@ func _process_data(value: Variant) -> Variant:
 ## 处理数组保存
 func _process_array_for_save(array: Array) -> Array:
 	var result: Array = []
-	for item in array:
-		if item is Dictionary:
+	for item in array:\
+	match typeof(item):
+		TYPE_DICTIONARY:
 			result.append(_process_data_for_save(item))
-		elif item is Array:
+		TYPE_ARRAY:
 			result.append(_process_array_for_save(item))
-		elif item is Vector2 or item is Vector3 or item is Color:
+		TYPE_INT, TYPE_VECTOR2, TYPE_VECTOR3, TYPE_COLOR, TYPE_OBJECT:
 			result.append(_process_data_for_save({"_": item})["_"])
-		else:
+		_:
 			result.append(item)
 	return result
 
@@ -127,25 +128,25 @@ func _process_data_for_load(data: Dictionary) -> Dictionary:
 	var result: Dictionary = {}
 	for key in data:
 		var value: Variant = data[key]
-		if value is Dictionary and value.has("__type"):
-			match value.__type:
-				"int":
-					result[key] = int(value.i)
-				"Vector2":
-					result[key] = Vector2(value.x, value.y)
-				"Vector3":
-					result[key] = Vector3(value.x, value.y, value.z)
-				"Color":
-					result[key] = Color(value.r, value.g, value.b, value.a)
-				"Node":
-					result[key] = NodePath(value.node_path)
-				"Object":
-					var script: Script = ResourceLoader.load(value.script, "Script")
-					var object: Object = script.new()
-					var prop_dict: Dictionary = value.props
-					for prop_key in prop_dict:
-						object.set(prop_key, prop_dict[prop_key])
-					result[key] = object
+		if value is Dictionary and value.has("__type"):\
+		match value.__type:
+			"int":
+				result[key] = int(value.i)
+			"Vector2":
+				result[key] = Vector2(value.x, value.y)
+			"Vector3":
+				result[key] = Vector3(value.x, value.y, value.z)
+			"Color":
+				result[key] = Color(value.r, value.g, value.b, value.a)
+			"Node":
+				result[key] = NodePath(value.node_path)
+			"Object":
+				var script: Script = ResourceLoader.load(value.script, "Script")
+				var object: Object = script.new()
+				var prop_dict: Dictionary = value.props
+				for prop_key in prop_dict:
+					object.set(prop_key, prop_dict[prop_key])
+				result[key] = object
 		elif value is Dictionary:
 			result[key] = _process_data_for_load(value)
 		elif value is Array:
