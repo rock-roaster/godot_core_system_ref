@@ -267,7 +267,8 @@ func _ensure_save_directory_exists() -> void:
 
 # 获取存档路径
 func _get_save_path(save_id: String) -> String:
-	return _save_strategy.get_save_path(System.get_setting_value("module_save/save_directory"), save_id)
+	return _save_strategy.get_save_path(
+		System.get_setting_value("module_save/save_directory"), save_id)
 
 
 # 清理旧的自动存档

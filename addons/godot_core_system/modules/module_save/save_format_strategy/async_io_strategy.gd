@@ -42,44 +42,48 @@ func _process_data_for_save(data: Dictionary) -> Dictionary:
 	var result: Dictionary = {}
 	for key in data:
 		var value: Variant = data[key]
-		if value is Node:
-			result[key] = {
-				"__type": "Node",
-				"node_path": value.get_path(),
-			}
-		elif value is int:
-			result[key] = {
+		result[key] = _process_data(value)
+	return result
+
+
+## 处理数据保存（单个判断）
+func _process_data(value: Variant) -> Variant:
+	match typeof(value):
+		TYPE_INT:
+			return {
 				"__type": "int",
 				"i": value,
 			}
-		elif value is Vector2:
-			result[key] = {
+		TYPE_VECTOR2:
+			return {
 				"__type": "Vector2",
 				"x": value.x,
 				"y": value.y,
 			}
-		elif value is Vector3:
-			result[key] = {
+		TYPE_VECTOR3:
+			return {
 				"__type": "Vector3",
 				"x": value.x,
 				"y": value.y,
 				"z": value.z,
 			}
-		elif value is Color:
-			result[key] = {
+		TYPE_COLOR:
+			return {
 				"__type": "Color",
 				"r": value.r,
 				"g": value.g,
 				"b": value.b,
 				"a": value.a,
 			}
-		elif value is Dictionary:
-			result[key] = _process_data_for_save(value)
-		elif value is Array:
-			result[key] = _process_array_for_save(value)
-		else:
-			result[key] = value
-	return result
+		TYPE_DICTIONARY:
+			return _process_data_for_save(value)
+		TYPE_ARRAY:
+			return _process_array_for_save(value)
+		TYPE_OBJECT:
+			var value_data: Dictionary = _process_object_for_save(value)
+			if not value_data.is_empty():
+				return value_data
+	return value
 
 
 ## 处理数组保存
@@ -97,6 +101,27 @@ func _process_array_for_save(array: Array) -> Array:
 	return result
 
 
+## 处理对象保存
+func _process_object_for_save(value: Object) -> Dictionary:
+	if value is Node:
+		return {
+			"__type": "Node",
+			"node_path": value.get_path(),
+		}
+	elif value.get_script() != null:
+		var script: Script = value.get_script()
+		var prop_dict: Dictionary
+		for prop in value.get_property_list():
+			prop_dict.set(prop.name, value.get(prop.name))
+		prop_dict.erase("script")
+		return {
+			"__type": "Object",
+			"props": prop_dict,
+			"script": script.get_path(),
+		}
+	return {}
+
+
 ## 处理数据加载
 func _process_data_for_load(data: Dictionary) -> Dictionary:
 	var result: Dictionary = {}
@@ -104,8 +129,6 @@ func _process_data_for_load(data: Dictionary) -> Dictionary:
 		var value: Variant = data[key]
 		if value is Dictionary and value.has("__type"):
 			match value.__type:
-				"Node":
-					result[key] = System.get_node_or_null(value.node_path)
 				"int":
 					result[key] = int(value.i)
 				"Vector2":
@@ -114,6 +137,15 @@ func _process_data_for_load(data: Dictionary) -> Dictionary:
 					result[key] = Vector3(value.x, value.y, value.z)
 				"Color":
 					result[key] = Color(value.r, value.g, value.b, value.a)
+				"Node":
+					result[key] = NodePath(value.node_path)
+				"Object":
+					var script: Script = ResourceLoader.load(value.script, "Script")
+					var object: Object = script.new()
+					var prop_dict: Dictionary = value.props
+					for prop_key in prop_dict:
+						object.set(prop_key, prop_dict[prop_key])
+					result[key] = object
 		elif value is Dictionary:
 			result[key] = _process_data_for_load(value)
 		elif value is Array:

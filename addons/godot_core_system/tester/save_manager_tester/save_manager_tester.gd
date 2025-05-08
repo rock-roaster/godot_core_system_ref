@@ -5,7 +5,11 @@ extends Node
 
 
 func _ready() -> void:
-	GameData.set_data("002", label)
+	var time_info: TimeInfo = TimeInfo.new()
+	time_info.day = 31
+
+	GameData.set_data("002", label.get_path())
+	GameData.set_data("003", time_info)
 	label.text = str(GameData.get_data("001"))
 
 
