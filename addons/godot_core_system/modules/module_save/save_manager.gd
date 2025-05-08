@@ -47,7 +47,7 @@ var max_auto_saves: int:
 # 私有变量
 var _current_save_id: String = ""
 var _auto_save_timer: float = 0
-var _encryption_key: String = "123456"  # TODO: 从安全的地方获取
+var _encryption_key: String = "123456"
 var _save_strategy: SaveFormatStrategy
 var _pending_node_states: Dictionary = {}
 
@@ -95,16 +95,18 @@ func register_saveable_node(node: Node) -> void:
 		else:
 			_logger.warning("节点 %s 缺少 load_data 方法，无法应用缓存状态！" % node_path)
 
+
 # 设置存档格式
 func set_save_format(format: StringName) -> void:
 	_set_save_format(format)
+
 
 # 创建存档
 func create_save(save_id: String = "") -> bool:
 	var actual_id = _generate_save_id() if save_id.is_empty() else save_id
 
 	# 收集数据
-	var save_data : Dictionary = {
+	var save_data: Dictionary = {
 		"metadata": {
 			"save_id": actual_id,
 			"timestamp": Time.get_unix_time_from_system(),
@@ -124,6 +126,7 @@ func create_save(save_id: String = "") -> bool:
 		return true
 	return false
 
+
 # 加载存档
 func load_save(save_id: String) -> bool:
 	if save_id.is_empty():
@@ -140,6 +143,7 @@ func load_save(save_id: String) -> bool:
 		return true
 	return false
 
+
 # 删除存档
 func delete_save(save_id: String) -> bool:
 	var save_path = _get_save_path(save_id)
@@ -152,6 +156,7 @@ func delete_save(save_id: String) -> bool:
 		return true
 	_logger.error("删除存档失败：%s" % save_path)
 	return false
+
 
 # 创建自动存档
 func create_auto_save() -> String:
@@ -171,6 +176,7 @@ func create_auto_save() -> String:
 	# 发送信号
 	auto_save_created.emit(auto_save_id)
 	return auto_save_id
+
 
 # 获取所有存档列表
 func get_save_list() -> Array[Dictionary]:
@@ -195,6 +201,7 @@ func get_save_list() -> Array[Dictionary]:
 
 	return saves
 
+
 # 注册自定义存档格式策略
 func register_save_format_strategy(format: StringName, strategy: SaveFormatStrategy) -> void:
 	_strategies[format] = strategy
@@ -205,12 +212,14 @@ func register_save_format_strategy(format: StringName, strategy: SaveFormatStrat
 func _get_auto_save_id() -> String:
 	return auto_save_prefix + _get_timestamp()
 
+
 # 设置当前存档格式
 func _set_save_format(format: StringName) -> void:
 	_save_strategy = _strategies.get(format, "resource")
 	if _save_strategy.has_method("set_encryption_key"):
 		var encryption_key = _get_encryption_key()
 		_save_strategy.set_encryption_key(encryption_key)
+
 
 ## 获取加密密钥
 func _get_encryption_key() -> String:
@@ -225,6 +234,7 @@ func _get_encryption_key() -> String:
 
 	return key
 
+
 ## 生成默认密钥
 func _generate_default_key() -> String:
 	var key = ""
@@ -233,13 +243,16 @@ func _generate_default_key() -> String:
 	return key
 	# return "123456"
 
+
 # 检查文件是否为有效的存档文件
 func _is_valid_save_file(file_name: String) -> bool:
 	return _save_strategy.is_valid_save_file(file_name)
 
+
 # 从文件名获取存档ID
 func _get_save_id_from_file(file_name: String) -> String:
 	return _save_strategy.get_save_id_from_file(file_name)
+
 
 # 确保存档目录存在
 func _ensure_save_directory_exists() -> void:
@@ -247,9 +260,11 @@ func _ensure_save_directory_exists() -> void:
 	if not DirAccess.dir_exists_absolute(save_dir):
 		DirAccess.make_dir_recursive_absolute(save_dir)
 
+
 # 获取存档路径
 func _get_save_path(save_id: String) -> String:
 	return _save_strategy.get_save_path(System.get_setting_value("module_save/save_directory"), save_id)
+
 
 # 清理旧的自动存档
 func _clean_old_auto_saves() -> void:
@@ -263,13 +278,16 @@ func _clean_old_auto_saves() -> void:
 		for i in range(max_auto_saves, auto_saves.size()):
 			delete_save(auto_saves[i].id)
 
+
 # 生成时间戳
 func _get_timestamp() -> String:
 	return str(Time.get_unix_time_from_system())
 
+
 # 生成存档ID
 func _generate_save_id() -> String:
 	return "save_" + _get_timestamp()
+
 
 # 收集Node状态
 func _collect_node_states() -> Array[Dictionary]:
@@ -277,16 +295,17 @@ func _collect_node_states() -> Array[Dictionary]:
 	var saveables = _current_tree.get_nodes_in_group(save_group)
 	for saveable in saveables:
 		if saveable.has_method("save"):
-			var node_data : Dictionary = saveable.save()
+			var node_data: Dictionary = saveable.save()
 			node_data["node_path"] = saveable.get_path()
 			nodes.append(node_data)
 		else:
 			_logger.warning("缺少save方法！%s" % str(saveable))
 	return nodes
 
+
 # 应用Node状态
 func _apply_node_states(nodes: Array) -> void:
-	for node_data : Dictionary in nodes:
+	for node_data: Dictionary in nodes:
 		var node_path : String = node_data.get("node_path", "")
 		if node_path.is_empty():
 			_logger.error("节点路径为空！%s" % str(node_data))

@@ -92,6 +92,21 @@ func clear_scene_stack() -> void:
 	_scene_stack.clear()
 
 
+func change_scene_fade(
+	scene_path: String,
+	duration: float = 0.5,
+	callback: Callable = Callable(),
+	) -> void:
+	await change_scene_async(
+		scene_path,
+		{},
+		false,
+		TransitionEffect.FADE,
+		duration,
+		callback,
+	)
+
+
 ## 异步切换场景
 ## [param scene_path] 场景路径
 ## [param scene_data] 场景数据

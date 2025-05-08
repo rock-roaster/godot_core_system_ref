@@ -1,7 +1,7 @@
 extends "./serialization_strategy.gd"
 
 func serialize(data: Variant) -> PackedByteArray:
-	var json_str := JSON.stringify(data)
+	var json_str := JSON.stringify(data, "\t", false)
 	if json_str.is_empty() and data != null:
 		System.logger.error("Failed to serialize data to JSON: %s" % str(data))
 	return json_str.to_utf8_buffer()
