@@ -5,6 +5,7 @@ extends Node
 
 
 func _ready() -> void:
+	GameData.set_data("002", label)
 	label.text = str(GameData.get_data("001"))
 
 

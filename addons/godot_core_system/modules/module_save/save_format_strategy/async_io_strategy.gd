@@ -16,25 +16,24 @@ func set_encryption_key(key: String) -> void:
 
 ## 保存数据
 func save(path: String, data: Dictionary) -> bool:
-	var processed_data = _process_data_for_save(data)
-	var task_id = _io_manager.write_file_async(path, processed_data, _encryption_key)
-	var result = await _io_manager.io_completed
+	var processed_data: Dictionary = _process_data_for_save(data)
+	var task_id: String = _io_manager.write_file_async(path, processed_data, _encryption_key)
+	var result: Array = await _io_manager.io_completed
 	return result[1] if result[0] == task_id else false
 
 
 ## 加载数据
 func load_save(path: String) -> Dictionary:
-	var task_id = _io_manager.read_file_async(path, _encryption_key)
-	var result = await _io_manager.io_completed
+	var task_id: String = _io_manager.read_file_async(path, _encryption_key)
+	var result: Array = await _io_manager.io_completed
 	if result[0] == task_id and result[1]:
 		return _process_data_for_load(result[2])
-
 	return {}
 
 
 ## 加载元数据
 func load_metadata(path: String) -> Dictionary:
-	var data : Dictionary = await load_save(path)
+	var data: Dictionary = await load_save(path)
 	return data.get("metadata", {}) if data.has("metadata") else {}
 
 
@@ -43,18 +42,28 @@ func _process_data_for_save(data: Dictionary) -> Dictionary:
 	var result: Dictionary = {}
 	for key in data:
 		var value: Variant = data[key]
-		if value is Vector2:
+		if value is Node:
+			result[key] = {
+				"__type": "Node",
+				"node_path": value.get_path(),
+			}
+		elif value is int:
+			result[key] = {
+				"__type": "int",
+				"i": value,
+			}
+		elif value is Vector2:
 			result[key] = {
 				"__type": "Vector2",
 				"x": value.x,
-				"y": value.y
+				"y": value.y,
 			}
 		elif value is Vector3:
 			result[key] = {
 				"__type": "Vector3",
 				"x": value.x,
 				"y": value.y,
-				"z": value.z
+				"z": value.z,
 			}
 		elif value is Color:
 			result[key] = {
@@ -62,7 +71,7 @@ func _process_data_for_save(data: Dictionary) -> Dictionary:
 				"r": value.r,
 				"g": value.g,
 				"b": value.b,
-				"a": value.a
+				"a": value.a,
 			}
 		elif value is Dictionary:
 			result[key] = _process_data_for_save(value)
@@ -75,7 +84,7 @@ func _process_data_for_save(data: Dictionary) -> Dictionary:
 
 ## 处理数组保存
 func _process_array_for_save(array: Array) -> Array:
-	var result = []
+	var result: Array = []
 	for item in array:
 		if item is Dictionary:
 			result.append(_process_data_for_save(item))
@@ -90,11 +99,15 @@ func _process_array_for_save(array: Array) -> Array:
 
 ## 处理数据加载
 func _process_data_for_load(data: Dictionary) -> Dictionary:
-	var result = {}
+	var result: Dictionary = {}
 	for key in data:
-		var value = data[key]
+		var value: Variant = data[key]
 		if value is Dictionary and value.has("__type"):
 			match value.__type:
+				"Node":
+					result[key] = System.get_node_or_null(value.node_path)
+				"int":
+					result[key] = int(value.i)
 				"Vector2":
 					result[key] = Vector2(value.x, value.y)
 				"Vector3":
@@ -112,7 +125,7 @@ func _process_data_for_load(data: Dictionary) -> Dictionary:
 
 ## 处理数组加载
 func _process_array_for_load(array: Array) -> Array:
-	var result = []
+	var result: Array = []
 	for item in array:
 		if item is Dictionary:
 			result.append(_process_data_for_load(item))

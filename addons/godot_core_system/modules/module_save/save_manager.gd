@@ -82,7 +82,7 @@ func register_saveable_node(node: Node) -> void:
 		node.add_to_group(save_group)
 		System.logger.info("注册存档节点: %s" % node.get_path())
 
-	var node_path : String = node.get_path()
+	var node_path: String = node.get_path()
 	# 检查是否有待加载的缓存状态
 	if _pending_node_states.has(node_path):
 		_logger.debug("发现节点 %s 的缓存状态，正在应用..." % node_path)
@@ -151,8 +151,8 @@ func load_save(save_id: String) -> bool:
 
 # 删除存档
 func delete_save(save_id: String) -> bool:
-	var save_path = _get_save_path(save_id)
-	var success = _save_strategy.delete_file(save_path)
+	var save_path: String = _get_save_path(save_id)
+	var success: bool = _save_strategy.delete_file(save_path)
 
 	if success:
 		if _current_save_id == save_id:
@@ -165,16 +165,16 @@ func delete_save(save_id: String) -> bool:
 
 # 创建自动存档
 func create_auto_save() -> String:
-	var auto_save_id = _get_auto_save_id()
+	var auto_save_id: String = _get_auto_save_id()
 
 	# 创建新存档
-	var success = await create_save(auto_save_id)
+	var success: bool = await create_save(auto_save_id)
 	if not success:
 		System.logger.error("Failed to create auto save: %s" % auto_save_id)
 		return ""
 
 	# 清理旧的自动存档
-	var cleanup_success = await _clean_old_auto_saves()
+	var cleanup_success: bool = await _clean_old_auto_saves()
 	if not cleanup_success:
 		System.logger.warning("Failed to clean old auto saves")
 
@@ -187,12 +187,12 @@ func create_auto_save() -> String:
 func get_save_list() -> Array[Dictionary]:
 	var saves: Array[Dictionary] = []
 
-	var files = _save_strategy.list_files(save_directory)
+	var files: Array = _save_strategy.list_files(save_directory)
 	for file in files:
-		var save_id = _get_save_id_from_file(file)
-		var save_path = _get_save_path(save_id)
+		var save_id: String = _get_save_id_from_file(file)
+		var save_path: String = _get_save_path(save_id)
 
-		var metadata = await _save_strategy.load_metadata(save_path)
+		var metadata: Dictionary = await _save_strategy.load_metadata(save_path)
 		if not metadata.is_empty():
 			saves.append({
 				"save_id": save_id,
@@ -201,8 +201,7 @@ func get_save_list() -> Array[Dictionary]:
 
 	# 按时间戳排序
 	saves.sort_custom(func(a, b):
-		return a.metadata.timestamp > b.metadata.timestamp
-	)
+		return a.metadata.timestamp > b.metadata.timestamp)
 
 	return saves
 
@@ -222,14 +221,14 @@ func _get_auto_save_id() -> String:
 func _set_save_format(format: StringName) -> void:
 	_save_strategy = _strategies.get(format, "resource")
 	if _save_strategy.has_method("set_encryption_key"):
-		var encryption_key = _get_encryption_key()
+		var encryption_key: String = _get_encryption_key()
 		_save_strategy.set_encryption_key(encryption_key)
 
 
 ## 获取加密密钥
 func _get_encryption_key() -> String:
 	# 从配置中获取密钥
-	var key = System.config_manager.get_value("save_system", "encryption_key", "")
+	var key: String = System.config_manager.get_value("save_system", "encryption_key", "")
 
 	# 如果配置中没有密钥，生成一个默认的
 	if key.is_empty():
@@ -242,7 +241,7 @@ func _get_encryption_key() -> String:
 
 ## 生成默认密钥
 func _generate_default_key() -> String:
-	var key = ""
+	var key: String = ""
 	for i in range(32):
 		key += str(randi() % 10)
 	return key
@@ -261,7 +260,7 @@ func _get_save_id_from_file(file_name: String) -> String:
 
 # 确保存档目录存在
 func _ensure_save_directory_exists() -> void:
-	var save_dir = System.get_setting_value("module_save/save_directory")
+	var save_dir: String = System.get_setting_value("module_save/save_directory")
 	if not DirAccess.dir_exists_absolute(save_dir):
 		DirAccess.make_dir_recursive_absolute(save_dir)
 
@@ -272,16 +271,20 @@ func _get_save_path(save_id: String) -> String:
 
 
 # 清理旧的自动存档
-func _clean_old_auto_saves() -> void:
-	var saves = await get_save_list()
-	var auto_saves = saves.filter(func(save):
-		var save_id = save.get("save_id")
-		return save_id.begins_with(auto_save_prefix)
+func _clean_old_auto_saves() -> bool:
+	var saves: Array[Dictionary] = await get_save_list()
+	var auto_saves: Array[Dictionary] = saves.filter(
+		func(save: Dictionary):
+			var save_id: String = save.get("save_id")
+			return save_id.begins_with(auto_save_prefix)
 	)
 
+	var success: bool = true
 	if auto_saves.size() > max_auto_saves:
 		for i in range(max_auto_saves, auto_saves.size()):
-			delete_save(auto_saves[i].id)
+			var result: bool = delete_save(auto_saves[i].id)
+			if not result: success = false
+	return success
 
 
 # 生成时间戳
@@ -297,14 +300,16 @@ func _generate_save_id() -> String:
 # 收集Node状态
 func _collect_node_states() -> Array[Dictionary]:
 	var nodes: Array[Dictionary] = []
-	var saveables = _current_tree.get_nodes_in_group(save_group)
-	for saveable in saveables:
-		if saveable.has_method("_save_data"):
-			var node_data: Dictionary = saveable.call("_save_data")
-			node_data["node_path"] = saveable.get_path()
+	var savables: Array[Node] = _current_tree.get_nodes_in_group(save_group)
+	for savable in savables:
+		if savable.has_method("_save_data"):
+			var node_data: Dictionary = {}
+			var savable_data: Dictionary = savable.call("_save_data")
+			node_data.merge(savable_data)
+			node_data["node_path"] = savable.get_path()
 			nodes.append(node_data)
 		else:
-			_logger.warning("缺少save方法！%s" % str(saveable))
+			_logger.warning("缺少 _save_data 方法！%s" % str(savable))
 	return nodes
 
 
@@ -321,7 +326,7 @@ func _apply_node_states(nodes: Array) -> void:
 				node_data.erase("node_path")
 				node.call("_load_data", node_data)
 			else:
-				_logger.warning("缺少 load_data 方法！%s" % str(node))
+				_logger.warning("缺少 _load_data 方法！%s" % str(node))
 		else:
 			# 节点不存在，缓存数据
 			_logger.debug("节点 %s 尚未加载，缓存其状态数据。" % node_path)
