@@ -80,9 +80,7 @@ func _process_data(value: Variant) -> Variant:
 		TYPE_ARRAY:
 			return _process_array_for_save(value)
 		TYPE_OBJECT:
-			var value_data: Dictionary = _process_object_for_save(value)
-			if not value_data.is_empty():
-				return value_data
+			return _process_object_for_save(value)
 	return value
 
 
@@ -103,24 +101,34 @@ func _process_array_for_save(array: Array) -> Array:
 
 
 ## 处理对象保存
-func _process_object_for_save(value: Object) -> Dictionary:
+func _process_object_for_save(value: Object) -> Variant:
 	if value is Node:
 		return {
 			"__type": "Node",
 			"node_path": value.get_path(),
 		}
-	elif value.get_script() != null:
+	else:
 		var script: Script = value.get_script()
 		var prop_dict: Dictionary
 		for prop in value.get_property_list():
 			prop_dict.set(prop.name, value.get(prop.name))
 		prop_dict.erase("script")
-		return {
-			"__type": "Object",
-			"props": prop_dict,
-			"script": script.get_path(),
-		}
-	return {}
+
+		if script != null:
+			var script_path: String = script.get_path()
+			prop_dict.erase(script_path.get_file())
+			return {
+				"__type": "Object",
+				"script": script_path,
+				"props": prop_dict,
+			}
+		else:
+			return {
+				"__type": "Object",
+				"class": value.get_class(),
+				"props": prop_dict,
+			}
+	return value
 
 
 ## 处理数据加载
@@ -141,12 +149,7 @@ func _process_data_for_load(data: Dictionary) -> Dictionary:
 			"Node":
 				result[key] = NodePath(value.node_path)
 			"Object":
-				var script: Script = ResourceLoader.load(value.script, "Script")
-				var object: Object = script.new()
-				var prop_dict: Dictionary = value.props
-				for prop_key in prop_dict:
-					object.set(prop_key, prop_dict[prop_key])
-				result[key] = object
+				result[key] = _process_object_for_load(value)
 		elif value is Dictionary:
 			result[key] = _process_data_for_load(value)
 		elif value is Array:
@@ -154,6 +157,19 @@ func _process_data_for_load(data: Dictionary) -> Dictionary:
 		else:
 			result[key] = value
 	return result
+
+
+## 处理对象加载
+func _process_object_for_load(value: Dictionary) -> Object:
+	var object: Object
+	if value.has("class"):
+		object = ClassDB.instantiate(value.class)
+	if value.has("script"):
+		object = ResourceLoader.load(value.script, "Script").new()
+	var prop_dict: Dictionary = value.props
+	for prop_key in prop_dict:
+		object.set(prop_key, prop_dict[prop_key])
+	return object
 
 
 ## 处理数组加载

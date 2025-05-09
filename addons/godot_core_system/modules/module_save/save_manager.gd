@@ -306,8 +306,8 @@ func _collect_node_states() -> Array[Dictionary]:
 		if savable.has_method("_save_data"):
 			var node_data: Dictionary = {}
 			var savable_data: Dictionary = savable.call("_save_data")
-			node_data.merge(savable_data)
 			node_data["node_path"] = savable.get_path()
+			node_data.merge(savable_data)
 			nodes.append(node_data)
 		else:
 			_logger.warning("缺少 _save_data 方法！%s" % str(savable))
