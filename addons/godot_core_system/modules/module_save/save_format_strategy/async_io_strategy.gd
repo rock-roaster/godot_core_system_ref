@@ -41,13 +41,12 @@ func load_metadata(path: String) -> Dictionary:
 func _process_data_for_save(data: Dictionary) -> Dictionary:
 	var result: Dictionary = {}
 	for key in data:
-		var value: Variant = data[key]
-		result[key] = _process_data(value)
+		result[key] = _process_data_value(data[key])
 	return result
 
 
 ## 处理数据保存（单个判断）
-func _process_data(value: Variant) -> Variant:
+func _process_data_value(value: Variant) -> Variant:
 	match typeof(value):
 		TYPE_INT:
 			return {
@@ -87,8 +86,7 @@ func _process_data(value: Variant) -> Variant:
 ## 处理数组保存
 func _process_array_for_save(array: Array) -> Array:
 	var result: Array = []
-	for item in array:\
-	match typeof(item):
+	for item in array: match typeof(item):
 		TYPE_DICTIONARY:
 			result.append(_process_data_for_save(item))
 		TYPE_ARRAY:
@@ -107,28 +105,23 @@ func _process_object_for_save(value: Object) -> Variant:
 			"__type": "Node",
 			"node_path": value.get_path(),
 		}
-	else:
-		var script: Script = value.get_script()
-		var prop_dict: Dictionary
-		for prop in value.get_property_list():
-			prop_dict.set(prop.name, value.get(prop.name))
-		prop_dict.erase("script")
 
-		if script != null:
-			var script_path: String = script.get_path()
-			prop_dict.erase(script_path.get_file())
-			return {
-				"__type": "Object",
-				"script": script_path,
-				"props": prop_dict,
-			}
-		else:
-			return {
-				"__type": "Object",
-				"class": value.get_class(),
-				"props": prop_dict,
-			}
-	return value
+	var object_dict: Dictionary = {"__type": "Object"}
+	var prop_dict: Dictionary
+	for prop in value.get_property_list():
+		prop_dict.set(prop.name, value.get(prop.name))
+
+	var script: Script = value.get_script()
+	if script != null:
+		var script_path: String = script.get_path()
+		prop_dict.erase(script_path.get_file())
+		object_dict["script"] = script_path
+	else:
+		object_dict["class"] = value.get_class()
+
+	prop_dict.erase("script")
+	object_dict["props"] = prop_dict
+	return object_dict
 
 
 ## 处理数据加载
@@ -136,26 +129,43 @@ func _process_data_for_load(data: Dictionary) -> Dictionary:
 	var result: Dictionary = {}
 	for key in data:
 		var value: Variant = data[key]
-		if value is Dictionary and value.has("__type"):\
-		match value.__type:
-			"int":
-				result[key] = int(value.i)
-			"Vector2":
-				result[key] = Vector2(value.x, value.y)
-			"Vector3":
-				result[key] = Vector3(value.x, value.y, value.z)
-			"Color":
-				result[key] = Color(value.r, value.g, value.b, value.a)
-			"Node":
-				result[key] = NodePath(value.node_path)
-			"Object":
-				result[key] = _process_object_for_load(value)
-		elif value is Dictionary:
-			result[key] = _process_data_for_load(value)
+		if value is Dictionary:
+			result[key] = _process_dictionary_for_load(value)
 		elif value is Array:
 			result[key] = _process_array_for_load(value)
 		else:
 			result[key] = value
+	return result
+
+
+## 处理字典加载
+func _process_dictionary_for_load(dict: Dictionary) -> Variant:
+	if dict.has("__type"): match dict.__type:
+		"int":
+			return int(dict.i)
+		"Vector2":
+			return Vector2(dict.x, dict.y)
+		"Vector3":
+			return Vector3(dict.x, dict.y, dict.z)
+		"Color":
+			return Color(dict.r, dict.g, dict.b, dict.a)
+		"Node":
+			return NodePath(dict.node_path)
+		"Object":
+			return _process_object_for_load(dict)
+	return _process_data_for_load(dict)
+
+
+## 处理数组加载
+func _process_array_for_load(array: Array) -> Array:
+	var result: Array = []
+	for item in array:
+		if item is Dictionary:
+			result.append(_process_data_for_load(item))
+		elif item is Array:
+			result.append(_process_array_for_load(item))
+		else:
+			result.append(item)
 	return result
 
 
@@ -170,16 +180,3 @@ func _process_object_for_load(value: Dictionary) -> Object:
 	for prop_key in prop_dict:
 		object.set(prop_key, prop_dict[prop_key])
 	return object
-
-
-## 处理数组加载
-func _process_array_for_load(array: Array) -> Array:
-	var result: Array = []
-	for item in array:
-		if item is Dictionary:
-			result.append(_process_data_for_load(item))
-		elif item is Array:
-			result.append(_process_array_for_load(item))
-		else:
-			result.append(item)
-	return result
