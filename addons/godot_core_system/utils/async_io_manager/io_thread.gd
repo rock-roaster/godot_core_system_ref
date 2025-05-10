@@ -67,15 +67,20 @@ func _thread_function():
 			task = _task_queue.pop_front()
 		_mutex.unlock()
 
-		if task:
-			var result = null
-			# 执行任务并获取结果
-			result = task.func.call()
-
-			# 使用 CallDeferred 安全地从主线程发出信号
-			call_deferred("_emit_task_completed", result, task.id)
+		if task: _process_delay.call_deferred(task)
 
 	System.logger.info("线程已停止")
+
+
+func _process_delay(task: Dictionary) -> void:
+	var result: Variant = null
+	# 执行任务并获取结果
+	var task_function: Callable = task.func
+	result = task_function.call()
+
+	# 使用 CallDeferred 安全地从主线程发出信号
+	call_deferred("_emit_task_completed", result, task.id)
+
 
 ## 从主线程发出任务完成信号
 func _emit_task_completed(result, task_id):

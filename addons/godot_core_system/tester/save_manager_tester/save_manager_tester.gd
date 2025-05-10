@@ -6,9 +6,10 @@ extends Node
 
 func _ready() -> void:
 	var time_info: TimeInfo = TimeInfo.new()
-	time_info.day = 31
+	time_info.new_arg = Vector3.ONE
 
 	GameData.set_data("002", [
+		Vector2(1.0, 5.0),
 		label,
 		time_info,
 		StyleBox.new(),

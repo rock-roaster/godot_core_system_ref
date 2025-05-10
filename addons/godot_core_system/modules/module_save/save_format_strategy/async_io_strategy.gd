@@ -16,7 +16,7 @@ func set_encryption_key(key: String) -> void:
 
 ## 保存数据
 func save(path: String, data: Dictionary) -> bool:
-	var processed_data: Dictionary = _process_data_for_save(data)
+	var processed_data: Dictionary = _process_data(data, _process_variant_for_save)
 	var task_id: String = _io_manager.write_file_async(path, processed_data, _encryption_key)
 	var result: Array = await _io_manager.io_completed
 	return result[1] if result[0] == task_id else false
@@ -27,7 +27,7 @@ func load_save(path: String) -> Dictionary:
 	var task_id: String = _io_manager.read_file_async(path, _encryption_key)
 	var result: Array = await _io_manager.io_completed
 	if result[0] == task_id and result[1]:
-		return _process_data_for_load(result[2])
+		return _process_data(result[2], _process_variant_for_load)
 	return {}
 
 
@@ -37,20 +37,16 @@ func load_metadata(path: String) -> Dictionary:
 	return data.get("metadata", {}) if data.has("metadata") else {}
 
 
-## 处理数据保存
-func _process_data_for_save(data: Dictionary) -> Dictionary:
+## 处理数据保存与加载
+func _process_data(data: Dictionary, process_func: Callable) -> Dictionary:
 	var result: Dictionary = {}
 	for key in data:
-		result[key] = _process_variant_for_save(data[key])
+		var value: Variant = data[key]
+		result[key] = process_func.call(value)
 	return result
 
 
-## 处理数组保存
-func _process_array_for_save(array: Array) -> Array:
-	return array.map(_process_variant_for_save)
-
-
-## 处理变量保存（单个判断）
+## 处理变量保存
 func _process_variant_for_save(value: Variant) -> Variant:
 	match typeof(value):
 		TYPE_INT:
@@ -80,7 +76,7 @@ func _process_variant_for_save(value: Variant) -> Variant:
 				"a": value.a,
 			}
 		TYPE_DICTIONARY:
-			return _process_data_for_save(value)
+			return _process_dictionary_for_save(value)
 		TYPE_ARRAY:
 			return _process_array_for_save(value)
 		TYPE_OBJECT:
@@ -88,18 +84,33 @@ func _process_variant_for_save(value: Variant) -> Variant:
 	return value
 
 
-## 处理对象保存
-func _process_object_for_save(value: Object) -> Variant:
-	if value is Node:
-		return {
-			"_type_": "Node",
-			"node_path": value.get_path(),
-		}
+## 处理字典保存
+func _process_dictionary_for_save(dict: Dictionary) -> Dictionary:
+	var value_dict: Dictionary = {}
+	for key in dict:
+		var value: Variant = dict[key]
+		value_dict[key] = _process_variant_for_save(value)
+	return value_dict
 
+
+## 处理数组保存
+func _process_array_for_save(array: Array) -> Array:
+	return array.map(_process_variant_for_save)
+
+
+## 处理对象保存
+func _process_object_for_save(value: Object) -> Dictionary:
 	var object_dict: Dictionary = {"_type_": "Object"}
+	if value is Node:
+		object_dict["_type_"] = "Node"
+		object_dict["node_path"] = value.get_path()
+		return object_dict
+
 	var prop_dict: Dictionary
 	for prop in value.get_property_list():
-		prop_dict.set(prop.name, value.get(prop.name))
+		var prop_name: String = prop["name"]
+		var prop_value: Variant = value.get(prop_name)
+		prop_dict.set(prop_name, _process_variant_for_save(prop_value))
 
 	var script: Script = value.get_script()
 	if script != null:
@@ -114,18 +125,14 @@ func _process_object_for_save(value: Object) -> Variant:
 	return object_dict
 
 
-## 处理数据加载
-func _process_data_for_load(data: Dictionary) -> Dictionary:
-	var result: Dictionary = {}
-	for key in data:
-		var value: Variant = data[key]
-		if value is Dictionary:
-			result[key] = _process_dictionary_for_load(value)
-		elif value is Array:
-			result[key] = _process_array_for_load(value)
-		else:
-			result[key] = value
-	return result
+## 处理变量加载
+func _process_variant_for_load(value: Variant) -> Variant:
+	match typeof(value):
+		TYPE_DICTIONARY:
+			return _process_dictionary_for_load(value)
+		TYPE_ARRAY:
+			return _process_array_for_load(value)
+	return value
 
 
 ## 处理字典加载
@@ -143,20 +150,17 @@ func _process_dictionary_for_load(dict: Dictionary) -> Variant:
 			return NodePath(dict.node_path)
 		"Object":
 			return _process_object_for_load(dict)
-	return _process_data_for_load(dict)
+
+	var value_dict: Dictionary = {}
+	for key in dict:
+		var value: Variant = dict[key]
+		value_dict[key] = _process_variant_for_load(value)
+	return value_dict
 
 
 ## 处理数组加载
 func _process_array_for_load(array: Array) -> Array:
-	var result: Array = []
-	for item in array:
-		if item is Dictionary:
-			result.append(_process_dictionary_for_load(item))
-		elif item is Array:
-			result.append(_process_array_for_load(item))
-		else:
-			result.append(item)
-	return result
+	return array.map(_process_variant_for_load)
 
 
 ## 处理对象加载
@@ -168,5 +172,8 @@ func _process_object_for_load(value: Dictionary) -> Object:
 		object = ResourceLoader.load(value.script, "Script").new()
 	var prop_dict: Dictionary = value.props
 	for prop_key in prop_dict:
-		object.set(prop_key, prop_dict[prop_key])
+		var prop_value: Variant = prop_dict[prop_key]
+		if prop_value is Dictionary:
+			prop_value = _process_dictionary_for_load(prop_value)
+		object.set(prop_key, prop_value)
 	return object

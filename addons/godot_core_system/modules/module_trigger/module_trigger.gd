@@ -24,7 +24,7 @@ var subscribe_event_bus : bool = false:
 
 
 func _process(delta: float) -> void:
-	for trigger : GameplayTrigger in _periodic_triggers:
+	for trigger: GameplayTrigger in _periodic_triggers:
 		trigger.update(delta)
 
 
@@ -83,7 +83,7 @@ func unregister_condition_type(type: StringName) -> void:
 
 ## 创建限制器
 func create_condition(config: Dictionary) -> TriggerCondition:
-	var condition_type : StringName = config.get("type")
+	var condition_type: StringName = config.get("type")
 	if not _condition_types.has(condition_type):
 		System.logger.error("create condition by type: %s" % condition_type)
 		return null

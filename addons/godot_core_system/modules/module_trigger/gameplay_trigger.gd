@@ -33,9 +33,9 @@ signal triggered(context: Dictionary)
 
 
 ## 构造触发器
-func _init(config : Dictionary = {}) -> void:
+func _init(config: Dictionary = {}) -> void:
 	for condition_config in config.get("conditions", {}):
-		var condition : TriggerCondition = _trigger_manager.create_condition(condition_config)
+		var condition: TriggerCondition = _trigger_manager.create_condition(condition_config)
 		if condition:
 			conditions.append(condition)
 	persistent = config.get("persistent", false)
