@@ -8,9 +8,11 @@ func _ready() -> void:
 	var time_info: TimeInfo = TimeInfo.new()
 	time_info.day = 31
 
-	GameData.set_data("002", label)
-	GameData.set_data("003", time_info)
-	GameData.set_data("004", StyleBox.new())
+	GameData.set_data("002", [
+		label,
+		time_info,
+		StyleBox.new(),
+	])
 	label.text = str(GameData.get_data("001"))
 
 

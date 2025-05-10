@@ -161,7 +161,7 @@ func _process_array_for_load(array: Array) -> Array:
 	var result: Array = []
 	for item in array:
 		if item is Dictionary:
-			result.append(_process_data_for_load(item))
+			result.append(_process_dictionary_for_load(item))
 		elif item is Array:
 			result.append(_process_array_for_load(item))
 		else:
