@@ -16,7 +16,7 @@ func set_encryption_key(key: String) -> void:
 
 ## 保存数据
 func save(path: String, data: Dictionary) -> bool:
-	var processed_data: Dictionary = _process_data(data, _process_variant_for_save)
+	var processed_data: Dictionary = _process_data_for_save(data)
 	var task_id: String = _io_manager.write_file_async(path, processed_data, _encryption_key)
 	var result: Array = await _io_manager.io_completed
 	return result[1] if result[0] == task_id else false
@@ -27,7 +27,7 @@ func load_save(path: String) -> Dictionary:
 	var task_id: String = _io_manager.read_file_async(path, _encryption_key)
 	var result: Array = await _io_manager.io_completed
 	if result[0] == task_id and result[1]:
-		return _process_data(result[2], _process_variant_for_load)
+		return _process_data_for_load(result[2])
 	return {}
 
 
@@ -37,13 +37,19 @@ func load_metadata(path: String) -> Dictionary:
 	return data.get("metadata", {}) if data.has("metadata") else {}
 
 
-## 处理数据保存与加载
-func _process_data(data: Dictionary, process_func: Callable) -> Dictionary:
+## 将函数应用在字典的每一个值上，并返回新的字典
+func _process_dictionary(dict: Dictionary, process_func: Callable) -> Dictionary:
 	var result: Dictionary = {}
-	for key in data:
-		var value: Variant = data[key]
+	for key in dict:
+		var value: Variant = dict[key]
 		result[key] = process_func.call(value)
 	return result
+
+
+#region process for save
+## 处理数据保存
+func _process_data_for_save(data: Dictionary) -> Dictionary:
+	return _process_dictionary_for_save(data)
 
 
 ## 处理变量保存
@@ -86,11 +92,7 @@ func _process_variant_for_save(value: Variant) -> Variant:
 
 ## 处理字典保存
 func _process_dictionary_for_save(dict: Dictionary) -> Dictionary:
-	var value_dict: Dictionary = {}
-	for key in dict:
-		var value: Variant = dict[key]
-		value_dict[key] = _process_variant_for_save(value)
-	return value_dict
+	return _process_dictionary(dict, _process_variant_for_save)
 
 
 ## 处理数组保存
@@ -123,6 +125,13 @@ func _process_object_for_save(value: Object) -> Dictionary:
 	prop_dict.erase("script")
 	object_dict["props"] = prop_dict
 	return object_dict
+#endregion
+
+
+#region process for load
+## 处理数据加载
+func _process_data_for_load(data: Dictionary) -> Dictionary:
+	return _process_dictionary(data, _process_variant_for_load)
 
 
 ## 处理变量加载
@@ -150,12 +159,7 @@ func _process_dictionary_for_load(dict: Dictionary) -> Variant:
 			return NodePath(dict.node_path)
 		"Object":
 			return _process_object_for_load(dict)
-
-	var value_dict: Dictionary = {}
-	for key in dict:
-		var value: Variant = dict[key]
-		value_dict[key] = _process_variant_for_load(value)
-	return value_dict
+	return _process_dictionary(dict, _process_variant_for_load)
 
 
 ## 处理数组加载
@@ -172,8 +176,7 @@ func _process_object_for_load(value: Dictionary) -> Object:
 		object = ResourceLoader.load(value.script, "Script").new()
 	var prop_dict: Dictionary = value.props
 	for prop_key in prop_dict:
-		var prop_value: Variant = prop_dict[prop_key]
-		if prop_value is Dictionary:
-			prop_value = _process_dictionary_for_load(prop_value)
+		var prop_value: Variant = _process_variant_for_load(prop_dict[prop_key])
 		object.set(prop_key, prop_value)
 	return object
+#endregion
