@@ -45,30 +45,35 @@ func _process_data_for_save(data: Dictionary) -> Dictionary:
 	return result
 
 
+## 处理数组保存
+func _process_array_for_save(array: Array) -> Array:
+	return array.map(_process_variant_for_save)
+
+
 ## 处理变量保存（单个判断）
 func _process_variant_for_save(value: Variant) -> Variant:
 	match typeof(value):
 		TYPE_INT:
 			return {
-				"__type": "int",
+				"_type_": "int",
 				"i": value,
 			}
 		TYPE_VECTOR2:
 			return {
-				"__type": "Vector2",
+				"_type_": "Vector2",
 				"x": value.x,
 				"y": value.y,
 			}
 		TYPE_VECTOR3:
 			return {
-				"__type": "Vector3",
+				"_type_": "Vector3",
 				"x": value.x,
 				"y": value.y,
 				"z": value.z,
 			}
 		TYPE_COLOR:
 			return {
-				"__type": "Color",
+				"_type_": "Color",
 				"r": value.r,
 				"g": value.g,
 				"b": value.b,
@@ -83,20 +88,15 @@ func _process_variant_for_save(value: Variant) -> Variant:
 	return value
 
 
-## 处理数组保存
-func _process_array_for_save(array: Array) -> Array:
-	return array.map(_process_variant_for_save)
-
-
 ## 处理对象保存
 func _process_object_for_save(value: Object) -> Variant:
 	if value is Node:
 		return {
-			"__type": "Node",
+			"_type_": "Node",
 			"node_path": value.get_path(),
 		}
 
-	var object_dict: Dictionary = {"__type": "Object"}
+	var object_dict: Dictionary = {"_type_": "Object"}
 	var prop_dict: Dictionary
 	for prop in value.get_property_list():
 		prop_dict.set(prop.name, value.get(prop.name))
@@ -130,7 +130,7 @@ func _process_data_for_load(data: Dictionary) -> Dictionary:
 
 ## 处理字典加载
 func _process_dictionary_for_load(dict: Dictionary) -> Variant:
-	if dict.has("__type"): match dict.__type:
+	if dict.has("_type_"): match dict._type_:
 		"int":
 			return int(dict.i)
 		"Vector2":
