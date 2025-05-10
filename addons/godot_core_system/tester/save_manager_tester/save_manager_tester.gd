@@ -8,7 +8,7 @@ func _ready() -> void:
 	var time_info: TimeInfo = TimeInfo.new()
 
 	GameData.set_data("002", [
-		Vector2(1.0, 5.0),
+		Projection.IDENTITY,
 		label,
 		time_info,
 		StyleBox.new(),
