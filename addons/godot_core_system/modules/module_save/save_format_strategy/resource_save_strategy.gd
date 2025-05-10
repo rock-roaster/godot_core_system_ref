@@ -2,11 +2,11 @@ extends "./save_format_strategy.gd"
 
 const GameStateData: = ModuleClass.ModuleSave.GameStateData
 
-## 文件名是否有效
+## 是否为有效的存档文件
 func is_valid_save_file(file_name: String) -> bool:
 	return file_name.ends_with(".tres")
 
-## 获取存档ID
+## 获取存档名
 func get_save_id_from_file(file_name: String) -> String:
 	return file_name.trim_suffix(".tres")
 

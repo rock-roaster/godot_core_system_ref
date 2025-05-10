@@ -31,9 +31,13 @@ var _thread_manager: ModuleClass.ModuleThread:
 	get: return System.thread
 
 
-func _init():
+func _init() -> void:
 	_modified = false
 	_config_file = DefaultConfig.get_default_config_file()
+
+
+func _ready() -> void:
+	load_config()
 
 
 func _exit() -> void:

@@ -60,9 +60,6 @@ var _logger: ModuleClass.ModuleLog = System.logger
 
 
 func _init() -> void:
-	# 设置默认序列化策略
-	_set_save_format(default_format)
-
 	# 确保存档目录存在
 	_ensure_save_directory_exists()
 
@@ -115,7 +112,7 @@ func create_save(save_id: String = "") -> bool:
 		"metadata": {
 			"save_id": actual_id,
 			"timestamp": Time.get_unix_time_from_system(),
-			"save_date": Time.get_datetime_string_from_system(),
+			"save_date": Time.get_datetime_string_from_system(false, true),
 			"game_version": ProjectSettings.get_setting("application/config/version", "1.0.0"),
 			"playtime": 0.0,
 		},
@@ -123,6 +120,7 @@ func create_save(save_id: String = "") -> bool:
 	}
 
 	# 存储数据
+	_set_save_format(default_format)
 	var save_path: String = _get_save_path(actual_id)
 	var success: bool = await _save_strategy.save(save_path, save_data)
 	if success:
@@ -137,6 +135,7 @@ func load_save(save_id: String) -> bool:
 	if save_id.is_empty():
 		return false
 
+	_set_save_format(default_format)
 	var save_path: String = _get_save_path(save_id)
 
 	var result: Dictionary = await _save_strategy.load_save(save_path)

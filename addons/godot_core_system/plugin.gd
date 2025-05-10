@@ -53,6 +53,15 @@ func _remove_setting_dict(info_dict: Dictionary) -> void:
 		ProjectSettings.set_setting(setting_name, null)
 
 
+func _add_template() -> void:
+	copy_dir("res://addons/godot_core_system/script_templates", "res://script_templates")
+	hide_dir("res://script_templates")
+
+
+func _remove_template() -> void:
+	remove_dir("res://script_templates")
+
+
 func copy_dir(from: String, to: String) -> void:
 	if not from.ends_with("/"): from += "/"
 	var dir_access: DirAccess = DirAccess.open(from)
@@ -61,7 +70,7 @@ func copy_dir(from: String, to: String) -> void:
 	if not to.ends_with("/"): to += "/"
 	dir_access.make_dir_recursive(to)
 	for file_name in dir_access.get_files():
-		dir_access.copy("%s/%s" % [from, file_name], "%s/%s" % [to, file_name])
+		dir_access.copy(from + file_name, to + file_name)
 	for dir_name in dir_access.get_directories():
 		copy_dir(from + dir_name, to + dir_name)
 
