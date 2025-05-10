@@ -13,6 +13,12 @@ func _ready() -> void:
 		time_info,
 		StyleBox.new(),
 	])
+
+	GameData.set_data("003", {
+		"1": label,
+		"2": time_info,
+		"3": StyleBox.new(),
+	})
 	label.text = str(GameData.get_data("001"))
 
 

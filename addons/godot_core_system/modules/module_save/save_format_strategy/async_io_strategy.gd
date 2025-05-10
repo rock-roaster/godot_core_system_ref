@@ -41,12 +41,12 @@ func load_metadata(path: String) -> Dictionary:
 func _process_data_for_save(data: Dictionary) -> Dictionary:
 	var result: Dictionary = {}
 	for key in data:
-		result[key] = _process_data_value(data[key])
+		result[key] = _process_variant_for_save(data[key])
 	return result
 
 
-## 处理数据保存（单个判断）
-func _process_data_value(value: Variant) -> Variant:
+## 处理变量保存（单个判断）
+func _process_variant_for_save(value: Variant) -> Variant:
 	match typeof(value):
 		TYPE_INT:
 			return {
@@ -85,17 +85,7 @@ func _process_data_value(value: Variant) -> Variant:
 
 ## 处理数组保存
 func _process_array_for_save(array: Array) -> Array:
-	var result: Array = []
-	for item in array: match typeof(item):
-		TYPE_DICTIONARY:
-			result.append(_process_data_for_save(item))
-		TYPE_ARRAY:
-			result.append(_process_array_for_save(item))
-		TYPE_INT, TYPE_VECTOR2, TYPE_VECTOR3, TYPE_COLOR, TYPE_OBJECT:
-			result.append(_process_data_for_save({"_": item})["_"])
-		_:
-			result.append(item)
-	return result
+	return array.map(_process_variant_for_save)
 
 
 ## 处理对象保存
