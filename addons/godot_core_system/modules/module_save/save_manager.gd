@@ -25,15 +25,11 @@ var save_group: String:
 	set(value): System.logger.error("read-only")
 
 var default_format: String:
-	get: return System.get_setting_value("module_save/defaults/serialization_format", "resource")
+	get: return System.get_setting_value("module_save/serialization_format", "resource")
 	set(value): System.logger.error("read-only")
 
 var auto_save_enabled: bool:
-	get: return System.get_setting_value("module_save/auto_save/enabled", true)
-	set(value): System.logger.error("read-only")
-
-var auto_save_interval: float:
-	get: return System.get_setting_value("module_save/auto_save/interval_seconds", 300.0)
+	get: return System.get_setting_value("module_save/auto_save/enabled", false)
 	set(value): System.logger.error("read-only")
 
 var auto_save_prefix: String:
@@ -42,6 +38,10 @@ var auto_save_prefix: String:
 
 var max_auto_saves: int:
 	get: return System.get_setting_value("module_save/auto_save/max_saves", 5)
+	set(value): System.logger.error("read-only")
+
+var auto_save_interval: float:
+	get: return System.get_setting_value("module_save/auto_save/interval_seconds", 300.0)
 	set(value): System.logger.error("read-only")
 
 # 私有变量
@@ -85,7 +85,6 @@ func register_savable_node(node: Node) -> void:
 		_logger.debug("发现节点 %s 的缓存状态，正在应用..." % node_path)
 		var cached_data = _pending_node_states[node_path]
 		if node.has_method("load_data"):
-			#await get_tree().process_frame
 			node.load_data(cached_data)
 			# 加载后从缓存移除
 			_pending_node_states.erase(node_path)
@@ -244,7 +243,6 @@ func _generate_default_key() -> String:
 	for i in range(32):
 		key += str(randi() % 10)
 	return key
-	# return "123456"
 
 
 # 检查文件是否为有效的存档文件

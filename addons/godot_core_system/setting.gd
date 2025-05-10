@@ -223,6 +223,16 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"default": "savable",
 	},
 
+	"module_save/serialization_format":
+	{
+		"name": SETTING_MODULE_SAVE + "serialization_format",
+		"type": TYPE_STRING,
+		"hint": PROPERTY_HINT_ENUM,
+		"hint_string": "resource,binary,json",
+		"basic": true,
+		"default": "resource",
+	},
+
 	"module_save/auto_save/enabled":
 	{
 		"name": SETTING_MODULE_SAVE + "auto_save/" + "enabled",
@@ -230,27 +240,7 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"hint": PROPERTY_HINT_NONE,
 		"hint_string": "",
 		"basic": true,
-		"default": true,
-	},
-
-	"module_save/auto_save/interval_seconds":
-	{
-		"name": SETTING_MODULE_SAVE + "auto_save/" + "interval_seconds",
-		"type": TYPE_FLOAT,
-		"hint": PROPERTY_HINT_NONE,
-		"hint_string": "",
-		"basic": true,
-		"default": 300.0,
-	},
-
-	"module_save/auto_save/max_saves":
-	{
-		"name": SETTING_MODULE_SAVE + "auto_save/" + "max_saves",
-		"type": TYPE_INT,
-		"hint": PROPERTY_HINT_NONE,
-		"hint_string": "",
-		"basic": true,
-		"default": 3,
+		"default": false,
 	},
 
 	"module_save/auto_save/name_prefix":
@@ -263,14 +253,24 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"default": "auto_",
 	},
 
-	"module_save/defaults/serialization_format":
+	"module_save/auto_save/max_saves":
 	{
-		"name": SETTING_MODULE_SAVE + "defaults/" + "serialization_format",
-		"type": TYPE_STRING,
-		"hint": PROPERTY_HINT_ENUM,
-		"hint_string": "resource,binary,json",
+		"name": SETTING_MODULE_SAVE + "auto_save/" + "max_saves",
+		"type": TYPE_INT,
+		"hint": PROPERTY_HINT_NONE,
+		"hint_string": "",
 		"basic": true,
-		"default": "resource",
+		"default": 5,
+	},
+
+	"module_save/auto_save/interval_seconds":
+	{
+		"name": SETTING_MODULE_SAVE + "auto_save/" + "interval_seconds",
+		"type": TYPE_FLOAT,
+		"hint": PROPERTY_HINT_NONE,
+		"hint_string": "",
+		"basic": true,
+		"default": 300.0,
 	},
 #endregion
 
