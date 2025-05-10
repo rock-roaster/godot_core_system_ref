@@ -1,5 +1,5 @@
 # meta-name: Savable Node
-# meta-description: Savable Node register by Save Manager.
+# meta-description: Savable Node can be register by Save Manager.
 extends Node
 
 
@@ -7,7 +7,7 @@ var _data: Dictionary
 
 
 func _ready() -> void:
-	System.save_manager.register_saveable_node(self)
+	System.save_manager.register_savable_node(self)
 
 
 func _save_data() -> Dictionary:

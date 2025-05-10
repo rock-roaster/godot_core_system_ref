@@ -74,7 +74,7 @@ func _process(delta: float) -> void:
 
 #region 公共API
 # 注册存档节点
-func register_saveable_node(node: Node) -> void:
+func register_savable_node(node: Node) -> void:
 	if not node.is_in_group(save_group):
 		node.add_to_group(save_group)
 		System.logger.info("注册存档节点: %s" % node.get_path())
