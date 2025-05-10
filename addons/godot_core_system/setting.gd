@@ -220,7 +220,7 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"hint": PROPERTY_HINT_NONE,
 		"hint_string": "",
 		"basic": true,
-		"default": "saveable",
+		"default": "savable",
 	},
 
 	"module_save/auto_save/enabled":

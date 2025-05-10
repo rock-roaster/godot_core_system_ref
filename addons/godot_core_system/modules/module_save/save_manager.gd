@@ -21,7 +21,7 @@ var save_directory: String:
 	set(value): System.logger.error("read-only")
 
 var save_group: String:
-	get: return System.get_setting_value("module_save/save_group", "saveable")
+	get: return System.get_setting_value("module_save/save_group", "savable")
 	set(value): System.logger.error("read-only")
 
 var default_format: String:
