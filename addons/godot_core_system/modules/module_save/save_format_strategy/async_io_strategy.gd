@@ -105,12 +105,12 @@ func _process_variant_for_save(value: Variant) -> Variant:
 		TYPE_TRANSFORM2D:
 			return {
 				"_type_": "Transform2D",
-				"x_x": value.x.x,
-				"x_y": value.x.y,
-				"y_x": value.y.x,
-				"y_y": value.y.y,
-				"o_x": value.origin.x,
-				"o_y": value.origin.y,
+				"xx": value.x.x,
+				"xy": value.x.y,
+				"yx": value.y.x,
+				"yy": value.y.y,
+				"ox": value.origin.x,
+				"oy": value.origin.y,
 			}
 		TYPE_VECTOR4:
 			return {
@@ -147,61 +147,61 @@ func _process_variant_for_save(value: Variant) -> Variant:
 		TYPE_AABB:
 			return {
 				"_type_": "AABB",
-				"p_x": value.position.x,
-				"p_y": value.position.y,
-				"p_z": value.position.z,
-				"s_x": value.size.x,
-				"s_y": value.size.y,
-				"s_z": value.size.z,
+				"px": value.position.x,
+				"py": value.position.y,
+				"pz": value.position.z,
+				"sx": value.size.x,
+				"sy": value.size.y,
+				"sz": value.size.z,
 			}
 		TYPE_BASIS:
 			return {
 				"_type_": "Basis",
-				"x_x": value.x.x,
-				"x_y": value.x.y,
-				"x_z": value.x.z,
-				"y_x": value.y.x,
-				"y_y": value.y.y,
-				"y_z": value.y.z,
-				"z_x": value.z.x,
-				"z_y": value.z.y,
-				"z_z": value.z.z,
+				"xx": value.x.x,
+				"xy": value.x.y,
+				"xz": value.x.z,
+				"yx": value.y.x,
+				"yy": value.y.y,
+				"yz": value.y.z,
+				"zx": value.z.x,
+				"zy": value.z.y,
+				"zz": value.z.z,
 			}
 		TYPE_TRANSFORM3D:
 			return {
 				"_type_": "Transform3D",
-				"x_x": value.basis.x.x,
-				"x_y": value.basis.x.y,
-				"x_z": value.basis.x.z,
-				"y_x": value.basis.y.x,
-				"y_y": value.basis.y.y,
-				"y_z": value.basis.y.z,
-				"z_x": value.basis.z.x,
-				"z_y": value.basis.z.y,
-				"z_z": value.basis.z.z,
-				"o_x": value.origin.x,
-				"o_y": value.origin.y,
-				"o_z": value.origin.z,
+				"xx": value.basis.x.x,
+				"xy": value.basis.x.y,
+				"xz": value.basis.x.z,
+				"yx": value.basis.y.x,
+				"yy": value.basis.y.y,
+				"yz": value.basis.y.z,
+				"zx": value.basis.z.x,
+				"zy": value.basis.z.y,
+				"zz": value.basis.z.z,
+				"ox": value.origin.x,
+				"oy": value.origin.y,
+				"oz": value.origin.z,
 			}
 		TYPE_PROJECTION:
 			return {
 				"_type_": "Projection",
-				"x_x": value.x.x,
-				"x_y": value.x.y,
-				"x_z": value.x.z,
-				"x_w": value.x.w,
-				"y_x": value.y.x,
-				"y_y": value.y.y,
-				"y_z": value.y.z,
-				"y_w": value.y.w,
-				"z_x": value.z.x,
-				"z_y": value.z.y,
-				"z_z": value.z.z,
-				"z_w": value.z.w,
-				"w_x": value.w.x,
-				"w_y": value.w.y,
-				"w_z": value.w.z,
-				"w_w": value.w.w,
+				"xx": value.x.x,
+				"xy": value.x.y,
+				"xz": value.x.z,
+				"xw": value.x.w,
+				"yx": value.y.x,
+				"yy": value.y.y,
+				"yz": value.y.z,
+				"yw": value.y.w,
+				"zx": value.z.x,
+				"zy": value.z.y,
+				"zz": value.z.z,
+				"zw": value.z.w,
+				"wx": value.w.x,
+				"wy": value.w.y,
+				"wz": value.w.z,
+				"ww": value.w.w,
 			}
 		TYPE_COLOR:
 			return {
@@ -293,9 +293,9 @@ func _process_dictionary_for_load(dict: Dictionary) -> Variant:
 			return Vector3i(dict.x, dict.y, dict.z)
 		"Transform2D":
 			return Transform2D(
-				Vector2(dict.x_x, dict.x_y),
-				Vector2(dict.y_x, dict.y_y),
-				Vector2(dict.o_x, dict.o_y),
+				Vector2(dict.xx, dict.xy),
+				Vector2(dict.yx, dict.yy),
+				Vector2(dict.ox, dict.oy),
 			)
 		"Vector4":
 			return Vector4(dict.x, dict.y, dict.z, dict.w)
@@ -307,28 +307,28 @@ func _process_dictionary_for_load(dict: Dictionary) -> Variant:
 			return Quaternion(dict.x, dict.y, dict.z, dict.w)
 		"AABB":
 			return AABB(
-				Vector3(dict.p_x, dict.p_y, dict.p_z),
-				Vector3(dict.s_x, dict.s_y, dict.s_z),
+				Vector3(dict.px, dict.py, dict.pz),
+				Vector3(dict.sx, dict.sy, dict.sz),
 			)
 		"Basis":
 			return Basis(
-				Vector3(dict.x_x, dict.x_y, dict.x_z),
-				Vector3(dict.y_x, dict.y_y, dict.y_z),
-				Vector3(dict.z_x, dict.z_y, dict.z_z),
+				Vector3(dict.xx, dict.xy, dict.xz),
+				Vector3(dict.yx, dict.yy, dict.yz),
+				Vector3(dict.zx, dict.zy, dict.zz),
 			)
 		"Transform3D":
 			return Transform3D(
-				Vector3(dict.x_x, dict.x_y, dict.x_z),
-				Vector3(dict.y_x, dict.y_y, dict.y_z),
-				Vector3(dict.z_x, dict.z_y, dict.z_z),
-				Vector3(dict.o_x, dict.o_y, dict.o_z),
+				Vector3(dict.xx, dict.xy, dict.xz),
+				Vector3(dict.yx, dict.yy, dict.yz),
+				Vector3(dict.zx, dict.zy, dict.zz),
+				Vector3(dict.ox, dict.oy, dict.oz),
 			)
 		"Projection":
 			return Projection(
-				Vector4(dict.x_x, dict.x_y, dict.x_z, dict.x_w),
-				Vector4(dict.y_x, dict.y_y, dict.y_z, dict.y_w),
-				Vector4(dict.z_x, dict.z_y, dict.z_z, dict.z_w),
-				Vector4(dict.w_x, dict.w_y, dict.w_z, dict.w_w),
+				Vector4(dict.xx, dict.xy, dict.xz, dict.xw),
+				Vector4(dict.yx, dict.yy, dict.yz, dict.yw),
+				Vector4(dict.zx, dict.zy, dict.zz, dict.zw),
+				Vector4(dict.wx, dict.wy, dict.wz, dict.ww),
 			)
 		"Color":
 			return Color(dict.r, dict.g, dict.b, dict.a)
