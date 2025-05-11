@@ -9,7 +9,7 @@ func _ready() -> void:
 
 	GameData.set_data("002", [
 		Projection.IDENTITY,
-		label,
+		label.get_path(),
 		time_info,
 		StyleBox.new(),
 	])

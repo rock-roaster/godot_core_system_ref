@@ -57,31 +57,28 @@ func _process_variant_for_save(value: Variant) -> Variant:
 	var value_type: int = typeof(value)
 	var value_dict: Dictionary = {"_type_": value_type}
 	match value_type:
-		TYPE_INT:
-			return {"i": value}.merged(value_dict)
+		TYPE_DICTIONARY:
+			return _process_dictionary_for_save(value)
+		TYPE_ARRAY:
+			return _process_array_for_save(value)
+		TYPE_OBJECT:
+			return _process_object_for_save(value)
+		TYPE_INT, TYPE_NODE_PATH:
+			return {"v": value}.merged(value_dict)
 		TYPE_VECTOR2, TYPE_VECTOR2I:
 			return {"x": value.x, "y": value.y}.merged(value_dict)
+		TYPE_VECTOR3, TYPE_VECTOR3I:
+			return {"x": value.x, "y": value.y, "z": value.z}.merged(value_dict)
+		TYPE_VECTOR4, TYPE_VECTOR4I, TYPE_QUATERNION:
+			return {"x": value.x, "y": value.y, "z": value.z, "w": value.w}.merged(value_dict)
+		TYPE_COLOR:
+			return {"r": value.r, "g": value.g, "b": value.b, "a": value.a}.merged(value_dict)
+		TYPE_PLANE:
+			return {"a": value.x, "b": value.y, "c": value.z, "d": value.d}.merged(value_dict)
 		TYPE_RECT2, TYPE_RECT2I:
 			return {
 				"x": value.position.x, "w": value.size.x,
 				"y": value.position.y, "h": value.size.x,
-			}.merged(value_dict)
-		TYPE_VECTOR3, TYPE_VECTOR3I:
-			return {"x": value.x, "y": value.y, "z": value.z}.merged(value_dict)
-		TYPE_TRANSFORM2D:
-			return {
-				"xx": value.x.x, "yx": value.y.x, "ox": value.origin.x,
-				"xy": value.x.y, "yy": value.y.y, "oy": value.origin.y,
-			}.merged(value_dict)
-		TYPE_VECTOR4, TYPE_VECTOR4I, TYPE_QUATERNION:
-			return {
-				"x": value.x, "y": value.y,
-				"z": value.z, "w": value.w,
-			}.merged(value_dict)
-		TYPE_PLANE:
-			return {
-				"a": value.x, "b": value.y,
-				"c": value.z, "d": value.d,
 			}.merged(value_dict)
 		TYPE_AABB:
 			return {
@@ -89,11 +86,10 @@ func _process_variant_for_save(value: Variant) -> Variant:
 				"py": value.position.y, "sy": value.size.y,
 				"pz": value.position.z, "sz": value.size.z,
 			}.merged(value_dict)
-		TYPE_BASIS:
+		TYPE_TRANSFORM2D:
 			return {
-				"xx": value.x.x, "xy": value.x.y, "xz": value.x.z,
-				"yx": value.y.x, "yy": value.y.y, "yz": value.y.z,
-				"zx": value.z.x, "zy": value.z.y, "zz": value.z.z,
+				"xx": value.x.x, "yx": value.y.x, "ox": value.origin.x,
+				"xy": value.x.y, "yy": value.y.y, "oy": value.origin.y,
 			}.merged(value_dict)
 		TYPE_TRANSFORM3D:
 			return {
@@ -104,6 +100,12 @@ func _process_variant_for_save(value: Variant) -> Variant:
 				"oy": value.origin.y,
 				"oz": value.origin.z,
 			}.merged(value_dict)
+		TYPE_BASIS:
+			return {
+				"xx": value.x.x, "xy": value.x.y, "xz": value.x.z,
+				"yx": value.y.x, "yy": value.y.y, "yz": value.y.z,
+				"zx": value.z.x, "zy": value.z.y, "zz": value.z.z,
+			}.merged(value_dict)
 		TYPE_PROJECTION:
 			return {
 				"xx": value.x.x, "xy": value.x.y, "xz": value.x.z, "xw": value.x.w,
@@ -111,14 +113,6 @@ func _process_variant_for_save(value: Variant) -> Variant:
 				"zx": value.z.x, "zy": value.z.y, "zz": value.z.z, "zw": value.z.w,
 				"wx": value.w.x, "wy": value.w.y, "wz": value.w.z, "ww": value.w.w,
 			}.merged(value_dict)
-		TYPE_COLOR:
-			return {"r": value.r, "g": value.g, "b": value.b, "a": value.a}.merged(value_dict)
-		TYPE_OBJECT:
-			return _process_object_for_save(value)
-		TYPE_DICTIONARY:
-			return _process_dictionary_for_save(value)
-		TYPE_ARRAY:
-			return _process_array_for_save(value)
 	return value
 
 
@@ -136,7 +130,7 @@ func _process_array_for_save(array: Array) -> Array:
 func _process_object_for_save(value: Object) -> Dictionary:
 	var object_dict: Dictionary
 	if value is Node:
-		object_dict["node_path"] = value.get_path()
+		object_dict["v"] = value.get_path()
 		object_dict["_type_"] = TYPE_NODE_PATH
 		return object_dict
 
@@ -181,7 +175,7 @@ func _process_variant_for_load(value: Variant) -> Variant:
 func _process_dictionary_for_load(dict: Dictionary) -> Variant:
 	if dict.has("_type_"): match int(dict._type_):
 		TYPE_INT:
-			return int(dict.i)
+			return int(dict.v)
 		TYPE_VECTOR2:
 			return Vector2(dict.x, dict.y)
 		TYPE_VECTOR2I:
@@ -236,7 +230,7 @@ func _process_dictionary_for_load(dict: Dictionary) -> Variant:
 		TYPE_COLOR:
 			return Color(dict.r, dict.g, dict.b, dict.a)
 		TYPE_NODE_PATH:
-			return NodePath(dict.node_path)
+			return NodePath(dict.v)
 		TYPE_OBJECT:
 			return _process_object_for_load(dict)
 	return _process_dictionary(dict, _process_variant_for_load)
