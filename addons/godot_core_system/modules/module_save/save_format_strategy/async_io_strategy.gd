@@ -58,100 +58,61 @@ func _process_variant_for_save(value: Variant) -> Variant:
 	var value_dict: Dictionary = {"_type_": value_type}
 	match value_type:
 		TYPE_INT:
-			value_dict["i"] = value
-			return value_dict
+			return {"i": value}.merged(value_dict)
 		TYPE_VECTOR2, TYPE_VECTOR2I:
-			value_dict["x"] = value.x
-			value_dict["y"] = value.y
-			return value_dict
+			return {"x": value.x, "y": value.y}.merged(value_dict)
 		TYPE_RECT2, TYPE_RECT2I:
-			value_dict["x"] = value.position.x
-			value_dict["y"] = value.position.y
-			value_dict["w"] = value.size.x
-			value_dict["h"] = value.size.y
-			return value_dict
+			return {
+				"x": value.position.x, "w": value.size.x,
+				"y": value.position.y, "h": value.size.x,
+			}.merged(value_dict)
 		TYPE_VECTOR3, TYPE_VECTOR3I:
-			value_dict["x"] = value.x
-			value_dict["y"] = value.y
-			value_dict["z"] = value.z
-			return value_dict
+			return {"x": value.x, "y": value.y, "z": value.z}.merged(value_dict)
 		TYPE_TRANSFORM2D:
-			value_dict["xx"] = value.x.x
-			value_dict["xy"] = value.x.y
-			value_dict["yx"] = value.y.x
-			value_dict["yy"] = value.y.y
-			value_dict["ox"] = value.origin.x
-			value_dict["oy"] = value.origin.y
-			return value_dict
+			return {
+				"xx": value.x.x, "yx": value.y.x, "ox": value.origin.x,
+				"xy": value.x.y, "yy": value.y.y, "oy": value.origin.y,
+			}.merged(value_dict)
 		TYPE_VECTOR4, TYPE_VECTOR4I, TYPE_QUATERNION:
-			value_dict["x"] = value.x
-			value_dict["y"] = value.y
-			value_dict["z"] = value.z
-			value_dict["w"] = value.w
-			return value_dict
+			return {
+				"x": value.x, "y": value.y,
+				"z": value.z, "w": value.w,
+			}.merged(value_dict)
 		TYPE_PLANE:
-			value_dict["a"] = value.x
-			value_dict["b"] = value.y
-			value_dict["c"] = value.z
-			value_dict["d"] = value.d
-			return value_dict
+			return {
+				"a": value.x, "b": value.y,
+				"c": value.z, "d": value.d,
+			}.merged(value_dict)
 		TYPE_AABB:
-			value_dict["px"] = value.position.x
-			value_dict["py"] = value.position.y
-			value_dict["pz"] = value.position.z
-			value_dict["sx"] = value.size.x
-			value_dict["sy"] = value.size.y
-			value_dict["sz"] = value.size.z
-			return value_dict
+			return {
+				"px": value.position.x, "sx": value.size.x,
+				"py": value.position.y, "sy": value.size.y,
+				"pz": value.position.z, "sz": value.size.z,
+			}.merged(value_dict)
 		TYPE_BASIS:
-			value_dict["xx"] = value.x.x
-			value_dict["xy"] = value.x.y
-			value_dict["xz"] = value.x.z
-			value_dict["yx"] = value.y.x
-			value_dict["yy"] = value.y.y
-			value_dict["yz"] = value.y.z
-			value_dict["zx"] = value.z.x
-			value_dict["zy"] = value.z.y
-			value_dict["zz"] = value.z.z
-			return value_dict
+			return {
+				"xx": value.x.x, "xy": value.x.y, "xz": value.x.z,
+				"yx": value.y.x, "yy": value.y.y, "yz": value.y.z,
+				"zx": value.z.x, "zy": value.z.y, "zz": value.z.z,
+			}.merged(value_dict)
 		TYPE_TRANSFORM3D:
-			value_dict["xx"] = value.basis.x.x
-			value_dict["xy"] = value.basis.x.y
-			value_dict["xz"] = value.basis.x.z
-			value_dict["yx"] = value.basis.y.x
-			value_dict["yy"] = value.basis.y.y
-			value_dict["yz"] = value.basis.y.z
-			value_dict["zx"] = value.basis.z.x
-			value_dict["zy"] = value.basis.z.y
-			value_dict["zz"] = value.basis.z.z
-			value_dict["ox"] = value.origin.x
-			value_dict["oy"] = value.origin.y
-			value_dict["oz"] = value.origin.z
-			return value_dict
+			return {
+				"xx": value.basis.x.x, "xy": value.basis.x.y, "xz": value.basis.x.z,
+				"yx": value.basis.y.x, "yy": value.basis.y.y, "yz": value.basis.y.z,
+				"zx": value.basis.z.x, "zy": value.basis.z.y, "zz": value.basis.z.z,
+				"ox": value.origin.x,
+				"oy": value.origin.y,
+				"oz": value.origin.z,
+			}.merged(value_dict)
 		TYPE_PROJECTION:
-			value_dict["xx"] = value.x.x
-			value_dict["xy"] = value.x.y
-			value_dict["xz"] = value.x.z
-			value_dict["xw"] = value.x.w
-			value_dict["yx"] = value.y.x
-			value_dict["yy"] = value.y.y
-			value_dict["yz"] = value.y.z
-			value_dict["yw"] = value.y.w
-			value_dict["zx"] = value.z.x
-			value_dict["zy"] = value.z.y
-			value_dict["zz"] = value.z.z
-			value_dict["zw"] = value.z.w
-			value_dict["wx"] = value.w.x
-			value_dict["wy"] = value.w.y
-			value_dict["wz"] = value.w.z
-			value_dict["ww"] = value.w.w
-			return value_dict
+			return {
+				"xx": value.x.x, "xy": value.x.y, "xz": value.x.z, "xw": value.x.w,
+				"yx": value.y.x, "yy": value.y.y, "yz": value.y.z, "yw": value.y.w,
+				"zx": value.z.x, "zy": value.z.y, "zz": value.z.z, "zw": value.z.w,
+				"wx": value.w.x, "wy": value.w.y, "wz": value.w.z, "ww": value.w.w,
+			}.merged(value_dict)
 		TYPE_COLOR:
-			value_dict["r"] = value.r
-			value_dict["g"] = value.g
-			value_dict["b"] = value.b
-			value_dict["a"] = value.a
-			return value_dict
+			return {"r": value.r, "g": value.g, "b": value.b, "a": value.a}.merged(value_dict)
 		TYPE_OBJECT:
 			return _process_object_for_save(value)
 		TYPE_DICTIONARY:
@@ -173,10 +134,10 @@ func _process_array_for_save(array: Array) -> Array:
 
 ## 处理对象保存
 func _process_object_for_save(value: Object) -> Dictionary:
-	var object_dict: Dictionary = {"_type_": TYPE_OBJECT}
+	var object_dict: Dictionary
 	if value is Node:
-		object_dict["_type_"] = TYPE_NODE_PATH
 		object_dict["node_path"] = value.get_path()
+		object_dict["_type_"] = TYPE_NODE_PATH
 		return object_dict
 
 	var prop_dict: Dictionary
@@ -195,6 +156,7 @@ func _process_object_for_save(value: Object) -> Dictionary:
 
 	prop_dict.erase("script")
 	object_dict["props"] = prop_dict
+	object_dict["_type_"] = TYPE_OBJECT
 	return object_dict
 #endregion
 
