@@ -1,6 +1,6 @@
 extends "./save_format_strategy.gd"
 
-const GameStateData: = ModuleClass.ModuleSave.GameStateData
+const GameStateData: = preload("./game_state_data.gd")
 
 ## 是否为有效的存档文件
 func is_valid_save_file(file_name: String) -> bool:
@@ -16,13 +16,8 @@ func get_save_path(directory: String, save_id: String) -> String:
 
 ## 保存存档
 func save(path: String, data: Dictionary) -> bool:
-	var save_data: GameStateData = GameStateData.new(
-		data.metadata.save_id,
-		data.metadata.timestamp,
-		data.metadata.save_date,
-		data.metadata.game_version,
-		data.metadata.playtime,
-	)
+	var save_data: GameStateData = GameStateData.new()
+	save_data.metadata = data.metadata
 	# 设置节点状态
 	save_data.nodes_state = data.nodes
 

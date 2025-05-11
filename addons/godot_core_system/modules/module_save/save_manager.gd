@@ -3,7 +3,6 @@ extends "res://addons/godot_core_system/modules/module_base.gd"
 ## 存档管理器，负责存档的创建、加载、删除等操作
 
 # 引用类型
-const GameStateData = preload("./game_state_data.gd")
 const SaveFormatStrategy = preload("./save_format_strategy/save_format_strategy.gd")
 const ResourceSaveStrategy = preload("./save_format_strategy/resource_save_strategy.gd")
 const BinarySaveStrategy = preload("./save_format_strategy/binary_save_strategy.gd")
@@ -111,10 +110,10 @@ func create_save(save_id: String = "") -> bool:
 	var save_data: Dictionary = {
 		"metadata": {
 			"save_id": actual_id,
-			"timestamp": Time.get_unix_time_from_system(),
+			"unix_time": Time.get_unix_time_from_system(),
 			"save_date": Time.get_datetime_string_from_system(false, true),
+			"play_time": 0.0,
 			"game_version": ProjectSettings.get_setting("application/config/version", "1.0.0"),
-			"playtime": 0.0,
 		},
 		"nodes": _collect_node_states(),
 	}
@@ -200,7 +199,7 @@ func get_save_list() -> Array[Dictionary]:
 
 	# 按时间戳排序
 	saves.sort_custom(func(a, b):
-		return a.metadata.timestamp > b.metadata.timestamp)
+		return a.metadata.unix_time > b.metadata.unix_time)
 
 	return saves
 
