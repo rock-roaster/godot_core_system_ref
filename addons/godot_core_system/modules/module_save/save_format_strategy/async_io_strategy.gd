@@ -127,7 +127,7 @@ func _process_array_for_save(array: Array) -> Array:
 
 
 ## 英文字符串的首字母为大写
-func is_upper(text: String) -> bool:
+func is_upper_case(text: String) -> bool:
 	return text.left(1) == text.left(1).to_upper()
 
 
@@ -142,12 +142,18 @@ func _process_object_for_save(value: Object) -> Dictionary:
 	var prop_dict: Dictionary
 	for prop in value.get_property_list():
 		var prop_name: String = prop["name"]
-		if is_upper(prop_name): continue
+		if is_upper_case(prop_name): continue
 		var prop_value: Variant = value.get(prop_name)
 		prop_dict.set(prop_name, _process_variant_for_save(prop_value))
 
+	var script: Script = value.get_script()
+	var script_path: String = ""
+	prop_dict.erase("script")
+	if script != null:
+		script_path = script.get_path()
+		prop_dict.erase(script_path.get_file())
+
 	if value is Resource:
-		prop_dict.erase("script")
 		prop_dict.erase("load_path")
 		prop_dict.erase("resource_path")
 		object_dict["resource_path"] = value.get_path()
@@ -155,15 +161,11 @@ func _process_object_for_save(value: Object) -> Dictionary:
 		object_dict["_type_"] = TYPE_OBJECT
 		return object_dict
 
-	var script: Script = value.get_script()
-	if script != null:
-		var script_path: String = script.get_path()
-		prop_dict.erase(script_path.get_file())
+	if not script_path.is_empty():
 		object_dict["script"] = script_path
 	else:
 		object_dict["class"] = value.get_class()
 
-	prop_dict.erase("script")
 	object_dict["props"] = prop_dict
 	object_dict["_type_"] = TYPE_OBJECT
 	return object_dict
