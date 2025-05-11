@@ -143,8 +143,8 @@ func _process_object_for_save(value: Object) -> Dictionary:
 	for prop in value.get_property_list():
 		var prop_name: String = prop["name"]
 		if is_upper_case(prop_name): continue
-		var prop_value: Variant = value.get(prop_name)
-		prop_dict.set(prop_name, _process_variant_for_save(prop_value))
+		var prop_value: Variant = _process_variant_for_save(value[prop_name])
+		prop_dict.set(prop_name, prop_value)
 
 	var script: Script = value.get_script()
 	var script_path: String = ""
