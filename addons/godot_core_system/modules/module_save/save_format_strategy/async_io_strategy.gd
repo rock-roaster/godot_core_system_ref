@@ -54,163 +54,104 @@ func _process_data_for_save(data: Dictionary) -> Dictionary:
 
 ## 处理变量保存
 func _process_variant_for_save(value: Variant) -> Variant:
-	match typeof(value):
+	var value_type: int = typeof(value)
+	var value_dict: Dictionary = {"_type_": value_type}
+	match value_type:
 		TYPE_INT:
-			return {
-				"_type_": "int",
-				"i": value,
-			}
-		TYPE_VECTOR2:
-			return {
-				"_type_": "Vector2",
-				"x": value.x,
-				"y": value.y,
-			}
-		TYPE_VECTOR2I:
-			return {
-				"_type_": "Vector2i",
-				"x": value.x,
-				"y": value.y,
-			}
-		TYPE_RECT2:
-			return {
-				"_type_": "Rect2",
-				"x": value.position.x,
-				"y": value.position.y,
-				"w": value.size.x,
-				"h": value.size.x,
-			}
-		TYPE_RECT2I:
-			return {
-				"_type_": "Rect2i",
-				"x": value.position.x,
-				"y": value.position.y,
-				"w": value.size.x,
-				"h": value.size.x,
-			}
-		TYPE_VECTOR3:
-			return {
-				"_type_": "Vector3",
-				"x": value.x,
-				"y": value.y,
-				"z": value.z,
-			}
-		TYPE_VECTOR3I:
-			return {
-				"_type_": "Vector3i",
-				"x": value.x,
-				"y": value.y,
-				"z": value.z,
-			}
+			value_dict["i"] = value
+			return value_dict
+		TYPE_VECTOR2, TYPE_VECTOR2I:
+			value_dict["x"] = value.x
+			value_dict["y"] = value.y
+			return value_dict
+		TYPE_RECT2, TYPE_RECT2I:
+			value_dict["x"] = value.position.x
+			value_dict["y"] = value.position.y
+			value_dict["w"] = value.size.x
+			value_dict["h"] = value.size.y
+			return value_dict
+		TYPE_VECTOR3, TYPE_VECTOR3I:
+			value_dict["x"] = value.x
+			value_dict["y"] = value.y
+			value_dict["z"] = value.z
+			return value_dict
 		TYPE_TRANSFORM2D:
-			return {
-				"_type_": "Transform2D",
-				"xx": value.x.x,
-				"xy": value.x.y,
-				"yx": value.y.x,
-				"yy": value.y.y,
-				"ox": value.origin.x,
-				"oy": value.origin.y,
-			}
-		TYPE_VECTOR4:
-			return {
-				"_type_": "Vector4",
-				"x": value.x,
-				"y": value.y,
-				"z": value.z,
-				"w": value.w,
-			}
-		TYPE_VECTOR4I:
-			return {
-				"_type_": "Vector4i",
-				"x": value.x,
-				"y": value.y,
-				"z": value.z,
-				"w": value.w,
-			}
+			value_dict["xx"] = value.x.x
+			value_dict["xy"] = value.x.y
+			value_dict["yx"] = value.y.x
+			value_dict["yy"] = value.y.y
+			value_dict["ox"] = value.origin.x
+			value_dict["oy"] = value.origin.y
+			return value_dict
+		TYPE_VECTOR4, TYPE_VECTOR4I, TYPE_QUATERNION:
+			value_dict["x"] = value.x
+			value_dict["y"] = value.y
+			value_dict["z"] = value.z
+			value_dict["w"] = value.w
+			return value_dict
 		TYPE_PLANE:
-			return {
-				"_type_": "Plane",
-				"a": value.x,
-				"b": value.y,
-				"c": value.z,
-				"d": value.d,
-			}
-		TYPE_QUATERNION:
-			return {
-				"_type_": "Quaternion",
-				"x": value.x,
-				"y": value.y,
-				"z": value.z,
-				"w": value.w,
-			}
+			value_dict["a"] = value.x
+			value_dict["b"] = value.y
+			value_dict["c"] = value.z
+			value_dict["d"] = value.d
+			return value_dict
 		TYPE_AABB:
-			return {
-				"_type_": "AABB",
-				"px": value.position.x,
-				"py": value.position.y,
-				"pz": value.position.z,
-				"sx": value.size.x,
-				"sy": value.size.y,
-				"sz": value.size.z,
-			}
+			value_dict["px"] = value.position.x
+			value_dict["py"] = value.position.y
+			value_dict["pz"] = value.position.z
+			value_dict["sx"] = value.size.x
+			value_dict["sy"] = value.size.y
+			value_dict["sz"] = value.size.z
+			return value_dict
 		TYPE_BASIS:
-			return {
-				"_type_": "Basis",
-				"xx": value.x.x,
-				"xy": value.x.y,
-				"xz": value.x.z,
-				"yx": value.y.x,
-				"yy": value.y.y,
-				"yz": value.y.z,
-				"zx": value.z.x,
-				"zy": value.z.y,
-				"zz": value.z.z,
-			}
+			value_dict["xx"] = value.x.x
+			value_dict["xy"] = value.x.y
+			value_dict["xz"] = value.x.z
+			value_dict["yx"] = value.y.x
+			value_dict["yy"] = value.y.y
+			value_dict["yz"] = value.y.z
+			value_dict["zx"] = value.z.x
+			value_dict["zy"] = value.z.y
+			value_dict["zz"] = value.z.z
+			return value_dict
 		TYPE_TRANSFORM3D:
-			return {
-				"_type_": "Transform3D",
-				"xx": value.basis.x.x,
-				"xy": value.basis.x.y,
-				"xz": value.basis.x.z,
-				"yx": value.basis.y.x,
-				"yy": value.basis.y.y,
-				"yz": value.basis.y.z,
-				"zx": value.basis.z.x,
-				"zy": value.basis.z.y,
-				"zz": value.basis.z.z,
-				"ox": value.origin.x,
-				"oy": value.origin.y,
-				"oz": value.origin.z,
-			}
+			value_dict["xx"] = value.basis.x.x
+			value_dict["xy"] = value.basis.x.y
+			value_dict["xz"] = value.basis.x.z
+			value_dict["yx"] = value.basis.y.x
+			value_dict["yy"] = value.basis.y.y
+			value_dict["yz"] = value.basis.y.z
+			value_dict["zx"] = value.basis.z.x
+			value_dict["zy"] = value.basis.z.y
+			value_dict["zz"] = value.basis.z.z
+			value_dict["ox"] = value.origin.x
+			value_dict["oy"] = value.origin.y
+			value_dict["oz"] = value.origin.z
+			return value_dict
 		TYPE_PROJECTION:
-			return {
-				"_type_": "Projection",
-				"xx": value.x.x,
-				"xy": value.x.y,
-				"xz": value.x.z,
-				"xw": value.x.w,
-				"yx": value.y.x,
-				"yy": value.y.y,
-				"yz": value.y.z,
-				"yw": value.y.w,
-				"zx": value.z.x,
-				"zy": value.z.y,
-				"zz": value.z.z,
-				"zw": value.z.w,
-				"wx": value.w.x,
-				"wy": value.w.y,
-				"wz": value.w.z,
-				"ww": value.w.w,
-			}
+			value_dict["xx"] = value.x.x
+			value_dict["xy"] = value.x.y
+			value_dict["xz"] = value.x.z
+			value_dict["xw"] = value.x.w
+			value_dict["yx"] = value.y.x
+			value_dict["yy"] = value.y.y
+			value_dict["yz"] = value.y.z
+			value_dict["yw"] = value.y.w
+			value_dict["zx"] = value.z.x
+			value_dict["zy"] = value.z.y
+			value_dict["zz"] = value.z.z
+			value_dict["zw"] = value.z.w
+			value_dict["wx"] = value.w.x
+			value_dict["wy"] = value.w.y
+			value_dict["wz"] = value.w.z
+			value_dict["ww"] = value.w.w
+			return value_dict
 		TYPE_COLOR:
-			return {
-				"_type_": "Color",
-				"r": value.r,
-				"g": value.g,
-				"b": value.b,
-				"a": value.a,
-			}
+			value_dict["r"] = value.r
+			value_dict["g"] = value.g
+			value_dict["b"] = value.b
+			value_dict["a"] = value.a
+			return value_dict
 		TYPE_OBJECT:
 			return _process_object_for_save(value)
 		TYPE_DICTIONARY:
@@ -232,9 +173,9 @@ func _process_array_for_save(array: Array) -> Array:
 
 ## 处理对象保存
 func _process_object_for_save(value: Object) -> Dictionary:
-	var object_dict: Dictionary = {"_type_": "Object"}
+	var object_dict: Dictionary = {"_type_": TYPE_OBJECT}
 	if value is Node:
-		object_dict["_type_"] = "NodePath"
+		object_dict["_type_"] = TYPE_NODE_PATH
 		object_dict["node_path"] = value.get_path()
 		return object_dict
 
@@ -276,65 +217,65 @@ func _process_variant_for_load(value: Variant) -> Variant:
 
 ## 处理字典加载
 func _process_dictionary_for_load(dict: Dictionary) -> Variant:
-	if dict.has("_type_"): match dict._type_:
-		"int":
+	if dict.has("_type_"): match int(dict._type_):
+		TYPE_INT:
 			return int(dict.i)
-		"Vector2":
+		TYPE_VECTOR2:
 			return Vector2(dict.x, dict.y)
-		"Vector2i":
+		TYPE_VECTOR2I:
 			return Vector2i(dict.x, dict.y)
-		"Rect2":
+		TYPE_RECT2:
 			return Rect2(dict.x, dict.y, dict.w, dict.h)
-		"Rect2i":
+		TYPE_VECTOR2I:
 			return Rect2i(dict.x, dict.y, dict.w, dict.h)
-		"Vector3":
+		TYPE_VECTOR3:
 			return Vector3(dict.x, dict.y, dict.z)
-		"Vector3i":
+		TYPE_VECTOR3I:
 			return Vector3i(dict.x, dict.y, dict.z)
-		"Transform2D":
+		TYPE_TRANSFORM2D:
 			return Transform2D(
 				Vector2(dict.xx, dict.xy),
 				Vector2(dict.yx, dict.yy),
 				Vector2(dict.ox, dict.oy),
 			)
-		"Vector4":
+		TYPE_VECTOR4:
 			return Vector4(dict.x, dict.y, dict.z, dict.w)
-		"Vector4i":
+		TYPE_VECTOR4I:
 			return Vector4i(dict.x, dict.y, dict.z, dict.w)
-		"Plane":
+		TYPE_PLANE:
 			return Plane(dict.a, dict.b, dict.c, dict.d)
-		"Quaternion":
+		TYPE_QUATERNION:
 			return Quaternion(dict.x, dict.y, dict.z, dict.w)
-		"AABB":
+		TYPE_AABB:
 			return AABB(
 				Vector3(dict.px, dict.py, dict.pz),
 				Vector3(dict.sx, dict.sy, dict.sz),
 			)
-		"Basis":
+		TYPE_BASIS:
 			return Basis(
 				Vector3(dict.xx, dict.xy, dict.xz),
 				Vector3(dict.yx, dict.yy, dict.yz),
 				Vector3(dict.zx, dict.zy, dict.zz),
 			)
-		"Transform3D":
+		TYPE_TRANSFORM3D:
 			return Transform3D(
 				Vector3(dict.xx, dict.xy, dict.xz),
 				Vector3(dict.yx, dict.yy, dict.yz),
 				Vector3(dict.zx, dict.zy, dict.zz),
 				Vector3(dict.ox, dict.oy, dict.oz),
 			)
-		"Projection":
+		TYPE_PROJECTION:
 			return Projection(
 				Vector4(dict.xx, dict.xy, dict.xz, dict.xw),
 				Vector4(dict.yx, dict.yy, dict.yz, dict.yw),
 				Vector4(dict.zx, dict.zy, dict.zz, dict.zw),
 				Vector4(dict.wx, dict.wy, dict.wz, dict.ww),
 			)
-		"Color":
+		TYPE_COLOR:
 			return Color(dict.r, dict.g, dict.b, dict.a)
-		"NodePath":
+		TYPE_NODE_PATH:
 			return NodePath(dict.node_path)
-		"Object":
+		TYPE_OBJECT:
 			return _process_object_for_load(dict)
 	return _process_dictionary(dict, _process_variant_for_load)
 
