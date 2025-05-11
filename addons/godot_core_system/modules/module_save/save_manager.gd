@@ -49,7 +49,7 @@ var _current_save_id: String = ""
 var _auto_save_timer: float = 0
 var _encryption_key: String = ""
 var _save_strategy: SaveFormatStrategy
-var _pending_node_states: Dictionary = {}
+var _pending_node_states: Dictionary[NodePath, Dictionary] = {}
 
 var _strategies := {
 	"resource": ResourceSaveStrategy.new(),
@@ -75,15 +75,16 @@ func _process(delta: float) -> void:
 #region 公共API
 # 注册存档节点
 func register_savable_node(node: Node) -> void:
+	var node_path: NodePath = node.get_path()
+
 	if not node.is_in_group(save_group):
 		node.add_to_group(save_group)
-		System.logger.info("注册存档节点: %s" % node.get_path())
+		_logger.info("注册存档节点: %s" % node_path)
 
-	var node_path: String = node.get_path()
 	# 检查是否有待加载的缓存状态
 	if _pending_node_states.has(node_path):
 		_logger.debug("发现节点 %s 的缓存状态，正在应用..." % node_path)
-		var cached_data = _pending_node_states[node_path]
+		var cached_data: Dictionary = _pending_node_states[node_path]
 		if node.has_method("load_data"):
 			node.load_data(cached_data)
 			# 加载后从缓存移除
@@ -168,13 +169,13 @@ func create_auto_save() -> String:
 	# 创建新存档
 	var success: bool = await create_save(auto_save_id)
 	if not success:
-		System.logger.error("Failed to create auto save: %s" % auto_save_id)
+		_logger.error("Failed to create auto save: %s" % auto_save_id)
 		return ""
 
 	# 清理旧的自动存档
 	var cleanup_success: bool = await _clean_old_auto_saves()
 	if not cleanup_success:
-		System.logger.warning("Failed to clean old auto saves")
+		_logger.warning("Failed to clean old auto saves")
 
 	# 发送信号
 	auto_save_created.emit(auto_save_id)
@@ -314,7 +315,7 @@ func _collect_node_states() -> Array[Dictionary]:
 # 应用Node状态
 func _apply_node_states(nodes: Array) -> void:
 	for node_data: Dictionary in nodes:
-		var node_path: String = node_data.get("node_path", "")
+		var node_path: NodePath = node_data.get("node_path", "")
 		if node_path.is_empty():
 			_logger.error("节点路径为空！%s" % str(node_data))
 			continue
