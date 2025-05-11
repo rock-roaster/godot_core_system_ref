@@ -24,3 +24,13 @@ func get_data(key: String, default: Variant = null) -> Variant:
 
 func set_data(key: String, value: Variant) -> void:
 	_data.set(key, value)
+
+
+func get_sub_data(section: String, key: String, default: Variant = null) -> Variant:
+	if not _data.has(section): return null
+	return _data[section].get(key, default)
+
+
+func set_sub_data(section: String, key: String, value: Variant) -> void:
+	if not _data.has(section): _data[section] = {}
+	_data[section].set(key, value)
