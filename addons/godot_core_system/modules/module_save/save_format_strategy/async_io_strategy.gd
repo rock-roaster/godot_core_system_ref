@@ -143,23 +143,27 @@ func _process_object_for_save(value: Object) -> Dictionary:
 	for prop in value.get_property_list():
 		var prop_name: String = prop["name"]
 		if is_upper_case(prop_name): continue
-		var prop_value: Variant = _process_variant_for_save(value[prop_name])
+		var prop_value: Variant = _process_variant_for_save(value.get(prop_name))
 		prop_dict.set(prop_name, prop_value)
 
 	var script: Script = value.get_script()
 	var script_path: String = ""
-	prop_dict.erase("script")
+	var script_file: String = ""
 	if script != null:
 		script_path = script.get_path()
-		prop_dict.erase(script_path.get_file())
+		script_file = script_path.get_file()
+		prop_dict.erase(script_file)
+	prop_dict.erase("script")
 
 	if value is Resource:
-		prop_dict.erase("load_path")
+		var resource_path: String = value.get_path()
 		prop_dict.erase("resource_path")
-		object_dict["resource_path"] = value.get_path()
-		object_dict["props"] = prop_dict
-		object_dict["_type_"] = TYPE_OBJECT
-		return object_dict
+		if not resource_path.is_empty():
+			prop_dict.erase("load_path")
+			object_dict["resource_path"] = resource_path
+			object_dict["props"] = prop_dict
+			object_dict["_type_"] = TYPE_OBJECT
+			return object_dict
 
 	if not script_path.is_empty():
 		object_dict["script"] = script_path
@@ -270,7 +274,7 @@ func _process_object_for_load(value: Dictionary) -> Object:
 
 	var prop_dict: Dictionary = value.props
 	for prop_key in prop_dict:
-		var prop_value: Variant = _process_variant_for_load(prop_dict[prop_key])
+		var prop_value: Variant = _process_variant_for_load(prop_dict.get(prop_key))
 		object.set(prop_key, prop_value)
 	return object
 #endregion
