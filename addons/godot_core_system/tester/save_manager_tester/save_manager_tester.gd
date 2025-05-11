@@ -5,20 +5,8 @@ extends Node
 
 
 func _ready() -> void:
-	var time_info: TimeInfo = TimeInfo.new()
-
-	GameData.set_data("002", [
-		Projection.IDENTITY,
-		label.get_path(),
-		time_info,
-		StyleBox.new(),
-	])
-
-	GameData.set_data("003", {
-		"1": label,
-		"2": time_info,
-		"3": StyleBox.new(),
-	})
+	var char_data: CharacterData = load("res://addons/dialogue_manager/tester/sample_character/小恶魔/小恶魔.tres")
+	GameData.set_data("char_01", char_data)
 	label.text = str(GameData.get_data("001"))
 
 

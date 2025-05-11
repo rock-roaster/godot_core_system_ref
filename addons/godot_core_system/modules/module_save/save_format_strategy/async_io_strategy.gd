@@ -126,6 +126,11 @@ func _process_array_for_save(array: Array) -> Array:
 	return array.map(_process_variant_for_save)
 
 
+## 英文字符串的首字母为大写
+func is_upper(text: String) -> bool:
+	return text.left(1) == text.left(1).to_upper()
+
+
 ## 处理对象保存
 func _process_object_for_save(value: Object) -> Dictionary:
 	var object_dict: Dictionary
@@ -137,8 +142,18 @@ func _process_object_for_save(value: Object) -> Dictionary:
 	var prop_dict: Dictionary
 	for prop in value.get_property_list():
 		var prop_name: String = prop["name"]
+		if is_upper(prop_name): continue
 		var prop_value: Variant = value.get(prop_name)
 		prop_dict.set(prop_name, _process_variant_for_save(prop_value))
+
+	if value is Resource:
+		prop_dict.erase("script")
+		prop_dict.erase("load_path")
+		prop_dict.erase("resource_path")
+		object_dict["resource_path"] = value.get_path()
+		object_dict["props"] = prop_dict
+		object_dict["_type_"] = TYPE_OBJECT
+		return object_dict
 
 	var script: Script = value.get_script()
 	if script != null:
@@ -244,10 +259,13 @@ func _process_array_for_load(array: Array) -> Array:
 ## 处理对象加载
 func _process_object_for_load(value: Dictionary) -> Object:
 	var object: Object
+	if value.has("resource_path"):
+		object = ResourceLoader.load(value.resource_path, "Resource")
 	if value.has("class"):
 		object = ClassDB.instantiate(value.class)
 	if value.has("script"):
 		object = ResourceLoader.load(value.script, "Script").new()
+
 	var prop_dict: Dictionary = value.props
 	for prop_key in prop_dict:
 		var prop_value: Variant = _process_variant_for_load(prop_dict[prop_key])
