@@ -143,8 +143,9 @@ func _process_object_for_save(value: Object) -> Dictionary:
 	for prop in value.get_property_list():
 		var prop_name: String = prop["name"]
 		if is_upper_case(prop_name): continue
-		var prop_value: Variant = _process_variant_for_save(value.get(prop_name))
-		prop_dict.set(prop_name, prop_value)
+		var prop_value: Variant = value.get(prop_name)
+		var processed_value: Variant = _process_variant_for_save(prop_value)
+		prop_dict.set(prop_name, processed_value)
 
 	var script: Script = value.get_script()
 	var script_path: String = ""
@@ -165,10 +166,10 @@ func _process_object_for_save(value: Object) -> Dictionary:
 			object_dict["_type_"] = TYPE_OBJECT
 			return object_dict
 
-	if not script_path.is_empty():
-		object_dict["script"] = script_path
-	else:
+	if script_path.is_empty():
 		object_dict["class"] = value.get_class()
+	else:
+		object_dict["script"] = script_path
 
 	object_dict["props"] = prop_dict
 	object_dict["_type_"] = TYPE_OBJECT
@@ -265,16 +266,17 @@ func _process_array_for_load(array: Array) -> Array:
 ## 处理对象加载
 func _process_object_for_load(value: Dictionary) -> Object:
 	var object: Object
-	if value.has("resource_path"):
-		object = ResourceLoader.load(value.resource_path, "Resource")
 	if value.has("class"):
 		object = ClassDB.instantiate(value.class)
 	if value.has("script"):
 		object = ResourceLoader.load(value.script, "Script").new()
+	if value.has("resource_path"):
+		object = ResourceLoader.load(value.resource_path, "Resource")
 
 	var prop_dict: Dictionary = value.props
 	for prop_key in prop_dict:
-		var prop_value: Variant = _process_variant_for_load(prop_dict.get(prop_key))
-		object.set(prop_key, prop_value)
+		var prop_value: Variant = prop_dict.get(prop_key)
+		var processed_value: Variant = _process_variant_for_load(prop_value)
+		object.set(prop_key, processed_value)
 	return object
 #endregion
