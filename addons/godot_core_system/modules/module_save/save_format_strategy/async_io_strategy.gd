@@ -182,7 +182,7 @@ func _process_dictionary_for_load(dict: Dictionary) -> Variant:
 			return Vector2i(dict.x, dict.y)
 		TYPE_RECT2:
 			return Rect2(dict.x, dict.y, dict.w, dict.h)
-		TYPE_VECTOR2I:
+		TYPE_RECT2I:
 			return Rect2i(dict.x, dict.y, dict.w, dict.h)
 		TYPE_VECTOR3:
 			return Vector3(dict.x, dict.y, dict.z)
