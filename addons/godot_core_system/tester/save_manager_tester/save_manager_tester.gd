@@ -8,7 +8,7 @@ extends Node
 
 func _ready() -> void:
 	var char_data: CharacterData = CharacterData.get_character_data(
-		"res://addons/dialogue_manager/tester/sample_character/小恶魔/小恶魔.tres").duplicate()
+		"res://addons/dialogue_manager/tester/sample_character/小恶魔/小恶魔.tres").duplicate(true)
 
 	var save_dict: Dictionary[StringName, CharacterData] = {
 		"Hello": char_data,

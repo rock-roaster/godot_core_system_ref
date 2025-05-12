@@ -131,18 +131,16 @@ func _process_array_for_save(array: Array) -> Variant:
 	if not array.is_typed():
 		return _process_array(array, _process_variant_for_save)
 
-	var value_dict: Dictionary = {
-		"_type_": TYPE_ARRAY,
-		"script": "",
-	}
+	var value_dict: Dictionary = {"script": ""}
 	value_dict["v_type"] = array.get_typed_builtin()
-	var array_typed_class: StringName = array.get_typed_class_name()
-	value_dict["class"] = array_typed_class
+	value_dict["class"] = array.get_typed_class_name()
 
 	var array_typed_script: Script = array.get_typed_script() as Script
 	if array_typed_script != null:
 		value_dict["script"] = array_typed_script.get_path()
+
 	value_dict["array"] = _process_array(array, _process_variant_for_save)
+	value_dict["_type_"] = TYPE_ARRAY
 	return value_dict
 
 
@@ -293,8 +291,8 @@ func _process_array_for_load(array: Dictionary) -> Array:
 	var array_type: int = int(array.v_type)
 	var array_class: StringName = ""
 	var array_script: Script = null
-	var array_script_path: String = array.script
 	if array_type == TYPE_OBJECT:
+		var array_script_path: String = array.script
 		array_class = array.class
 		array_script = ResourceLoader.load(array_script_path, "Script")\
 			if not array_script_path.is_empty() else null
