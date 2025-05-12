@@ -15,6 +15,7 @@ func encrypt(bytes: PackedByteArray, key: PackedByteArray) -> PackedByteArray:
 		encrypted_bytes[i] = bytes[i] ^ key[i % key.size()] # XOR with cycling key
 	return encrypted_bytes
 
+
 func decrypt(bytes: PackedByteArray, key: PackedByteArray) -> PackedByteArray:
 	if key.is_empty():
 		System.logger.error("XOR decrypt: Empty key provided, returning original data.")

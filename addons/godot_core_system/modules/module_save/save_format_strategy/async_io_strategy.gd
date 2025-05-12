@@ -158,8 +158,15 @@ func _process_object_for_save(value: Object) -> Dictionary:
 	prop_dict.erase("script")
 
 	if value is Resource:
-		var resource_path: String = value.get_path()
 		prop_dict.erase("resource_path")
+		if not value.resource_local_to_scene:
+			prop_dict.erase("resource_local_to_scene")
+		if value.resource_name.is_empty():
+			prop_dict.erase("resource_name")
+		if value.resource_scene_unique_id.is_empty():
+			prop_dict.erase("resource_scene_unique_id")
+
+		var resource_path: String = value.get_path()
 		if not resource_path.is_empty():
 			prop_dict.erase("load_path")
 			object_dict["resource_path"] = resource_path

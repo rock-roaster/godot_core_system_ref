@@ -1,6 +1,6 @@
 extends "./save_format_strategy.gd"
 
-const GameStateData: = preload("./game_state_data.gd")
+const GameStateData: = preload("../game_state_data.gd")
 
 ## 是否为有效的存档文件
 func is_valid_save_file(file_name: String) -> bool:
