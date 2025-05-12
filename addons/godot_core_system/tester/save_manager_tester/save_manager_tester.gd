@@ -5,6 +5,8 @@ extends Node
 
 @onready var character: Character = $Character
 
+var target_dict: Dictionary[StringName, CharacterData]
+
 
 func _ready() -> void:
 	var char_data: CharacterData = CharacterData.get_character_data(
@@ -43,3 +45,4 @@ func _on_cancel_pressed() -> void:
 	await System.save_manager.load_save("save_01")
 	label.text = str(GameData.get_data("001"))
 	character.set_character_data(GameData.get_data("char_01"))
+	target_dict = GameData.get_data("002")

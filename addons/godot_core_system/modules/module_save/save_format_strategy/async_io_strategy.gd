@@ -123,7 +123,25 @@ func _process_variant_for_save(value: Variant) -> Variant:
 
 ## 处理字典保存
 func _process_dictionary_for_save(dict: Dictionary) -> Dictionary:
-	return _process_dictionary(dict, _process_variant_for_save)
+	if not dict.is_typed():
+		return _process_dictionary(dict, _process_variant_for_save)
+
+	var value_dict: Dictionary = {}
+	value_dict["key_type"] = dict.get_typed_key_builtin()
+	value_dict["key_class"] = dict.get_typed_key_class_name()
+
+	var typed_key_script: Script = dict.get_typed_key_script() as Script
+	value_dict["key_script"] = typed_key_script.get_path() if typed_key_script != null else ""
+
+	value_dict["value_type"] = dict.get_typed_value_builtin()
+	value_dict["value_class"] = dict.get_typed_value_class_name()
+
+	var typed_value_script: Script = dict.get_typed_value_script() as Script
+	value_dict["value_script"] = typed_value_script.get_path() if typed_value_script != null else ""
+
+	value_dict["dictionary"] = _process_dictionary(dict, _process_variant_for_save)
+	value_dict["_type_"] = TYPE_DICTIONARY
+	return value_dict
 
 
 ## 处理数组保存
@@ -131,13 +149,12 @@ func _process_array_for_save(array: Array) -> Variant:
 	if not array.is_typed():
 		return _process_array(array, _process_variant_for_save)
 
-	var value_dict: Dictionary = {"script": ""}
-	value_dict["v_type"] = array.get_typed_builtin()
+	var value_dict: Dictionary = {}
+	value_dict["value_type"] = array.get_typed_builtin()
 	value_dict["class"] = array.get_typed_class_name()
 
 	var array_typed_script: Script = array.get_typed_script() as Script
-	if array_typed_script != null:
-		value_dict["script"] = array_typed_script.get_path()
+	value_dict["script"] = array_typed_script.get_path() if array_typed_script != null else ""
 
 	value_dict["array"] = _process_array(array, _process_variant_for_save)
 	value_dict["_type_"] = TYPE_ARRAY
@@ -280,9 +297,34 @@ func _process_dictionary_for_load(dict: Dictionary) -> Variant:
 			return NodePath(dict.v)
 		TYPE_OBJECT:
 			return _process_object_for_load(dict)
+		TYPE_DICTIONARY:
+			return _process_typed_dictionary_for_load(dict)
 		TYPE_ARRAY:
 			return _process_typed_array_for_load(dict)
 	return _process_dictionary(dict, _process_variant_for_load)
+
+
+## 处理类型字典加载
+func _process_typed_dictionary_for_load(dict: Dictionary) -> Dictionary:
+	var dict_value: Dictionary = _process_dictionary_for_load(dict.dictionary)
+	var dict_key_type: int = int(dict.key_type)
+	var dict_key_class: StringName = ""
+	var dict_key_script: Script = null
+	var dict_value_type: int = int(dict.value_type)
+	var dict_value_class: StringName = ""
+	var dict_value_script: Script = null
+	if dict_key_type == TYPE_OBJECT:
+		var dict_script_path: String = dict.key_script
+		dict_key_class = dict.key_class
+		dict_key_script = ResourceLoader.load(dict_script_path, "Script")\
+			if not dict_script_path.is_empty() else null
+	if dict_value_type == TYPE_OBJECT:
+		var dict_script_path: String = dict.value_script
+		dict_value_class = dict.value_class
+		dict_value_script = ResourceLoader.load(dict_script_path, "Script")\
+			if not dict_script_path.is_empty() else null
+	return Dictionary(dict_value, dict_key_type, dict_key_class, dict_key_script,
+		dict_value_type, dict_value_class, dict_value_script)
 
 
 ## 处理数组加载
@@ -293,7 +335,7 @@ func _process_array_for_load(array: Array) -> Array:
 ## 处理类型数组加载
 func _process_typed_array_for_load(array: Dictionary) -> Array:
 	var array_value: Array = _process_array_for_load(array.array)
-	var array_type: int = int(array.v_type)
+	var array_type: int = int(array.value_type)
 	var array_class: StringName = ""
 	var array_script: Script = null
 	if array_type == TYPE_OBJECT:
