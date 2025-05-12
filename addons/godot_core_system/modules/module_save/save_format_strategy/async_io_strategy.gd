@@ -290,10 +290,15 @@ func _process_dictionary_for_load(dict: Dictionary) -> Variant:
 ## 处理数组加载
 func _process_array_for_load(array: Dictionary) -> Array:
 	var array_value: Array = _process_array(array.array, _process_variant_for_load)
+	var array_type: int = int(array.v_type)
+	var array_class: StringName = ""
+	var array_script: Script = null
 	var array_script_path: String = array.script
-	var array_script: Script = ResourceLoader.load(array_script_path, "Script")\
-		if not array_script_path.is_empty() else null
-	return Array(array_value, int(array.v_type), array.class, array_script)
+	if array_type == TYPE_OBJECT:
+		array_class = array.class
+		array_script = ResourceLoader.load(array_script_path, "Script")\
+			if not array_script_path.is_empty() else null
+	return Array(array_value, array_type, array_class, array_script)
 
 
 ## 处理对象加载
