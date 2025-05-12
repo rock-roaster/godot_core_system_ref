@@ -214,7 +214,7 @@ func _process_variant_for_load(value: Variant) -> Variant:
 	if value is Dictionary:
 		return _process_dictionary_for_load(value)
 	if value is Array:
-		return _process_array(value, _process_variant_for_load)
+		return _process_array_for_load(value)
 	return value
 
 
@@ -281,13 +281,18 @@ func _process_dictionary_for_load(dict: Dictionary) -> Variant:
 		TYPE_OBJECT:
 			return _process_object_for_load(dict)
 		TYPE_ARRAY:
-			return _process_array_for_load(dict)
+			return _process_typed_array_for_load(dict)
 	return _process_dictionary(dict, _process_variant_for_load)
 
 
 ## 处理数组加载
-func _process_array_for_load(array: Dictionary) -> Array:
-	var array_value: Array = _process_array(array.array, _process_variant_for_load)
+func _process_array_for_load(array: Array) -> Array:
+	return _process_array(array, _process_variant_for_load)
+
+
+## 处理类型数组加载
+func _process_typed_array_for_load(array: Dictionary) -> Array:
+	var array_value: Array = _process_array_for_load(array.array)
 	var array_type: int = int(array.v_type)
 	var array_class: StringName = ""
 	var array_script: Script = null
