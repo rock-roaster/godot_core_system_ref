@@ -8,14 +8,23 @@ extends Node
 
 func _ready() -> void:
 	var char_data: CharacterData = CharacterData.get_character_data(
-		"res://addons/dialogue_manager/tester/sample_character/小恶魔/小恶魔.tres").duplicate(true)
+		"res://addons/dialogue_manager/tester/sample_character/小恶魔/小恶魔.tres").duplicate()
+
+	var save_dict: Dictionary[StringName, CharacterData] = {
+		"Hello": char_data,
+	}
+
 	GameData.set_data("char_01", char_data)
+	GameData.set_data("002", save_dict)
 	label.text = str(GameData.get_data("001"))
 
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"ui_accept"): _on_accept_pressed()
 	if event.is_action_pressed(&"ui_cancel"): _on_cancel_pressed()
+
+	if event.is_action_pressed(&"ui_left"): character.start_speaking()
+	if event.is_action_pressed(&"ui_right"): character.stop_speaking()
 
 	if event.is_action_pressed(&"ui_up"):
 		GameData._data["001"] += 1

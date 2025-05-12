@@ -46,6 +46,11 @@ func _process_dictionary(dict: Dictionary, process_func: Callable) -> Dictionary
 	return result
 
 
+## 将函数应用在数组的每一个值上，并返回新的数组
+func _process_array(array: Array, process_func: Callable) -> Array:
+	return array.map(process_func)
+
+
 #region process for save
 ## 处理数据保存
 func _process_data_for_save(data: Dictionary) -> Dictionary:
@@ -122,8 +127,23 @@ func _process_dictionary_for_save(dict: Dictionary) -> Dictionary:
 
 
 ## 处理数组保存
-func _process_array_for_save(array: Array) -> Array:
-	return array.map(_process_variant_for_save)
+func _process_array_for_save(array: Array) -> Variant:
+	if not array.is_typed():
+		return _process_array(array, _process_variant_for_save)
+
+	var value_dict: Dictionary = {
+		"_type_": TYPE_ARRAY,
+		"script": "",
+	}
+	value_dict["v_type"] = array.get_typed_builtin()
+	var array_typed_class: StringName = array.get_typed_class_name()
+	value_dict["class"] = array_typed_class
+
+	var array_typed_script: Script = array.get_typed_script() as Script
+	if array_typed_script != null:
+		value_dict["script"] = array_typed_script.get_path()
+	value_dict["array"] = _process_array(array, _process_variant_for_save)
+	return value_dict
 
 
 ## 英文字符串的首字母为大写
@@ -193,11 +213,10 @@ func _process_data_for_load(data: Dictionary) -> Dictionary:
 
 ## 处理变量加载
 func _process_variant_for_load(value: Variant) -> Variant:
-	match typeof(value):
-		TYPE_DICTIONARY:
-			return _process_dictionary_for_load(value)
-		TYPE_ARRAY:
-			return _process_array_for_load(value)
+	if value is Dictionary:
+		return _process_dictionary_for_load(value)
+	if value is Array:
+		return _process_array(value, _process_variant_for_load)
 	return value
 
 
@@ -263,12 +282,18 @@ func _process_dictionary_for_load(dict: Dictionary) -> Variant:
 			return NodePath(dict.v)
 		TYPE_OBJECT:
 			return _process_object_for_load(dict)
+		TYPE_ARRAY:
+			return _process_array_for_load(dict)
 	return _process_dictionary(dict, _process_variant_for_load)
 
 
 ## 处理数组加载
-func _process_array_for_load(array: Array) -> Array:
-	return array.map(_process_variant_for_load)
+func _process_array_for_load(array: Dictionary) -> Array:
+	var array_value: Array = _process_array(array.array, _process_variant_for_load)
+	var array_script_path: String = array.script
+	var array_script: Script = ResourceLoader.load(array_script_path, "Script")\
+		if not array_script_path.is_empty() else null
+	return Array(array_value, int(array.v_type), array.class, array_script)
 
 
 ## 处理对象加载
