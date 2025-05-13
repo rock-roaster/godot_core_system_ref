@@ -164,6 +164,7 @@ func _process_array_for_save(array: Array) -> Variant:
 ## 英文字符串的首字母为大写
 func is_upper_case(text: String) -> bool:
 	var first_letter: String = text.left(1)
+	if first_letter == "_": return false
 	return first_letter == first_letter.to_upper()
 
 
