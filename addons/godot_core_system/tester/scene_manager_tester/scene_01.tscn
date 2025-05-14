@@ -1,0 +1,29 @@
+[gd_scene load_steps=2 format=3 uid="uid://n8jj28jo77ku"]
+
+[ext_resource type="Script" uid="uid://rvmjljwk1x8q" path="res://addons/godot_core_system/tester/scene_manager_tester/scene_01.gd" id="1_xoe01"]
+
+[node name="Scene01" type="Node"]
+script = ExtResource("1_xoe01")
+
+[node name="Label" type="Label" parent="."]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -112.0
+offset_right = 112.0
+offset_bottom = 70.0
+grow_horizontal = 2
+text = "Scene_01"
+
+[node name="Information" type="Label" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -35.0
+offset_right = 20.0
+offset_bottom = 35.0
+grow_horizontal = 2
+grow_vertical = 2

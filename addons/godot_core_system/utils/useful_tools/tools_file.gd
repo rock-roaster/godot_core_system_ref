@@ -50,7 +50,7 @@ static func load_resource(path: String, type_hint: String = "") -> Resource:
 
 static func get_dir_resource(dir_path: String, type_hint: String = "") -> Array[Resource]:
 	var new_resource_array: Array[Resource] = []
-	for file_name in DirAccess.get_files_at(dir_path):
+	for file_name in ResourceLoader.list_directory(dir_path):
 		var new_resource: Resource = load_resource(dir_path + file_name, type_hint)
 		if new_resource == null: continue
 		new_resource_array.append(new_resource.duplicate())

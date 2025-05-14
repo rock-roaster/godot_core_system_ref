@@ -10,8 +10,6 @@ signal resource_unloaded(path: String)
 
 ## 资源缓存
 var _resource_cache: Dictionary[String, Resource] = {}
-## 对象池
-var _instance_pools: Dictionary[StringName, Array] = {}
 
 ## 当前懒加载时间
 var _lazy_load_time: float = 0.0
@@ -29,7 +27,7 @@ var _loading_count: int = 0
 var _max_loading_count: int = 100
 
 var _logger: ModuleClass.ModuleLog:
-	get: return System.logger
+	get: return _system_node.logger
 
 
 ## 处理懒加载
@@ -91,7 +89,9 @@ func unload_resource(path: String = "") -> void:
 	if path.is_empty():
 		_resource_cache.clear()
 		resource_unloaded.emit("")
-	elif _resource_cache.has(path):
+		return
+
+	if _resource_cache.has(path):
 		_resource_cache.erase(path)
 		resource_unloaded.emit(path)
 
@@ -104,55 +104,9 @@ func get_resource(path: String) -> Resource:
 	if _resource_cache.has(path) and _resource_cache[path] == null:
 		_loading_count -= 1
 	if _resource_cache.get(path, null) == null:
-		_logger.warning("[ResourceManager] cannot get cached resource on %s, reload it!" % path)
+		#_logger.warning("[ResourceManager] cannot get cached resource on %s, reload it!" % path)
 		return load_resource(path)
 	return _resource_cache.get(path)
-
-
-## 从对象池获取实例，如果不存在则返回空
-## [param id] 实例ID
-## [return] 池中的实例
-func get_instance(id: StringName) -> Node:
-	if _instance_pools.has(id):
-		return _instance_pools[id].pop_back()
-	return null
-
-
-## 回收实例到对象池
-## [param id] 实例ID
-## [param instance] 要回收的实例
-func recycle_instance(id: StringName, instance: Node) -> void:
-	if not _instance_pools.has(id):
-		_instance_pools[id] = []
-	if instance.get_parent():
-		instance.get_parent().remove_child(instance)
-	_instance_pools[id].append(instance)
-
-
-## 获取对象池中实例的数量，如果为空，计算所有对象池中的实例数量
-## [param id] 实例ID
-## [return] 池中的实例数量
-func get_instance_count(id: StringName = "") -> int:
-	if id.is_empty():
-		var count: int = 0
-		for pool in _instance_pools.values():
-			count += pool.size()
-		return count
-	if not _instance_pools.has(id):
-		return 0
-	return _instance_pools[id].size()
-
-
-## 清空对象池，如果为空，清空所有对象池
-## [param id] 实例ID
-func clear_instance_pool(id: StringName = "") -> void:
-	if id.is_empty():
-		_instance_pools.clear()
-	elif _instance_pools.has(id):
-		_instance_pools[id].clear()
-		_instance_pools[id].resize(0)
-	else:
-		push_error("instance pool for id ", id, " not exist.")
 
 
 ## 设置懒加载时间间隔

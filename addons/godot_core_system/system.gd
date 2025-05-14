@@ -20,8 +20,7 @@ const ModuleState = ModuleClass.ModuleState
 const ModuleTag = ModuleClass.ModuleTag
 const ModuleTrigger = ModuleClass.ModuleTrigger
 const ModuleThread = ModuleClass.ModuleThread
-
-#const AsyncIOManager = preload("./utils/async_io_manager/async_io_manager.gd")
+const ModuleInstance = ModuleClass.ModuleInstance
 #endregion
 
 #region 模组变量与getset方法
@@ -69,6 +68,10 @@ var state_manager: ModuleState:
 	get: return get_module("state_manager")
 	set(value): push_error("state_manager is read-only.")
 
+var instance_pool: ModuleInstance:
+	get: return get_module("instance_pool")
+	set(value): push_error("instance_pool is read-only.")
+
 var tag_manager: ModuleTag:
 	get: return get_module("tag_manager")
 	set(value): push_error("tag_manager is read-only.")
@@ -98,6 +101,7 @@ var _module_scripts: Dictionary[StringName, Script] = {
 	"tag_manager": ModuleTag,
 	"trigger_manager": ModuleTrigger,
 	"thread_manager": ModuleThread,
+	"instance_pool": ModuleInstance,
 }
 
 

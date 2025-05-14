@@ -8,65 +8,57 @@ extends "res://addons/godot_core_system/modules/module_base.gd"
 ## 4. 预加载场景功能
 
 # 信号
+## 场景预加载完成
+signal scene_preloaded(scene_path: String)
 ## 开始加载场景
 signal scene_loading_started(scene_path: String)
 ## 场景切换
 signal scene_changed(old_scene: Node, new_scene: Node)
 ## 结束加载场景
-signal scene_loading_finished()
-## 场景预加载完成
-signal scene_preloaded(scene_path: String)
-
-## 场景转换效果
-enum TransitionEffect {
-	NONE,       ## 无转场效果
-	FADE,       ## 淡入淡出
-	SLIDE,      ## 滑动
-	DISSOLVE,   ## 溶解
-	CUSTOM,     ## 自定义
-}
+signal scene_loading_finished
+## 场景数据保存
+signal scene_saved(scene_path: String, dict: Dictionary)
 
 # 属性
+## 场景栈
+## 每个元素的结构为:
+## {
+##     "scene_node": Node,          # 场景节点
+##     "scene_data": Dictionary,    # 场景数据
+## }
+var _scene_stack: Dictionary[String, Dictionary] = {}
+## 预载场景路径
+var _preloaded_scenes: Array[String] = []
+
+## 是否正在切换场景
+var _is_switching: bool = false
+## 转场效果实例
+var _transitions: Dictionary = {}
+
+## 转场层
+var _transition_layer: CanvasLayer
+
 ## 当前场景
 var _current_scene: Node:
 	get: return _current_tree.get_current_scene()
 	set(value): _current_tree.set_current_scene.call_deferred(value)
 
-## 转场层
-var _transition_layer: CanvasLayer
-## 转场矩形
-var _transition_rect: ColorRect
-
-## 场景栈
-## 每个元素的结构为:
-## {
-##   "scene": Node,           # 场景节点
-##   "scene_path": String,    # 场景路径
-##   "data": Dictionary       # 场景数据
-## }
-var _scene_stack: Array[Dictionary] = []
-## 是否正在切换场景
-var _is_switching: bool = false
-## 转场效果实例
-var _transitions: Dictionary = {}
-## 自定义转场效果
-var _custom_transitions: Dictionary = {}
-
 ## 资源管理器
 var _resource_manager: ModuleClass.ModuleResource:
-	get: return System.resource_manager
+	get: return _system_node.resource_manager
+
+## 对象池
+var _instance_pool: ModuleClass.ModuleInstance:
+	get: return _system_node.instance_pool
+
 ## 日志管理器
 var _logger: ModuleClass.ModuleLog:
-	get: return System.logger
-
-var _preloaded_scenes: Array[String] = []
+	get: return _system_node.logger
 
 
 func _ready() -> void:
 	# 连接资源加载完成信号
-	if not _resource_manager.resource_loaded.is_connected(_on_resource_loaded):
-		_resource_manager.resource_loaded.connect(_on_resource_loaded)
-
+	_resource_manager.resource_loaded.connect(_on_resource_loaded)
 	# 设置默认转场遮罩
 	_setup_transition_layer()
 	# 初始化默认转场效果
@@ -74,7 +66,51 @@ func _ready() -> void:
 
 
 func _exit() -> void:
-	clear_scene_stack()
+	_clear_scene_stack()
+
+
+## 资源加载完成回调
+func _on_resource_loaded(path: String, resource: Resource) -> void:
+	if resource is PackedScene:
+		scene_preloaded.emit(path)
+		if not _preloaded_scenes.has(path):
+			_preloaded_scenes.append(path)
+
+
+## 设置转场层
+func _setup_transition_layer() -> void:
+	_transition_layer = CanvasLayer.new()
+	_transition_layer.layer = 128
+	_system_node.add_child(_transition_layer)
+
+
+## 设置默认转场效果
+func _setup_default_transitions() -> void:
+	register_transition("fade", FadeTransition.new())
+	register_transition("slide", SlideTransition.new())
+	register_transition("dissolve", DissolveTransition.new())
+
+
+## 确保所有栈中的孤儿节点均被释放
+func _clear_scene_stack() -> void:
+	for stack in _scene_stack.values():
+		var stack_node: Node = stack.get("scene_node")
+		stack_node.queue_free()
+	_scene_stack.clear()
+
+
+## 注册自定义转场效果
+## @param effect 转场效果类型
+## @param transition 转场效果实例
+func register_transition(effect: StringName, transition: BaseTransition) -> void:
+	if transition == null or effect.is_empty(): return
+	_transitions[effect] = transition
+	transition.init(_transition_layer)
+
+
+## 获取当前场景
+func get_current_scene() -> Node:
+	return _current_scene
 
 
 ## 预加载场景
@@ -84,27 +120,78 @@ func preload_scene(scene_path: String) -> void:
 	_resource_manager.preload_resource(scene_path)
 
 
-## 确保所有栈中的孤儿节点均被释放
-func clear_scene_stack() -> void:
-	for stack in _scene_stack:
-		var scene: Node = stack.get("scene") as Node
-		scene.queue_free()
-	_scene_stack.clear()
+## 卸载预加载场景
+func unload_scene(scene_path: String = "") -> void:
+	if scene_path.is_empty():
+		for path in _preloaded_scenes:
+			_resource_manager.unload_resource(path)
+		_preloaded_scenes.clear()
+		return
+
+	if _preloaded_scenes.has(scene_path):
+		_resource_manager.unload_resource(scene_path)
+		_preloaded_scenes.erase(scene_path)
 
 
 func change_scene_fade(
 	scene_path: String,
-	duration: float = 0.5,
-	callback: Callable = Callable(),
+	scene_data: Dictionary = {},
+	push_to_stack: bool = false,
 	) -> void:
-	await change_scene_async(
+	await change_scene(scene_path, scene_data, push_to_stack, "fade")
+
+
+func get_scene_node(scene_path: String, scene_data: Dictionary = {}) -> Node:
+	var new_scene: Node
+
+	# 检查场景栈中是否已存在该场景
+	if _scene_stack.has(scene_path):
+		# 如果场景在栈中存在，重用该场景
+		var stack_data: Dictionary = _scene_stack[scene_path]
+		new_scene = stack_data.get("scene_node") as Node
+		# 从栈中移除该场景（因为它将成为当前场景）
+		_scene_stack.erase(scene_path)
+
+		if is_instance_valid(new_scene):
+			if new_scene.has_method("_restore_scene"):
+				new_scene.call("_restore_scene", scene_data)
+			if new_scene is CanvasItem:
+				new_scene.move_to_front()
+
+	# 检查资源管理器中是否已存在该场景
+	if new_scene == null:
+		# 加载新场景
+		new_scene = _instance_pool.get_instance(scene_path)
+		if new_scene == null:
+			var packed_scene: PackedScene = _resource_manager.get_resource(scene_path)
+			new_scene = packed_scene.instantiate()
+		if new_scene.has_method("_init_scene"):
+			new_scene.call("_init_scene", scene_data)
+
+	return new_scene
+
+
+func _get_scene_save(scene: Node) -> Dictionary:
+	var scene_data: Dictionary = scene.call("_save_scene") as Dictionary\
+		if scene.has_method("_save_scene") else {}
+	if not scene_data.is_empty():
+		scene_saved.emit(scene.scene_file_path, scene_data)
+	return scene_data
+
+
+func push_scene_to_stack(scene: Node) -> void:
+	var scene_path: String = scene.scene_file_path
+	var scene_data: Dictionary = _get_scene_save(scene)
+
+	# 保存当前场景到栈
+	_scene_stack.set(
 		scene_path,
-		{},
-		false,
-		TransitionEffect.FADE,
-		duration,
-		callback,
+		{
+			"scene_node": scene,
+			"scene_data": scene_data,
+		}
 	)
+	scene.get_parent().remove_child(scene)
 
 
 ## 异步切换场景
@@ -114,91 +201,32 @@ func change_scene_fade(
 ## [param effect] 转场效果
 ## [param duration] 转场持续时间
 ## [param callback] 切换完成回调
-func change_scene_async(
-		scene_path: String,
-		scene_data: Dictionary = {},
-		push_to_stack: bool = false,
-		effect: TransitionEffect = TransitionEffect.NONE,
-		duration: float = 0.5,
-		callback: Callable = Callable(),
-		custom_transition_name: StringName = "",
-		) -> void:
+func change_scene(
+	scene_path: String,
+	scene_data: Dictionary = {},
+	push_to_stack: bool = false,
+	effect: StringName = "",
+	duration: float = 0.5,
+	) -> void:
+
 	# 防止同时切换多个场景
 	if _is_switching:
-		_logger.warning("Scene switch already in progress, ignoring request to switch to: %s" % scene_path)
+		_logger.warning("Scene switching, ignoring request in: %s" % scene_path)
 		return
 
 	_is_switching = true
 	scene_loading_started.emit(scene_path)
 
-	# 检查场景栈中是否已存在该场景
-	var stack_index: int = -1
-	for i in _scene_stack.size():
-		if _scene_stack[i].get("scene_path") == scene_path:
-			stack_index = i
-			break
-
-	var new_scene: Node
-	if stack_index >= 0:
-		# 如果场景在栈中存在，重用该场景
-		var stack_data: Dictionary = _scene_stack[stack_index]
-		new_scene = stack_data.get("scene")
-		# 更新场景数据
-		if new_scene.has_method("init_state"):
-			new_scene.call("init_state", scene_data)
-		# 从栈中移除该场景（因为它将成为当前场景）
-		_scene_stack.remove_at(stack_index)
-
-		if new_scene is CanvasItem:
-			new_scene.move_to_front()
-	else:
-		# 加载新场景
-		new_scene = _resource_manager.get_instance(scene_path)
-		if not new_scene:
-			var scene_resource: PackedScene = _resource_manager.get_resource(scene_path)
-			new_scene = scene_resource.instantiate()
-
-		if not new_scene:
-			_logger.error("Failed to load scene: %s" % scene_path)
-			_is_switching = false
-			return
-
-		if new_scene.has_method("init_state"):
-			new_scene.init_state(scene_data)
-
-	await _do_scene_switch(new_scene, effect, duration, callback, custom_transition_name, push_to_stack)
-	await _current_tree.process_frame
-	_is_switching = false
-
-
-## 返回上一个场景
-## [param effect] 转场效果
-## [param duration] 持续时间
-## [param callback] 回调
-func pop_scene_async(
-		effect: TransitionEffect = TransitionEffect.NONE,
-		duration: float = 0.5,
-		callback: Callable = Callable(),
-		custom_transition_name: StringName = "",
-		) -> void:
-
-	# 防止同时切换多个场景
-	if _is_switching:
-		_logger.warning("Scene switch already in progress.")
+	var new_scene: Node = get_scene_node(scene_path, scene_data)
+	if new_scene == null:
+		_logger.error("Failed to load scene: %s" % scene_path)
+		_is_switching = false
 		return
 
-	if _scene_stack.is_empty():
-		return
-
-	_is_switching = true
-	var prev_scene_data: Dictionary = _scene_stack.pop_back()
-	var prev_scene: Node = prev_scene_data.get("scene")
-
-	if prev_scene.has_method("restore_state"):
-		prev_scene.call("restore_state", prev_scene_data.data)
-
-	await _do_scene_switch(prev_scene, effect, duration, callback, custom_transition_name)
+	await _do_scene_switch(new_scene, effect, duration, push_to_stack)
+	unload_scene(scene_path)
 	_is_switching = false
+	scene_loading_finished.emit(scene_path)
 
 
 ## 子场景管理
@@ -207,109 +235,38 @@ func pop_scene_async(
 ## [param scene_data] 场景数据
 ## [return] 子场景
 func add_sub_scene(
-		parent_node: Node,
-		scene_path: String,
-		scene_data: Dictionary = {},
-		) -> Node:
-	var scene_resource: PackedScene = _resource_manager.load_resource(scene_path)
-	var sub_scene: Node = scene_resource.instantiate()
-	if sub_scene.has_method("init_state"):
-		sub_scene.call("init_state", scene_data)
-	parent_node.add_child(sub_scene)
-	return sub_scene
+	parent_node: Node,
+	scene_path: String,
+	scene_data: Dictionary = {},
+	) -> Node:
 
-
-## 获取当前场景
-func get_current_scene() -> Node:
-	return _current_scene
-
-
-## 清除预加载的场景
-func clear_preloaded_scenes() -> void:
-	for scene_path in _preloaded_scenes:
-		_resource_manager.clear_resource_cache(scene_path)
-	_preloaded_scenes.clear()
-
-
-## 注册自定义转场效果
-## @param effect 转场效果类型
-## @param transition 转场效果实例
-func register_transition(effect: TransitionEffect, transition: BaseTransition, custom_name: StringName = "") -> void:
-	if not transition:
+	var new_scene: Node = get_scene_node(scene_path, scene_data)
+	if new_scene == null:
+		_logger.error("Failed to add sub scene: %s" % scene_path)
 		return
-	if effect == TransitionEffect.CUSTOM:
-		if custom_name.is_empty():
-			_logger.error("Custom transition name cannot be empty")
-		_custom_transitions[custom_name] = transition
-	else:
-		_transitions[effect] = transition
-	transition.init(_transition_rect)
+
+	parent_node.add_child(new_scene)
+	return new_scene
 
 
 ## 开始转场效果
 ## @param effect 转场效果
 ## @param duration 转场持续时间
-func _start_transition(effect: TransitionEffect, duration: float, custom_transition_name: StringName = "") -> void:
-	_transition_rect.visible = true
-	if effect == TransitionEffect.CUSTOM and custom_transition_name:
-		await _custom_transitions[custom_transition_name].start(duration)
+func _start_transition(effect: StringName, duration: float) -> void:
+	if _transitions.has(effect):
+		await _transitions[effect].start(duration)
 	else:
-		if effect in _transitions:
-			await _transitions[effect].start(duration)
-		else:
-			_logger.warning("Transition effect not found: %d" % effect)
+		_logger.warning("Transition effect not found: %d" % effect)
 
 
 ## 结束转场效果
 ## @param effect 转场效果
 ## @param duration 转场持续时间
-func _end_transition(effect: TransitionEffect, duration: float, custom_transition_name: StringName = "") -> void:
-	if effect == TransitionEffect.CUSTOM and custom_transition_name:
-		await _custom_transitions[custom_transition_name].end(duration)
+func _end_transition(effect: StringName, duration: float) -> void:
+	if _transitions.has(effect):
+		await _transitions[effect].end(duration)
 	else:
-		if effect in _transitions:
-			await _transitions[effect].end(duration)
-		else:
-			_logger.warning("Transition effect not found: %d" % effect)
-	_transition_rect.visible = false
-
-
-## 清理转场效果
-func _cleanup_transition(effect: TransitionEffect, custom_transition_name: StringName = "") -> void:
-	_transition_rect.visible = false
-
-
-## 设置转场层
-func _setup_transition_layer() -> void:
-	_transition_layer = CanvasLayer.new()
-	_transition_layer.layer = 128  # 确保在最上层
-	_current_root.add_child.call_deferred(_transition_layer)
-
-	_transition_rect = ColorRect.new()
-	_transition_rect.color = Color.BLACK
-	_transition_rect.visible = false
-	_transition_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE  # 忽略鼠标输入
-	_transition_layer.add_child.call_deferred(_transition_rect)
-
-	var size_changed_signal: Signal = _current_root.get_viewport().size_changed
-	if not size_changed_signal.is_connected(_on_viewport_size_changed):
-		size_changed_signal.connect(_on_viewport_size_changed)
-	_on_viewport_size_changed()
-
-
-## 设置转场矩形大小
-func _on_viewport_size_changed():
-	if _transition_rect:
-		var size: Vector2 = _current_root.get_viewport().get_visible_rect().size
-		_transition_rect.size = size
-		_transition_rect.position = Vector2.ZERO  # 让转场效果自己处理位置
-
-
-## 设置默认转场效果
-func _setup_default_transitions() -> void:
-	register_transition(TransitionEffect.FADE, FadeTransition.new())
-	register_transition(TransitionEffect.SLIDE, SlideTransition.new())
-	register_transition(TransitionEffect.DISSOLVE, DissolveTransition.new())
+		_logger.warning("Transition effect not found: %d" % effect)
 
 
 ## 私有方法：执行场景切换
@@ -319,63 +276,40 @@ func _setup_default_transitions() -> void:
 ## [param callback] 回调
 ## [param save_current] 是否保存当前场景
 func _do_scene_switch(
-		new_scene: Node,
-		effect: TransitionEffect,
-		duration: float,
-		callback: Callable,
-		custom_transition_name: StringName = "",
-		save_current: bool = false,
-		) -> void:
-	var old_scene: Node = _current_scene
+	new_scene: Node,
+	effect: StringName,
+	duration: float,
+	push_to_stack: bool,
+	) -> void:
 
 	# 开始转场效果
-	if effect != TransitionEffect.NONE:
-		await _start_transition(effect, duration, custom_transition_name)
+	if not effect.is_empty():
+		await _start_transition(effect, duration)
 
 	# 添加新场景
 	if not new_scene.get_parent():
 		_current_root.add_child.call_deferred(new_scene)
 
+	var old_scene: Node = _current_scene
 	_current_scene = new_scene
 
-	if save_current and old_scene:
-		# 保存当前场景到栈
-		_scene_stack.push_back(
-			{
-				"scene": old_scene,
-				"scene_path": old_scene.scene_file_path,
-				"data": old_scene.save_state() if old_scene.has_method("save_state") else {},
-			}
-		)
-		old_scene.get_parent().remove_child(old_scene)
-	else:
-		# 如果不需要保存状态，则直接销毁当前场景
-		if old_scene:
+	if old_scene != null:
+		if push_to_stack:
+			# 保存当前场景到栈
+			push_scene_to_stack(old_scene)
+		else:
+			# 如果不需要保存状态，则直接销毁当前场景
+			_get_scene_save(old_scene)
 			old_scene.get_parent().remove_child(old_scene)
 			old_scene.queue_free()
 
 	# 结束转场效果
-	if effect != TransitionEffect.NONE:
-		await _end_transition(effect, duration, custom_transition_name)
-		_cleanup_transition(effect, custom_transition_name)
+	if not effect.is_empty():
+		await _end_transition(effect, duration)
 
 	## 场景切换后强制更新新场景的相机
-	call_deferred("_update_new_scene_camera", new_scene)
-
+	_update_new_scene_camera.call_deferred(new_scene)
 	scene_changed.emit(old_scene, new_scene)
-
-	# 回调
-	if callback.is_valid():
-		callback.call()
-
-	scene_loading_finished.emit()
-
-
-## 资源加载完成回调
-func _on_resource_loaded(path: String, resource: Resource) -> void:
-	if path in _preloaded_scenes and resource is PackedScene:
-		_preloaded_scenes.erase(path)
-		scene_preloaded.emit(path)
 
 
 func _update_new_scene_camera(new_scene: Node) -> void:
@@ -384,10 +318,10 @@ func _update_new_scene_camera(new_scene: Node) -> void:
 		return
 
 	var new_scene_viewport: Viewport = new_scene.get_viewport()
-	if new_scene_viewport != null:
-		if new_scene_viewport.get_camera_2d() != null:
-			new_scene_viewport.get_camera_2d().force_update_scroll()
-			new_scene_viewport.get_camera_2d().force_update_transform()
+	if new_scene_viewport != null:\
+	if new_scene_viewport.get_camera_2d() != null:
+		new_scene_viewport.get_camera_2d().force_update_scroll()
+		new_scene_viewport.get_camera_2d().force_update_transform()
 
 	## 待补充3D相机有关设置。下面注释代码无法确定是否有效。需要进一步测试
 	#if new_scene_viewport != null:

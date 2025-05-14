@@ -23,7 +23,7 @@ func _ready() -> void:
 	_cleanup_timer = Timer.new()
 	_cleanup_timer.wait_time = CLEANUP_INTERVAL
 	_cleanup_timer.timeout.connect(_on_cleanup_timer_timeout)
-	_current_root.add_child(_cleanup_timer)
+	_system_node.add_child(_cleanup_timer)
 	_cleanup_timer.start()
 
 func _exit_tree() -> void:

@@ -26,20 +26,18 @@ func _ready() -> void:
 
 func _on_resource_loaded(resource_path: String, resource: Resource) -> void:
 	if resource is PackedScene:
-		var entity_id := _entity_path_map.find_key(resource_path)
-		if not entity_id:
-			return
-		if _entity_resource_cache.has(entity_id):
-			return
+		var entity_id: Variant = _entity_path_map.find_key(resource_path)
+		if not entity_id: return
+		if _entity_resource_cache.has(entity_id): return
+
 		_entity_resource_cache[entity_id] = resource
 		var scene := resource
 		entity_loaded.emit(entity_id, scene)
 
 
 func _on_resource_unloaded(resource_path: String) -> void:
-	var entity_id: StringName = _entity_path_map.find_key(resource_path)
-	if not entity_id:
-		return
+	var entity_id: Variant = _entity_path_map.find_key(resource_path)
+	if not entity_id: return
 	_entity_resource_cache.erase(entity_id)
 	entity_unloaded.emit(entity_id)
 
