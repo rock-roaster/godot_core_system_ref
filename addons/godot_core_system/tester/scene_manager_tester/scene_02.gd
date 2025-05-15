@@ -25,6 +25,10 @@ func _input(event: InputEvent) -> void:
 		_change_scene()
 
 
+func _save_scene() -> Dictionary:
+	return scene_save
+
+
 func _init_scene(data: Dictionary) -> void:
 	info_text = data.get("init_info")
 
@@ -34,9 +38,5 @@ func _restore_scene(data: Dictionary) -> void:
 	information.text = data.get("restore_info")
 
 
-func _save_scene() -> Dictionary:
-	return scene_save
-
-
 func _change_scene() -> void:
-	System.scene_manager.change_scene_cross(scene_path, scene_data, true)
+	System.scene_manager.change_scene_dissolve(scene_path, scene_data, true)

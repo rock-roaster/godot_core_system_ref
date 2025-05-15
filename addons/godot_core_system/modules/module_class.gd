@@ -31,5 +31,3 @@ const ModuleTag: = preload("./module_tag/module_tag.gd")
 const ModuleTrigger: = preload("./module_trigger/module_trigger.gd")
 
 const ModuleThread: = preload("./module_thread/module_thread.gd")
-
-const ModuleInstance: = preload("./module_instance/module_instance.gd")

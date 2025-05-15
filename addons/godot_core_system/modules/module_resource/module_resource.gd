@@ -30,10 +30,25 @@ var _logger: ModuleClass.ModuleLog:
 	get: return _system.logger
 
 
+func _init() -> void:
+	resource_loaded.connect(_on_resource_loaded)
+	resource_unloaded.connect(_on_resource_unloaded)
+
+
 ## 处理懒加载
 func _process(delta: float) -> void:
 	_check_pending()
 	_lazy_load(delta)
+
+
+func _on_resource_loaded(path: String, resource: Resource) -> void:
+	_system.scene_manager._on_resource_loaded(path, resource)
+	_system.entity_manager._on_resource_loaded(path, resource)
+
+
+func _on_resource_unloaded(path: String) -> void:
+	_system.scene_manager._on_resource_unloaded(path)
+	_system.entity_manager._on_resource_unloaded(path)
 
 
 ## 获得文件夹中的所有资源路径

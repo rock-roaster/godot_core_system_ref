@@ -47,9 +47,9 @@ var _current_scene: Node:
 var _resource_manager: ModuleClass.ModuleResource:
 	get: return _system.resource_manager
 
-## 对象池
-var _instance_pool: ModuleClass.ModuleInstance:
-	get: return _system.instance_pool
+## 示例管理器
+var _entity_manager: ModuleClass.ModuleEntity:
+	get: return _system.entity_manager
 
 ## 日志管理器
 var _logger: ModuleClass.ModuleLog:
@@ -57,8 +57,6 @@ var _logger: ModuleClass.ModuleLog:
 
 
 func _ready() -> void:
-	# 连接资源加载完成信号
-	_resource_manager.resource_loaded.connect(_on_resource_loaded)
 	# 设置默认转场遮罩
 	_setup_transition_layer()
 	# 初始化默认转场效果
@@ -69,12 +67,15 @@ func _exit() -> void:
 	_clear_scene_stack()
 
 
-## 资源加载完成回调
 func _on_resource_loaded(path: String, resource: Resource) -> void:
 	if resource is PackedScene:
 		scene_preloaded.emit(path)
 		if not _preloaded_scenes.has(path):
 			_preloaded_scenes.append(path)
+
+
+func _on_resource_unloaded(path: String) -> void:
+	_preloaded_scenes.erase(path)
 
 
 ## 设置转场层
@@ -118,7 +119,6 @@ func get_current_scene() -> Node:
 ## 预加载场景
 ## @param scene_path 场景路径
 func preload_scene(scene_path: String) -> void:
-	_preloaded_scenes.append(scene_path)
 	_resource_manager.preload_resource(scene_path)
 
 
@@ -127,12 +127,10 @@ func unload_scene(scene_path: String = "") -> void:
 	if scene_path.is_empty():
 		for path in _preloaded_scenes:
 			_resource_manager.unload_resource(path)
-		_preloaded_scenes.clear()
 		return
 
 	if _preloaded_scenes.has(scene_path):
 		_resource_manager.unload_resource(scene_path)
-		_preloaded_scenes.erase(scene_path)
 
 
 func _get_scene_node(scene_path: String, scene_data: Dictionary = {}) -> Node:
@@ -146,7 +144,7 @@ func _get_scene_node(scene_path: String, scene_data: Dictionary = {}) -> Node:
 
 	# 检查对象池中是否已存在该场景
 	if new_scene == null:
-		new_scene = _instance_pool.get_instance(scene_path)
+		new_scene = _entity_manager.get_instance(scene_path)
 
 	# 当场景未被释放时返回
 	if is_instance_valid(new_scene):
