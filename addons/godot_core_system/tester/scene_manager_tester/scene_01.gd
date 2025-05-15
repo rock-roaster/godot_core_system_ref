@@ -19,10 +19,6 @@ func _ready() -> void:
 	System.scene_manager.preload_scene(scene_path)
 	information.text = info_text
 
-	System.instance_pool.create_instance_pool("01", information, 10, true)
-	for i in 10:
-		add_child(System.instance_pool.get_instance("01"))
-
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"ui_accept"):
@@ -43,9 +39,4 @@ func _save_scene() -> Dictionary:
 
 
 func _change_scene() -> void:
-	System.scene_manager.change_scene_fade(
-		scene_path,
-		scene_data,
-		true,
-	)
-	System.instance_pool.clear_instance_pool("01")
+	System.scene_manager.change_scene_fade(scene_path, scene_data)

@@ -39,9 +39,4 @@ func _save_scene() -> Dictionary:
 
 
 func _change_scene() -> void:
-	System.scene_manager.change_scene_fade(
-		scene_path,
-		scene_data,
-		true,
-	)
-	System.save_manager.create_save("scene_tester")
+	System.scene_manager.change_scene_fade(scene_path, scene_data, true)

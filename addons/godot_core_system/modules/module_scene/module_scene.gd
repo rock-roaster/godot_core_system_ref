@@ -133,40 +133,36 @@ func unload_scene(scene_path: String = "") -> void:
 		_preloaded_scenes.erase(scene_path)
 
 
-func change_scene_fade(
-	scene_path: String,
-	scene_data: Dictionary = {},
-	push_to_stack: bool = false,
-	) -> void:
-	await change_scene(scene_path, scene_data, push_to_stack, "fade")
-
-
-func get_scene_node(scene_path: String, scene_data: Dictionary = {}) -> Node:
+func _get_scene_node(scene_path: String, scene_data: Dictionary = {}) -> Node:
 	var new_scene: Node
 
 	# 检查场景栈中是否已存在该场景
 	if _scene_stack.has(scene_path):
-		# 如果场景在栈中存在，重用该场景
 		var stack_data: Dictionary = _scene_stack[scene_path]
 		new_scene = stack_data.get("scene_node") as Node
-		# 从栈中移除该场景（因为它将成为当前场景）
 		_scene_stack.erase(scene_path)
 
-		if is_instance_valid(new_scene):
-			if new_scene.has_method("_restore_scene"):
-				new_scene.call("_restore_scene", scene_data)
-			if new_scene is CanvasItem:
-				new_scene.move_to_front()
-
-	# 检查资源管理器中是否已存在该场景
+	# 检查对象池中是否已存在该场景
 	if new_scene == null:
-		# 加载新场景
 		new_scene = _instance_pool.get_instance(scene_path)
-		if new_scene == null:
-			var packed_scene: PackedScene = _resource_manager.get_resource(scene_path)
-			new_scene = packed_scene.instantiate()
-		if new_scene.has_method("_init_scene"):
-			new_scene.call("_init_scene", scene_data)
+
+	# 当场景未被释放时返回
+	if is_instance_valid(new_scene):
+		# 检查场景复原函数
+		if new_scene.has_method("_restore_scene"):
+			new_scene.call("_restore_scene", scene_data)
+		if new_scene is CanvasItem:
+			new_scene.move_to_front()
+		return new_scene
+
+	# 从资源管理器中重构场景
+	if new_scene == null:
+		var packed_scene: PackedScene = _resource_manager.get_resource(scene_path)
+		new_scene = packed_scene.instantiate()
+
+	# 检查场景构造函数
+	if new_scene != null && new_scene.has_method("_init_scene"):
+		new_scene.call("_init_scene", scene_data)
 
 	return new_scene
 
@@ -194,6 +190,22 @@ func push_scene_to_stack(scene: Node) -> void:
 	scene.get_parent().remove_child(scene)
 
 
+func change_scene_fade(
+	scene_path: String,
+	scene_data: Dictionary = {},
+	push_to_stack: bool = false,
+	) -> void:
+	await change_scene(scene_path, scene_data, push_to_stack, "fade")
+
+
+func change_scene_slide(
+	scene_path: String,
+	scene_data: Dictionary = {},
+	push_to_stack: bool = false,
+	) -> void:
+	await change_scene(scene_path, scene_data, push_to_stack, "slide")
+
+
 ## 异步切换场景
 ## [param scene_path] 场景路径
 ## [param scene_data] 场景数据
@@ -217,13 +229,13 @@ func change_scene(
 	_is_switching = true
 	scene_loading_started.emit(scene_path)
 
-	var new_scene: Node = get_scene_node(scene_path, scene_data)
+	var new_scene: Node = _get_scene_node(scene_path, scene_data)
 	if new_scene == null:
 		_logger.error("Failed to load scene: %s" % scene_path)
 		_is_switching = false
 		return
 
-	await _do_scene_switch(new_scene, effect, duration, push_to_stack)
+	await _do_scene_switch(new_scene, push_to_stack, effect, duration)
 	unload_scene(scene_path)
 	_is_switching = false
 	scene_loading_finished.emit(scene_path)
@@ -240,7 +252,7 @@ func add_sub_scene(
 	scene_data: Dictionary = {},
 	) -> Node:
 
-	var new_scene: Node = get_scene_node(scene_path, scene_data)
+	var new_scene: Node = _get_scene_node(scene_path, scene_data)
 	if new_scene == null:
 		_logger.error("Failed to add sub scene: %s" % scene_path)
 		return
@@ -277,9 +289,9 @@ func _end_transition(effect: StringName, duration: float) -> void:
 ## [param save_current] 是否保存当前场景
 func _do_scene_switch(
 	new_scene: Node,
+	push_to_stack: bool,
 	effect: StringName,
 	duration: float,
-	push_to_stack: bool,
 	) -> void:
 
 	# 开始转场效果

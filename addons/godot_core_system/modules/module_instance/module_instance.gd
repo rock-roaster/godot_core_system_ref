@@ -5,6 +5,10 @@ extends "res://addons/godot_core_system/modules/module_base.gd"
 var _instance_pools: Dictionary[StringName, Array] = {}
 
 
+func _exit() -> void:
+	clear_instance_pool()
+
+
 ## 创建对象池
 ## [param id] 实例ID
 ## [param instance] 要创建的实例
@@ -30,9 +34,9 @@ func create_instance_pool(
 ## [param id] 实例ID
 ## [return] 池中的实例
 func get_instance(id: StringName) -> Node:
-	if _instance_pools.has(id):
-		return _instance_pools[id].pop_back()
-	return null
+	if not _instance_pools.has(id):
+		return null
+	return _instance_pools[id].pop_back()
 
 
 ## 回收实例到对象池
