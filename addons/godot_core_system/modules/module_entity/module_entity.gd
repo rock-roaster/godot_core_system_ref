@@ -16,7 +16,7 @@ var _entity_resource_cache: Dictionary[StringName, PackedScene] = {}
 var _entity_path_map: Dictionary[StringName, String] = {}
 
 var _resource_manager: ModuleClass.ModuleResource:
-	get: return System.resource_manager
+	get: return _system.resource_manager
 
 
 func _ready() -> void:

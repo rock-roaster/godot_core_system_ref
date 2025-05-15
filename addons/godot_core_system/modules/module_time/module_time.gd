@@ -67,7 +67,8 @@ func get_game_time() -> float:
 
 ## 创建计时器
 func create_timer(id: String, duration: float, loop: bool = false,
-				 callback: Callable = Callable()) -> void:
+	callback: Callable = Callable()) -> void:
+
 	if has_timer(id):
 		push_warning("Timer with id '%s' already exists. Overwriting..." % id)
 

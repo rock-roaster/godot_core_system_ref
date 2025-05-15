@@ -10,7 +10,7 @@ func add_task(
 	callback: Callable = func(_result: Variant): pass,
 	auto_advance: bool = false,
 	call_deferred: bool = true,
-) -> void:
+	) -> void:
 
 	if not _thread_dictionary.has(name):
 		create_thread(name)

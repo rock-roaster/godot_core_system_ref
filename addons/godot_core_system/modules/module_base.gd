@@ -1,12 +1,12 @@
 extends RefCounted
 
 
-var _system_node: System:
+var _system: System:
 	get: return System
-	set(value): push_error("_system_node is read only.")
+	set(value): push_error("_system is read only.")
 
 var _current_tree: SceneTree:
-	get: return _system_node.get_tree()
+	get: return _system.get_tree()
 	set(value): push_error("_current_tree is read only.")
 
 var _current_root: Window:

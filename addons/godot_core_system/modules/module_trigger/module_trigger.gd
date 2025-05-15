@@ -16,11 +16,12 @@ var _condition_types : Dictionary = {
 	"state_trigger_condition": StateTriggerCondition,
 }
 
-var _event_bus: System.ModuleEvent = System.event_manager
-
 ## 是否订阅事件总线的事件
 var subscribe_event_bus : bool = false:
-	get: return System.get_setting_value(SETTING_SUBSCRIBE_EVENT_BUS)
+	get: return _system.get_setting_value(SETTING_SUBSCRIBE_EVENT_BUS)
+
+var _event_bus: System.ModuleEvent:
+	get: return _system.event_manager
 
 
 func _process(delta: float) -> void:
@@ -30,10 +31,10 @@ func _process(delta: float) -> void:
 
 ## 触发
 func handle_event(trigger_type: StringName, context: Dictionary) -> void:
-	var triggers : Array = _event_triggers.get(trigger_type, [])
+	var triggers: Array = _event_triggers.get(trigger_type, [])
 	if triggers.is_empty():
 		return
-	for trigger : GameplayTrigger in triggers:
+	for trigger: GameplayTrigger in triggers:
 		trigger.execute(context)
 
 
@@ -51,7 +52,7 @@ func register_event_trigger(trigger_type: StringName, trigger: GameplayTrigger) 
 ## 移除触发器
 func unregister_event_trigger(trigger_type: StringName, trigger: GameplayTrigger) -> void:
 	trigger.triggered.disconnect(_on_trigger_triggered.bind(trigger))
-	var triggers : Array[GameplayTrigger] = _event_triggers.get(trigger_type, [])
+	var triggers: Array[GameplayTrigger] = _event_triggers.get(trigger_type, [])
 	if triggers.has(trigger):
 		triggers.erase(trigger)
 		if triggers.is_empty() and subscribe_event_bus:
@@ -85,7 +86,7 @@ func unregister_condition_type(type: StringName) -> void:
 func create_condition(config: Dictionary) -> TriggerCondition:
 	var condition_type: StringName = config.get("type")
 	if not _condition_types.has(condition_type):
-		System.logger.error("create condition by type: %s" % condition_type)
+		_system.logger.error("create condition by type: %s" % condition_type)
 		return null
 	return _condition_types[condition_type].new(config)
 

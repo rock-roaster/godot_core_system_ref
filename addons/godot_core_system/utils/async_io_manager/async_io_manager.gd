@@ -34,7 +34,8 @@ var _serializer: SerializationStrategy
 var _compressor: CompressionStrategy
 var _encryptor: EncryptionStrategy
 
-var _logger: ModuleClass.ModuleLog = System.logger
+var _logger: ModuleClass.ModuleLog:
+	get: return System.logger
 
 
 func _init(p_serializer = null, p_compressor = null, p_encryptor = null) -> void:

@@ -28,7 +28,7 @@ var _modified: bool
 var _config_file: ConfigFile
 ## 线程管理器
 var _thread_manager: ModuleClass.ModuleThread:
-	get: return System.thread
+	get: return _system.thread
 
 
 func _init() -> void:

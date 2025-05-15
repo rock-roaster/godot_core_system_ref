@@ -9,7 +9,7 @@ var _transition_layer: CanvasLayer
 
 
 ## 初始化转场效果
-## @param transition_rect 转场矩形
+## @param transition_layer 转场图层
 func init(
 	transition_layer: CanvasLayer,
 	) -> void:

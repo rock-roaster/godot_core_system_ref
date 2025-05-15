@@ -14,15 +14,15 @@ enum LogLevel {
 ## 默认日志颜色配置
 var default_log_colors: Dictionary = {
 	LogLevel.DEBUG:
-		System.get_setting_value("module_log/color_debug"),
+		_system.get_setting_value("module_log/color_debug"),
 	LogLevel.INFO:
-		System.get_setting_value("module_log/color_info"),
+		_system.get_setting_value("module_log/color_info"),
 	LogLevel.WARNING:
-		System.get_setting_value("module_log/color_warning"),
+		_system.get_setting_value("module_log/color_warning"),
 	LogLevel.ERROR:
-		System.get_setting_value("module_log/color_error"),
+		_system.get_setting_value("module_log/color_error"),
 	LogLevel.FATAL:
-		System.get_setting_value("module_log/color_fatal"),
+		_system.get_setting_value("module_log/color_fatal"),
 }
 
 ## 当前日志级别

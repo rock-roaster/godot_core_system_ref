@@ -45,15 +45,15 @@ var _current_scene: Node:
 
 ## 资源管理器
 var _resource_manager: ModuleClass.ModuleResource:
-	get: return _system_node.resource_manager
+	get: return _system.resource_manager
 
 ## 对象池
 var _instance_pool: ModuleClass.ModuleInstance:
-	get: return _system_node.instance_pool
+	get: return _system.instance_pool
 
 ## 日志管理器
 var _logger: ModuleClass.ModuleLog:
-	get: return _system_node.logger
+	get: return _system.logger
 
 
 func _ready() -> void:
@@ -80,8 +80,9 @@ func _on_resource_loaded(path: String, resource: Resource) -> void:
 ## 设置转场层
 func _setup_transition_layer() -> void:
 	_transition_layer = CanvasLayer.new()
+	_transition_layer.name = "TransitionLayer"
 	_transition_layer.layer = 128
-	_system_node.add_child(_transition_layer)
+	_system.add_child(_transition_layer)
 
 
 ## 设置默认转场效果
@@ -204,6 +205,14 @@ func change_scene_slide(
 	push_to_stack: bool = false,
 	) -> void:
 	await change_scene(scene_path, scene_data, push_to_stack, "slide")
+
+
+func change_scene_dissolve(
+	scene_path: String,
+	scene_data: Dictionary = {},
+	push_to_stack: bool = false,
+	) -> void:
+	await change_scene(scene_path, scene_data, push_to_stack, "dissolve")
 
 
 ## 异步切换场景

@@ -16,32 +16,32 @@ signal auto_save_created(save_id: String)						# 自动存档创建
 
 # 配置属性
 var save_directory: String:
-	get: return System.get_setting_value("module_save/save_directory", "user://saves")
-	set(value): System.logger.error("read-only")
+	get: return _system.get_setting_value("module_save/save_directory", "user://saves")
+	set(value): _system.logger.error("read-only")
 
 var save_group: String:
-	get: return System.get_setting_value("module_save/save_group", "savable")
-	set(value): System.logger.error("read-only")
+	get: return _system.get_setting_value("module_save/save_group", "savable")
+	set(value): _system.logger.error("read-only")
 
 var default_format: String:
-	get: return System.get_setting_value("module_save/serialization_format", "resource")
-	set(value): System.logger.error("read-only")
+	get: return _system.get_setting_value("module_save/serialization_format", "resource")
+	set(value): _system.logger.error("read-only")
 
 var auto_save_enabled: bool:
-	get: return System.get_setting_value("module_save/auto_save/enabled", false)
-	set(value): System.logger.error("read-only")
+	get: return _system.get_setting_value("module_save/auto_save/enabled", false)
+	set(value): _system.logger.error("read-only")
 
 var auto_save_prefix: String:
-	get: return System.get_setting_value("module_save/auto_save/name_prefix", "auto_save_")
-	set(value): System.logger.error("read-only")
+	get: return _system.get_setting_value("module_save/auto_save/name_prefix", "auto_save_")
+	set(value): _system.logger.error("read-only")
 
 var max_auto_saves: int:
-	get: return System.get_setting_value("module_save/auto_save/max_saves", 5)
-	set(value): System.logger.error("read-only")
+	get: return _system.get_setting_value("module_save/auto_save/max_saves", 5)
+	set(value): _system.logger.error("read-only")
 
 var auto_save_interval: float:
-	get: return System.get_setting_value("module_save/auto_save/interval_seconds", 300.0)
-	set(value): System.logger.error("read-only")
+	get: return _system.get_setting_value("module_save/auto_save/interval_seconds", 300.0)
+	set(value): _system.logger.error("read-only")
 
 # 私有变量
 var _current_save_id: String = ""
@@ -50,12 +50,14 @@ var _encryption_key: String = ""
 var _save_strategy: SaveFormatStrategy
 var _pending_node_states: Dictionary[NodePath, Dictionary] = {}
 
-var _strategies := {
+var _strategies: Dictionary[StringName, SaveFormatStrategy] = {
 	"resource": ResourceSaveStrategy.new(),
 	"binary": BinarySaveStrategy.new(),
 	"json": JSONSaveStrategy.new(),
 }
-var _logger: ModuleClass.ModuleLog = System.logger
+
+var _logger: ModuleClass.ModuleLog:
+	get: return _system.logger
 
 
 func _init() -> void:

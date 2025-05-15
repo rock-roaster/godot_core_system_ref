@@ -27,7 +27,7 @@ var _loading_count: int = 0
 var _max_loading_count: int = 100
 
 var _logger: ModuleClass.ModuleLog:
-	get: return _system_node.logger
+	get: return _system.logger
 
 
 ## 处理懒加载
