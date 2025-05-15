@@ -68,10 +68,11 @@ func _exit() -> void:
 
 
 func _on_resource_loaded(path: String, resource: Resource) -> void:
-	if resource is PackedScene:
-		scene_preloaded.emit(path)
-		if not _preloaded_scenes.has(path):
-			_preloaded_scenes.append(path)
+	if resource is not PackedScene: return
+	scene_preloaded.emit(path)
+
+	if _preloaded_scenes.has(path): return
+	_preloaded_scenes.append(path)
 
 
 func _on_resource_unloaded(path: String) -> void:

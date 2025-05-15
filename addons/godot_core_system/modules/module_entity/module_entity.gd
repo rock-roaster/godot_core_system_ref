@@ -27,14 +27,13 @@ func _exit() -> void:
 
 
 func _on_resource_loaded(resource_path: String, resource: Resource) -> void:
-	if resource is PackedScene:
-		var entity_id: Variant = _entity_path_map.find_key(resource_path)
-		if not entity_id: return
-		if _entity_resource_cache.has(entity_id): return
+	if resource is not PackedScene: return
+	var entity_id: Variant = _entity_path_map.find_key(resource_path)
+	if not entity_id: return
 
-		_entity_resource_cache[entity_id] = resource
-		var scene: PackedScene = resource
-		entity_loaded.emit(entity_id, scene)
+	if _entity_resource_cache.has(entity_id): return
+	_entity_resource_cache[entity_id] = resource
+	entity_loaded.emit(entity_id, resource)
 
 
 func _on_resource_unloaded(resource_path: String) -> void:
@@ -62,7 +61,7 @@ func load_entity(entity_id: StringName, scene_path: String) -> PackedScene:
 	_entity_path_map[entity_id] = scene_path
 	var scene: PackedScene = _resource_manager.load_resource(scene_path)
 	if not scene:
-		# push_error("无法加载实体场景: %s" % scene_path)
+		push_error("无法加载实体场景: %s" % scene_path)
 		return null
 
 	_entity_resource_cache[entity_id] = scene
@@ -82,8 +81,12 @@ func unload_entity(entity_id: StringName) -> void:
 ## 创建实体
 ## [param entity_id] 实体ID
 ## [param parent] 父节点
-func create_entity(entity_id: StringName, entity_config: Resource, parent: Node = null) -> Node:
-	var instance: Node = _resource_manager.get_instance(_entity_path_map[entity_id])
+func create_entity(
+	entity_id: StringName,
+	entity_data: Dictionary = {},
+	parent: Node = null,
+	) -> Node:
+	var instance: Node = get_instance(_entity_path_map[entity_id])
 	if not instance:
 		instance = get_entity_scene(entity_id).instantiate()
 
@@ -95,9 +98,8 @@ func create_entity(entity_id: StringName, entity_config: Resource, parent: Node 
 		parent.add_child(instance)
 
 	## 初始化实体
-	if not instance.has_method("_init_node"):
-		return
-	instance.call("_init_node", entity_config)
+	if instance.has_method("_init_node"):
+		instance.call("_init_node", entity_data)
 
 	entity_created.emit(entity_id, instance)
 	return instance
@@ -106,9 +108,12 @@ func create_entity(entity_id: StringName, entity_config: Resource, parent: Node 
 ## 更新实体
 ## [param entity_id] 实体ID
 ## [param instance] 要更新的实体
-func update_entity(instance: Node, entity_config: Resource) -> void:
+func update_entity(
+	instance: Node,
+	entity_data: Dictionary = {},
+	) -> void:
 	if instance.has_method("_update_node"):
-		instance.call("_update_node", entity_config)
+		instance.call("_update_node", entity_data)
 
 
 ## 销毁实体
@@ -127,6 +132,7 @@ func clear_entities() -> void:
 		clear_instance_pool(_entity_path_map[entity_id])
 
 
+#region instance pool
 ## 创建对象池
 ## [param id] 实例ID
 ## [param instance] 要创建的实例
@@ -199,3 +205,4 @@ func clear_instance_pool(id: StringName = "") -> void:
 
 
 func _free_instance(value: Node) -> void: value.free()
+#endregion
