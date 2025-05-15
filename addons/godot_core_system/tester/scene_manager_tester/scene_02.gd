@@ -39,4 +39,4 @@ func _save_scene() -> Dictionary:
 
 
 func _change_scene() -> void:
-	System.scene_manager.change_scene_dissolve(scene_path, scene_data, true)
+	System.scene_manager.change_scene_cross(scene_path, scene_data, true)

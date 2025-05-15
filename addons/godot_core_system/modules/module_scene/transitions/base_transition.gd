@@ -10,10 +10,8 @@ var _transition_layer: CanvasLayer
 
 ## 初始化转场效果
 ## @param transition_layer 转场图层
-func init(
-	transition_layer: CanvasLayer,
-	) -> void:
-	_transition_layer = transition_layer
+func _init_transition(layer: CanvasLayer) -> void:
+	_transition_layer = layer
 
 
 func add_transition_rect() -> ColorRect:

@@ -88,6 +88,7 @@ func _setup_transition_layer() -> void:
 ## 设置默认转场效果
 func _setup_default_transitions() -> void:
 	register_transition("fade", FadeTransition.new())
+	register_transition("cross", CrossTransition.new())
 	register_transition("slide", SlideTransition.new())
 	register_transition("dissolve", DissolveTransition.new())
 
@@ -106,7 +107,7 @@ func _clear_scene_stack() -> void:
 func register_transition(effect: StringName, transition: BaseTransition) -> void:
 	if transition == null or effect.is_empty(): return
 	_transitions[effect] = transition
-	transition.init(_transition_layer)
+	transition._init_transition(_transition_layer)
 
 
 ## 获取当前场景
@@ -197,6 +198,14 @@ func change_scene_fade(
 	push_to_stack: bool = false,
 	) -> void:
 	await change_scene(scene_path, scene_data, push_to_stack, "fade")
+
+
+func change_scene_cross(
+	scene_path: String,
+	scene_data: Dictionary = {},
+	push_to_stack: bool = false,
+	) -> void:
+	await change_scene(scene_path, scene_data, push_to_stack, "cross")
 
 
 func change_scene_slide(

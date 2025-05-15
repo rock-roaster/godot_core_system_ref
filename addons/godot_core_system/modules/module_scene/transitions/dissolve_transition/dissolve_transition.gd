@@ -9,16 +9,18 @@ var _transition_rect: ColorRect
 
 
 func _set_noise_texture() -> void:
+	var fast_noise: FastNoiseLite = FastNoiseLite.new()
+	fast_noise.seed = randi()
+
 	var noise_texture: NoiseTexture2D = NoiseTexture2D.new()
-	noise_texture.noise = FastNoiseLite.new()
-	noise_texture.width = _transition_rect.size.x * 0.5
-	noise_texture.height = _transition_rect.size.y * 0.5
+	noise_texture.noise = fast_noise
+	noise_texture.width = _transition_rect.size.x * 0.33
+	noise_texture.height = _transition_rect.size.y * 0.33
 
 	var shader_material: ShaderMaterial = ShaderMaterial.new()
 	shader_material.shader = dissolve_shader
 	shader_material.set_shader_parameter("dissolve_noise", noise_texture)
 	shader_material.set_shader_parameter("dissolve_value", 0.0)
-	#shader_material.set_shader_parameter("burn_size", 0.1)
 
 	_transition_rect.material = shader_material
 
