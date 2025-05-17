@@ -2,12 +2,13 @@ extends Node
 class_name StateMachine
 
 
-@export var current_state: State = null
+@export var current_state: State
 
 
 func _ready() -> void:
-	for state in get_children_states():
+	for state in get_states():
 		state.state_machine = self
+		state._setup_sub_states()
 
 	if current_state:
 		current_state.enter()
@@ -15,17 +16,17 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if current_state:
-		current_state.process(delta)
+		current_state.update(delta)
 
 
 func _physics_process(delta: float) -> void:
 	if current_state:
-		current_state.physics_process(delta)
+		current_state.physics_update(delta)
 
 
 func _input(event: InputEvent) -> void:
 	if current_state:
-		current_state.input(event)
+		current_state.handle_input(event)
 
 
 func switch(state: State) -> void:
@@ -33,18 +34,13 @@ func switch(state: State) -> void:
 	if current_state:
 		current_state.exit()
 	current_state = state
-	current_state.enter()
+	if current_state:
+		current_state.enter()
 
 
-func get_child_state(id: String) -> State:
-	for state in get_children_states():
-		if state.name == id: return state
-	return null
-
-
-func get_children_states() -> Array[State]:
-	var node_array: Array = get_children().filter(
-		func(value: Node) -> bool: return value is State)
+func get_states() -> Array[State]:
 	var state_array: Array[State] = []
-	state_array.append_array(node_array)
+	var child_array: Array = get_children().filter(
+		func(value: Node) -> bool: return value is State)
+	state_array.append_array(child_array)
 	return state_array

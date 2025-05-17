@@ -1,23 +1,19 @@
 extends State
 
+
 ## 进入状态
-func enter() -> void:
+func _enter() -> bool:
 	print("%s entered!" % name)
-	pass
+	return false
+
 
 ## 退出状态
-func exit() -> void:
+func _exit() -> bool:
 	print("%s exited!" % name)
-	pass
+	return false
 
-## 每帧更新
-func process(_delta: float) -> void:
-	pass
 
-## 每物理帧更新
-func physics_process(_delta: float) -> void:
-	pass
-
-## 处理输入
-func input(_event: InputEvent) -> void:
-	pass
+func _handle_input(event: InputEvent) -> bool:
+	if event.is_action_pressed(&"ui_accept"):
+		$"../../State01".switch()
+	return false
