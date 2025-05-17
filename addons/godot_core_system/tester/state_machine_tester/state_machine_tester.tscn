@@ -1,0 +1,24 @@
+[gd_scene load_steps=6 format=3 uid="uid://mudvvnno6q8d"]
+
+[ext_resource type="Script" uid="uid://cgf85q45o68p3" path="res://addons/godot_core_system/tester/state_machine_tester/state_machine_tester.gd" id="1_kj1vs"]
+[ext_resource type="Script" uid="uid://cevlnboy7af1q" path="res://addons/godot_core_system/utils/state_machine/state_machine.gd" id="1_nflnl"]
+[ext_resource type="Script" uid="uid://b4b8uililpf7r" path="res://addons/godot_core_system/tester/state_machine_tester/state_01.gd" id="2_djynw"]
+[ext_resource type="Script" uid="uid://bt0nhusavsxjf" path="res://addons/godot_core_system/tester/state_machine_tester/state_02.gd" id="3_q82d3"]
+[ext_resource type="Script" uid="uid://duh7q1t7tgger" path="res://addons/godot_core_system/tester/state_machine_tester/state_03.gd" id="4_kj1vs"]
+
+[node name="StateMachineTester" type="Node"]
+script = ExtResource("1_kj1vs")
+
+[node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("current_state")]
+script = ExtResource("1_nflnl")
+current_state = NodePath("State01")
+metadata/_custom_type_script = "uid://cevlnboy7af1q"
+
+[node name="State01" type="Node" parent="StateMachine"]
+script = ExtResource("2_djynw")
+
+[node name="State02" type="Node" parent="StateMachine"]
+script = ExtResource("3_q82d3")
+
+[node name="State03" type="Node" parent="StateMachine"]
+script = ExtResource("4_kj1vs")
