@@ -329,8 +329,8 @@ func _do_scene_switch(
 		else:
 			# 如果不需要保存状态，则直接销毁当前场景
 			_get_scene_save(old_scene)
-			old_scene.get_parent().remove_child(old_scene)
-			old_scene.queue_free()
+			old_scene.get_parent().remove_child.call_deferred(old_scene)
+			old_scene.queue_free.call_deferred()
 
 	# 结束转场效果
 	if not effect.is_empty():
