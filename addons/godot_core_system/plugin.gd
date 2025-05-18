@@ -16,6 +16,11 @@ func _enter_tree() -> void:
 	ProjectSettings.save()
 
 
+## 在启用插件时添加脚本模板
+func _enable_plugin() -> void:
+	_add_template()
+
+
 ## 在禁用插件时恢复项目配置
 func _disable_plugin() -> void:
 	remove_autoload_singleton(SYSTEM_NAME)
@@ -55,11 +60,13 @@ func _remove_setting_dict(info_dict: Dictionary) -> void:
 
 func _add_template() -> void:
 	copy_dir("res://addons/godot_core_system/script_templates", "res://script_templates")
-	hide_dir("res://script_templates")
+	#hide_dir("res://script_templates")
+	EditorInterface.get_resource_filesystem().scan()
 
 
 func _remove_template() -> void:
 	remove_dir("res://script_templates")
+	EditorInterface.get_resource_filesystem().scan()
 
 
 func copy_dir(from: String, to: String) -> void:

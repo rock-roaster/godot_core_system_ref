@@ -16,8 +16,6 @@ const ModuleEvent: = preload("./module_event/module_event.gd")
 
 const ModuleInput: = preload("./module_input/module_input.gd")
 
-const ModuleState: = preload("./module_state/module_state.gd")
-
 const ModuleResource: = preload("./module_resource/module_resource.gd")
 
 const ModuleEntity: = preload("./module_entity/module_entity.gd")

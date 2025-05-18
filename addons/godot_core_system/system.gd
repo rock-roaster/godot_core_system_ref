@@ -16,7 +16,6 @@ const ModuleAudio = ModuleClass.ModuleAudio
 const ModuleInput = ModuleClass.ModuleInput
 const ModuleTime = ModuleClass.ModuleTime
 const ModuleEvent = ModuleClass.ModuleEvent
-const ModuleState = ModuleClass.ModuleState
 const ModuleTag = ModuleClass.ModuleTag
 const ModuleTrigger = ModuleClass.ModuleTrigger
 const ModuleThread = ModuleClass.ModuleThread
@@ -63,10 +62,6 @@ var event_manager: ModuleEvent:
 	get: return get_module("event_manager")
 	set(value): push_error("event_manager is read-only.")
 
-var state_manager: ModuleState:
-	get: return get_module("state_manager")
-	set(value): push_error("state_manager is read-only.")
-
 var tag_manager: ModuleTag:
 	get: return get_module("tag_manager")
 	set(value): push_error("tag_manager is read-only.")
@@ -92,7 +87,6 @@ var _module_scripts: Dictionary[StringName, Script] = {
 	"input_manager": ModuleInput,
 	"time_manager": ModuleTime,
 	"event_manager": ModuleEvent,
-	"state_manager": ModuleState,
 	"tag_manager": ModuleTag,
 	"trigger_manager": ModuleTrigger,
 	"thread_manager": ModuleThread,
