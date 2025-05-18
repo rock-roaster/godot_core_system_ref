@@ -1,7 +1,7 @@
 extends Node
 
 
-const SETTING_SCRIPT: Script = preload("res://addons/godot_core_system/setting.gd")
+const SETTING_SCRIPT: Script = preload("setting.gd")
 const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = SETTING_SCRIPT.SETTING_INFO_DICT
 
 #region 导入模组脚本
