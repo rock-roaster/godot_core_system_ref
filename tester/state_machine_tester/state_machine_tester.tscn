@@ -1,9 +1,9 @@
 [gd_scene load_steps=5 format=3 uid="uid://mudvvnno6q8d"]
 
 [ext_resource type="Script" uid="uid://cevlnboy7af1q" path="res://addons/godot_core_system/utils/state_machine/state_machine.gd" id="1_nflnl"]
-[ext_resource type="Script" uid="uid://b4b8uililpf7r" path="res://addons/godot_core_system/tester/state_machine_tester/state_01.gd" id="2_djynw"]
-[ext_resource type="Script" uid="uid://bt0nhusavsxjf" path="res://addons/godot_core_system/tester/state_machine_tester/state_02.gd" id="3_q82d3"]
-[ext_resource type="Script" uid="uid://duh7q1t7tgger" path="res://addons/godot_core_system/tester/state_machine_tester/state_03.gd" id="4_kj1vs"]
+[ext_resource type="Script" uid="uid://b4b8uililpf7r" path="res://tester/state_machine_tester/state_01.gd" id="2_djynw"]
+[ext_resource type="Script" uid="uid://bt0nhusavsxjf" path="res://tester/state_machine_tester/state_02.gd" id="3_q82d3"]
+[ext_resource type="Script" uid="uid://duh7q1t7tgger" path="res://tester/state_machine_tester/state_03.gd" id="4_kj1vs"]
 
 [node name="StateMachineTester" type="Node"]
 

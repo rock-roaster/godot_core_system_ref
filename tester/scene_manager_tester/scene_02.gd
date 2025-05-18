@@ -1,7 +1,7 @@
 extends SceneBase
 
 
-var scene_path: String = "res://addons/godot_core_system/tester/scene_manager_tester/scene_01.tscn"
+var scene_path: String = "res://tester/scene_manager_tester/scene_01.tscn"
 
 var info_text: String
 

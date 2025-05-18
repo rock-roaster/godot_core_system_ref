@@ -1,7 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://8sl8iuvvb7wm"]
+[gd_scene load_steps=2 format=3 uid="uid://8sl8iuvvb7wm"]
 
-[ext_resource type="Script" uid="uid://deb8x6kjbj2v4" path="res://addons/godot_core_system/tester/save_manager_tester/save_manager_tester.gd" id="1_b8e2r"]
-[ext_resource type="Script" uid="uid://dgvra4vut8alw" path="res://addons/dialogue_manager/script/character/character.gd" id="2_vf8vv"]
+[ext_resource type="Script" uid="uid://deb8x6kjbj2v4" path="res://tester/save_manager_tester/save_manager_tester.gd" id="1_b8e2r"]
 
 [node name="SaveManagerTester" type="Node"]
 script = ExtResource("1_b8e2r")
@@ -14,18 +13,4 @@ offset_left = -20.0
 offset_right = 20.0
 offset_bottom = 70.0
 grow_horizontal = 2
-metadata/_edit_lock_ = true
-
-[node name="Character" type="Control" parent="."]
-layout_mode = 3
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -20.0
-offset_top = 144.0
-offset_right = 20.0
-offset_bottom = 184.0
-grow_horizontal = 2
-script = ExtResource("2_vf8vv")
-metadata/_custom_type_script = "uid://dgvra4vut8alw"
 metadata/_edit_lock_ = true
