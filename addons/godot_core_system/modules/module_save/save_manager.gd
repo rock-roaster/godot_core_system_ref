@@ -282,7 +282,7 @@ func _clean_old_auto_saves() -> bool:
 	var success: bool = true
 	if auto_saves.size() > max_auto_saves:
 		for i in range(max_auto_saves, auto_saves.size()):
-			var result: bool = delete_save(auto_saves[i].id)
+			var result: bool = delete_save(auto_saves[i].save_id)
 			if not result: success = false
 	return success
 

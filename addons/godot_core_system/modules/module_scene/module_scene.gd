@@ -332,13 +332,14 @@ func _do_scene_switch(
 			old_scene.get_parent().remove_child.call_deferred(old_scene)
 			old_scene.queue_free.call_deferred()
 
+	scene_changed.emit(old_scene, new_scene)
+
 	# 结束转场效果
 	if not effect.is_empty():
 		await _end_transition(effect, duration)
 
 	## 场景切换后强制更新新场景的相机
 	_update_new_scene_camera.call_deferred(new_scene)
-	scene_changed.emit(old_scene, new_scene)
 
 
 func _update_new_scene_camera(new_scene: Node) -> void:
