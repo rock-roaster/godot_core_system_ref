@@ -9,11 +9,8 @@ signal tag_added(tag: GameplayTag)
 ## 当移除标签时发出
 signal tag_removed(tag: GameplayTag)
 
-var _tag_manager: System.ModuleTag:
-	get:
-		if not _tag_manager:
-			_tag_manager = System.tag_manager
-		return _tag_manager
+var _tag_manager: ModuleClass.ModuleTag:
+	get: return System.tag_manager
 
 
 ## 添加标签

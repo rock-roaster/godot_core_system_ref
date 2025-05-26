@@ -1,4 +1,4 @@
-extends "res://addons/godot_core_system/modules/module_base.gd"
+extends "../module_base.gd"
 
 
 var _thread_dictionary: Dictionary[StringName, SingleThread]

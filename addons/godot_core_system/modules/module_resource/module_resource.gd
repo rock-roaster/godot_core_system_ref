@@ -1,4 +1,4 @@
-extends "res://addons/godot_core_system/modules/module_base.gd"
+extends "../module_base.gd"
 
 ## 资源管理器
 ## 负责管理资源的加载，缓存和对象池

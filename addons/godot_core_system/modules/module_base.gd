@@ -14,6 +14,10 @@ var _current_root: Window:
 	set(value): push_error("_current_root is read only.")
 
 
+func import() -> void:
+	pass
+
+
 func _init() -> void:
 	pass
 

@@ -61,9 +61,10 @@ func list_files(directory: String) -> Array:
 	dir.list_dir_begin()
 	var file_name: String = dir.get_next()
 	while not file_name.is_empty():
-		if file_name != "." and file_name != ".." and not dir.current_is_dir():
-			if is_valid_save_file(file_name):
-				files.append(file_name)
+		if file_name != "." && file_name != ".."\
+		&& not dir.current_is_dir()\
+		&& is_valid_save_file(file_name):
+			files.append(file_name)
 		file_name = dir.get_next()
 	dir.list_dir_end()
 	return files

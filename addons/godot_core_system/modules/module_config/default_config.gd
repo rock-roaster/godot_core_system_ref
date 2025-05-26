@@ -4,6 +4,16 @@ extends RefCounted
 const DEFAULT_CONFIG_HINT: Dictionary[StringName, Dictionary] = {
 	"game":
 	{
+		"first_run":
+		{
+			"section": "game",
+			"name": "first_run",
+			"type": TYPE_BOOL,
+			"hint": PROPERTY_HINT_NONE,
+			"hint_string": "",
+			"default": true,
+		},
+
 		"language":
 		{
 			"section": "game",
@@ -23,16 +33,6 @@ const DEFAULT_CONFIG_HINT: Dictionary[StringName, Dictionary] = {
 			"hint_string": "easy,normal,hard",
 			"default": "normal",
 		},
-
-		"first_run":
-		{
-			"section": "game",
-			"name": "first_run",
-			"type": TYPE_BOOL,
-			"hint": PROPERTY_HINT_NONE,
-			"hint_string": "",
-			"default": true,
-		},
 	},
 
 	"graphics":
@@ -47,6 +47,16 @@ const DEFAULT_CONFIG_HINT: Dictionary[StringName, Dictionary] = {
 			"default": false,
 		},
 
+		"resolution":
+		{
+			"section": "graphics",
+			"name": "resolution",
+			"type": TYPE_FLOAT,
+			"hint": PROPERTY_HINT_RANGE,
+			"hint_string": "0.0, 1.0, 0.05",
+			"default": 1.0,
+		},
+
 		"vsync":
 		{
 			"section": "graphics",
@@ -55,16 +65,6 @@ const DEFAULT_CONFIG_HINT: Dictionary[StringName, Dictionary] = {
 			"hint": PROPERTY_HINT_NONE,
 			"hint_string": "",
 			"default": true,
-		},
-
-		"resolution":
-		{
-			"section": "graphics",
-			"name": "resolution",
-			"type": TYPE_VECTOR2I,
-			"hint": PROPERTY_HINT_RANGE,
-			"hint_string": "",
-			"default": Vector2i(1920, 1080),
 		},
 
 		"quality":
@@ -86,8 +86,8 @@ const DEFAULT_CONFIG_HINT: Dictionary[StringName, Dictionary] = {
 			"name": "master_volume",
 			"type": TYPE_FLOAT,
 			"hint": PROPERTY_HINT_RANGE,
-			"hint_string": "0.0, 1.0, 0.01",
-			"default": 1.0,
+			"hint_string": "0.0, 12.0, 1.0",
+			"default": 12.0,
 		},
 
 		"music_volume":
@@ -96,8 +96,8 @@ const DEFAULT_CONFIG_HINT: Dictionary[StringName, Dictionary] = {
 			"name": "music_volume",
 			"type": TYPE_FLOAT,
 			"hint": PROPERTY_HINT_RANGE,
-			"hint_string": "0.0, 1.0, 0.01",
-			"default": 1.0,
+			"hint_string": "0.0, 12.0, 1.0",
+			"default": 12.0,
 		},
 
 		"sound_volume":
@@ -106,53 +106,13 @@ const DEFAULT_CONFIG_HINT: Dictionary[StringName, Dictionary] = {
 			"name": "sound_volume",
 			"type": TYPE_FLOAT,
 			"hint": PROPERTY_HINT_RANGE,
-			"hint_string": "0.0, 1.0, 0.01",
-			"default": 1.0,
-		},
-
-		"voice_volume":
-		{
-			"section": "audio",
-			"name": "voice_volume",
-			"type": TYPE_FLOAT,
-			"hint": PROPERTY_HINT_RANGE,
-			"hint_string": "0.0, 1.0, 0.01",
-			"default": 1.0,
-		},
-
-		"mute":
-		{
-			"section": "audio",
-			"name": "mute",
-			"type": TYPE_BOOL,
-			"hint": PROPERTY_HINT_NONE,
-			"hint_string": "",
-			"default": false,
+			"hint_string": "0.0, 12.0, 1.0",
+			"default": 12.0,
 		},
 	},
 
 	"input":
 	{
-		"mouse_sensitivity":
-		{
-			"section": "input",
-			"name": "mouse_sensitivity",
-			"type": TYPE_FLOAT,
-			"hint": PROPERTY_HINT_RANGE,
-			"hint_string": "0.0, 1.0, 0.01",
-			"default": 1.0,
-		},
-
-		"gamepad_enabled":
-		{
-			"section": "input",
-			"name": "gamepad_enabled",
-			"type": TYPE_BOOL,
-			"hint": PROPERTY_HINT_NONE,
-			"hint_string": "",
-			"default": true,
-		},
-
 		"vibration_enabled":
 		{
 			"section": "input",
@@ -174,112 +134,6 @@ const DEFAULT_CONFIG_HINT: Dictionary[StringName, Dictionary] = {
 			"hint": PROPERTY_HINT_NONE,
 			"hint_string": "",
 			"default": true,
-		},
-
-		"auto_save":
-		{
-			"section": "gameplay",
-			"name": "auto_save",
-			"type": TYPE_BOOL,
-			"hint": PROPERTY_HINT_NONE,
-			"hint_string": "",
-			"default": true,
-		},
-
-		"auto_save_interval":
-		{
-			"section": "gameplay",
-			"name": "auto_save_interval",
-			"type": TYPE_INT,
-			"hint": PROPERTY_HINT_RANGE,
-			"hint_string": "0, 300, 1, or_greater",
-			"default": 300,
-		},
-
-		"show_damage_numbers":
-		{
-			"section": "gameplay",
-			"name": "show_damage_numbers",
-			"type": TYPE_BOOL,
-			"hint": PROPERTY_HINT_NONE,
-			"hint_string": "",
-			"default": true,
-		},
-
-		"show_floating_text":
-		{
-			"section": "gameplay",
-			"name": "show_floating_text",
-			"type": TYPE_BOOL,
-			"hint": PROPERTY_HINT_NONE,
-			"hint_string": "",
-			"default": true,
-		},
-	},
-
-	"accessibility":
-	{
-		"subtitles":
-		{
-			"section": "accessibility",
-			"name": "subtitles",
-			"type": TYPE_BOOL,
-			"hint": PROPERTY_HINT_NONE,
-			"hint_string": "",
-			"default": true,
-		},
-
-		"screen_shake":
-		{
-			"section": "accessibility",
-			"name": "screen_shake",
-			"type": TYPE_BOOL,
-			"hint": PROPERTY_HINT_NONE,
-			"hint_string": "",
-			"default": true,
-		},
-
-		"text_size":
-		{
-			"section": "accessibility",
-			"name": "text_size",
-			"type": TYPE_STRING,
-			"hint": PROPERTY_HINT_ENUM,
-			"hint_string": "low,medium,high",
-			"default": "medium",
-		},
-	},
-
-	"debug":
-	{
-		"logging_enabled":
-		{
-			"section": "debug",
-			"name": "logging_enabled",
-			"type": TYPE_BOOL,
-			"hint": PROPERTY_HINT_NONE,
-			"hint_string": "",
-			"default": true,
-		},
-
-		"show_fps":
-		{
-			"section": "debug",
-			"name": "show_fps",
-			"type": TYPE_BOOL,
-			"hint": PROPERTY_HINT_NONE,
-			"hint_string": "",
-			"default": false,
-		},
-
-		"show_debug_info":
-		{
-			"section": "debug",
-			"name": "show_debug_info",
-			"type": TYPE_BOOL,
-			"hint": PROPERTY_HINT_NONE,
-			"hint_string": "",
-			"default": false,
 		},
 	},
 }

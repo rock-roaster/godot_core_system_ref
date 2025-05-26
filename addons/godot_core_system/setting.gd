@@ -8,8 +8,9 @@ const SETTING_MODULE_CONFIG: String = "godot_core_system/module_config/"
 const SETTING_MODULE_TRIGGER: String = "godot_core_system/module_trigger/"
 
 const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
+
 #region ModuleEnable
-	"module_enable/logger":
+	"module_enable/module_log":
 	{
 		"name": SETTING_MODULE_ENABLE + "logger",
 		"type": TYPE_BOOL,
@@ -19,17 +20,7 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"default": true,
 	},
 
-	"module_enable/io_manager":
-	{
-		"name": SETTING_MODULE_ENABLE + "io_manager",
-		"type": TYPE_BOOL,
-		"hint": PROPERTY_HINT_NONE,
-		"hint_string": "",
-		"basic": true,
-		"default": true,
-	},
-
-	"module_enable/save_manager":
+	"module_enable/module_save":
 	{
 		"name": SETTING_MODULE_ENABLE + "save_manager",
 		"type": TYPE_BOOL,
@@ -39,7 +30,7 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"default": true,
 	},
 
-	"module_enable/config_manager":
+	"module_enable/module_config":
 	{
 		"name": SETTING_MODULE_ENABLE + "config_manager",
 		"type": TYPE_BOOL,
@@ -49,7 +40,7 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"default": true,
 	},
 
-	"module_enable/resource_manager":
+	"module_enable/module_resource":
 	{
 		"name": SETTING_MODULE_ENABLE + "resource_manager",
 		"type": TYPE_BOOL,
@@ -59,7 +50,7 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"default": true,
 	},
 
-	"module_enable/entity_manager":
+	"module_enable/module_entity":
 	{
 		"name": SETTING_MODULE_ENABLE + "entity_manager",
 		"type": TYPE_BOOL,
@@ -69,7 +60,7 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"default": true,
 	},
 
-	"module_enable/scene_manager":
+	"module_enable/module_scene":
 	{
 		"name": SETTING_MODULE_ENABLE + "scene_manager",
 		"type": TYPE_BOOL,
@@ -79,7 +70,7 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"default": true,
 	},
 
-	"module_enable/audio_manager":
+	"module_enable/module_audio":
 	{
 		"name": SETTING_MODULE_ENABLE + "audio_manager",
 		"type": TYPE_BOOL,
@@ -89,7 +80,7 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"default": true,
 	},
 
-	"module_enable/input_manager":
+	"module_enable/module_input":
 	{
 		"name": SETTING_MODULE_ENABLE + "input_manager",
 		"type": TYPE_BOOL,
@@ -99,7 +90,7 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"default": true,
 	},
 
-	"module_enable/time_manager":
+	"module_enable/module_time":
 	{
 		"name": SETTING_MODULE_ENABLE + "time_manager",
 		"type": TYPE_BOOL,
@@ -109,7 +100,7 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"default": true,
 	},
 
-	"module_enable/event_manager":
+	"module_enable/module_event":
 	{
 		"name": SETTING_MODULE_ENABLE + "event_manager",
 		"type": TYPE_BOOL,
@@ -119,17 +110,7 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"default": true,
 	},
 
-	"module_enable/state_manager":
-	{
-		"name": SETTING_MODULE_ENABLE + "state_manager",
-		"type": TYPE_BOOL,
-		"hint": PROPERTY_HINT_NONE,
-		"hint_string": "",
-		"basic": true,
-		"default": true,
-	},
-
-	"module_enable/tag_manager":
+	"module_enable/module_tag":
 	{
 		"name": SETTING_MODULE_ENABLE + "tag_manager",
 		"type": TYPE_BOOL,
@@ -139,9 +120,19 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"default": true,
 	},
 
-	"module_enable/trigger_manager":
+	"module_enable/module_trigger":
 	{
 		"name": SETTING_MODULE_ENABLE + "trigger_manager",
+		"type": TYPE_BOOL,
+		"hint": PROPERTY_HINT_NONE,
+		"hint_string": "",
+		"basic": true,
+		"default": true,
+	},
+
+	"module_enable/module_thread":
+	{
+		"name": SETTING_MODULE_ENABLE + "thread_manager",
 		"type": TYPE_BOOL,
 		"hint": PROPERTY_HINT_NONE,
 		"hint_string": "",
@@ -228,9 +219,9 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"name": SETTING_MODULE_SAVE + "serialization_format",
 		"type": TYPE_STRING,
 		"hint": PROPERTY_HINT_ENUM,
-		"hint_string": "resource,binary,json",
+		"hint_string": "json,binary,resource",
 		"basic": true,
-		"default": "resource",
+		"default": "json",
 	},
 
 	"module_save/auto_save/enabled":
@@ -243,22 +234,12 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"default": false,
 	},
 
-	"module_save/auto_save/name_prefix":
-	{
-		"name": SETTING_MODULE_SAVE + "auto_save/" + "name_prefix",
-		"type": TYPE_STRING,
-		"hint": PROPERTY_HINT_NONE,
-		"hint_string": "",
-		"basic": true,
-		"default": "auto_",
-	},
-
 	"module_save/auto_save/max_saves":
 	{
 		"name": SETTING_MODULE_SAVE + "auto_save/" + "max_saves",
 		"type": TYPE_INT,
-		"hint": PROPERTY_HINT_NONE,
-		"hint_string": "",
+		"hint": PROPERTY_HINT_RANGE,
+		"hint_string": "1,10,1,or_greater",
 		"basic": true,
 		"default": 5,
 	},
@@ -267,10 +248,20 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 	{
 		"name": SETTING_MODULE_SAVE + "auto_save/" + "interval_seconds",
 		"type": TYPE_FLOAT,
+		"hint": PROPERTY_HINT_RANGE,
+		"hint_string": "0.0,600.0,1.0,or_greater",
+		"basic": true,
+		"default": 300.0,
+	},
+
+	"module_save/auto_save/name_prefix":
+	{
+		"name": SETTING_MODULE_SAVE + "auto_save/" + "name_prefix",
+		"type": TYPE_STRING,
 		"hint": PROPERTY_HINT_NONE,
 		"hint_string": "",
 		"basic": true,
-		"default": 300.0,
+		"default": "save_auto_",
 	},
 #endregion
 
@@ -292,7 +283,7 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"hint": PROPERTY_HINT_NONE,
 		"hint_string": "",
 		"basic": true,
-		"default": true,
+		"default": false,
 	},
 #endregion
 
@@ -307,6 +298,7 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"default": true,
 	},
 #endregion
+
 }
 
 

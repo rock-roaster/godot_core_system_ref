@@ -22,12 +22,8 @@ var _time_since_last_tirgger : float = 0.0
 var _is_active : bool = false
 var _context : Dictionary = {}
 
-var _trigger_manager: System.ModuleTrigger:
-	get:
-		if not _trigger_manager:
-			_trigger_manager = System.trigger_manager
-		return _trigger_manager
-
+var _trigger_manager: ModuleClass.ModuleTrigger:
+	get: return System.trigger_manager
 
 signal triggered(context: Dictionary)
 

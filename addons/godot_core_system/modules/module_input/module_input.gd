@@ -1,16 +1,17 @@
-extends "res://addons/godot_core_system/modules/module_base.gd"
+extends "../module_base.gd"
 
 
 signal action_triggered(action_name: String, event: InputEvent)
 signal axis_changed(axis_name: String, value: Vector2)
 
-var _virtual_actions: Dictionary = {}
-var _axis_mappings: Dictionary = {}
 var _action_states: Dictionary = {}
+var _axis_mappings: Dictionary = {}
+var _virtual_actions: Dictionary = {}
 
 
 func _ready():
 	# 初始化所有已注册的输入动作状态
+	_apply_input_map()
 	for action in InputMap.get_actions():
 		_action_states[action] = false
 
@@ -32,14 +33,20 @@ func _input(event: InputEvent):
 	_process_axis_input()
 
 
+func _apply_input_map() -> void:
+	var input_map_setting: Script = preload("input_map_setting.gd")
+	input_map_setting.apply_input_map()
+
+
 ## 注册虚拟轴
 ## [param axis_name] 轴名称
 ## [param positive_x] 正向 X 轴动作
 ## [param negative_x] 负向 X 轴动作
 ## [param positive_y] 正向 Y 轴动作
 ## [param negative_y] 负向 Y 轴动作
-func register_axis(axis_name: String, positive_x: String = "", negative_x: String = "",
-				  positive_y: String = "", negative_y: String = "") -> void:
+func register_axis(axis_name: String, positive_x: String = "",
+	negative_x: String = "", positive_y: String = "", negative_y: String = "") -> void:
+
 	_axis_mappings[axis_name] = {
 		"positive_x": positive_x,
 		"negative_x": negative_x,
@@ -57,8 +64,8 @@ func register_virtual_action(action_name: String, key_combination: Array) -> voi
 
 	for event in key_combination:
 		InputMap.action_add_event(action_name, event)
-	_virtual_actions[action_name] = key_combination
 	_action_states[action_name] = false
+	_virtual_actions[action_name] = key_combination
 
 
 ## 检查动作是否被按下

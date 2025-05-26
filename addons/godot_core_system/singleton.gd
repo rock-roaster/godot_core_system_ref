@@ -1,96 +1,74 @@
 extends Node
 
 
-const SETTING_SCRIPT: Script = preload("setting.gd")
-const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = SETTING_SCRIPT.SETTING_INFO_DICT
+const Setting: Script = preload("setting.gd")
+const ModuleBase: Script = ModuleClass.ModuleBase
 
-#region 导入模组脚本
-const ModuleBase = ModuleClass.ModuleBase
-const ModuleLog = ModuleClass.ModuleLog
-const ModuleSave = ModuleClass.ModuleSave
-const ModuleConfig = ModuleClass.ModuleConfig
-const ModuleResource = ModuleClass.ModuleResource
-const ModuleEntity = ModuleClass.ModuleEntity
-const ModuleScene = ModuleClass.ModuleScene
-const ModuleAudio = ModuleClass.ModuleAudio
-const ModuleInput = ModuleClass.ModuleInput
-const ModuleTime = ModuleClass.ModuleTime
-const ModuleEvent = ModuleClass.ModuleEvent
-const ModuleTag = ModuleClass.ModuleTag
-const ModuleTrigger = ModuleClass.ModuleTrigger
-const ModuleThread = ModuleClass.ModuleThread
-#endregion
+#region 获取模组实例
+var logger: ModuleClass.ModuleLog:
+	get: return get_module("module_log")
+	set(value): push_error("module_log is read-only.")
 
-#region 模组变量与getset方法
-var logger: ModuleLog:
-	get: return get_module("logger")
-	set(value): push_error("logger is read-only.")
+var save_manager: ModuleClass.ModuleSave:
+	get: return get_module("module_save")
+	set(value): push_error("module_save is read-only.")
 
-var save_manager: ModuleSave:
-	get: return get_module("save_manager")
-	set(value): push_error("save_manager is read-only.")
+var config_manager: ModuleClass.ModuleConfig:
+	get: return get_module("module_config")
+	set(value): push_error("module_config is read-only.")
 
-var config_manager: ModuleConfig:
-	get: return get_module("config_manager")
-	set(value): push_error("config_manager is read-only.")
+var resource_manager: ModuleClass.ModuleResource:
+	get: return get_module("module_resource")
+	set(value): push_error("module_resource is read-only.")
 
-var resource_manager: ModuleResource:
-	get: return get_module("resource_manager")
-	set(value): push_error("resource_manager is read-only.")
+var entity_manager: ModuleClass.ModuleEntity:
+	get: return get_module("module_entity")
+	set(value): push_error("module_entity is read-only.")
 
-var entity_manager: ModuleEntity:
-	get: return get_module("entity_manager")
-	set(value): push_error("entity_manager is read-only.")
+var scene_manager: ModuleClass.ModuleScene:
+	get: return get_module("module_scene")
+	set(value): push_error("module_scene is read-only.")
 
-var scene_manager: ModuleScene:
-	get: return get_module("scene_manager")
-	set(value): push_error("scene_manager is read-only.")
+var audio_manager: ModuleClass.ModuleAudio:
+	get: return get_module("module_audio")
+	set(value): push_error("module_audio is read-only.")
 
-var audio_manager: ModuleAudio:
-	get: return get_module("audio_manager")
-	set(value): push_error("audio_manager is read-only.")
+var input_manager: ModuleClass.ModuleInput:
+	get: return get_module("module_input")
+	set(value): push_error("module_input is read-only.")
 
-var input_manager: ModuleInput:
-	get: return get_module("input_manager")
-	set(value): push_error("input_manager is read-only.")
+var time_manager: ModuleClass.ModuleTime:
+	get: return get_module("module_time")
+	set(value): push_error("module_time is read-only.")
 
-var time_manager: ModuleTime:
-	get: return get_module("time_manager")
-	set(value): push_error("time_manager is read-only.")
+var event_manager: ModuleClass.ModuleEvent:
+	get: return get_module("module_event")
+	set(value): push_error("module_event is read-only.")
 
-var event_manager: ModuleEvent:
-	get: return get_module("event_manager")
-	set(value): push_error("event_manager is read-only.")
+var tag_manager: ModuleClass.ModuleTag:
+	get: return get_module("module_tag")
+	set(value): push_error("module_tag is read-only.")
 
-var tag_manager: ModuleTag:
-	get: return get_module("tag_manager")
-	set(value): push_error("tag_manager is read-only.")
+var trigger_manager: ModuleClass.ModuleTrigger:
+	get: return get_module("module_trigger")
+	set(value): push_error("module_trigger is read-only.")
 
-var trigger_manager: ModuleTrigger:
-	get: return get_module("trigger_manager")
-	set(value): push_error("trigger_manager is read-only.")
-
-var thread: ModuleThread:
-	get: return get_module("thread_manager")
-	set(value): push_error("thread_manager is read-only.")
+var thread: ModuleClass.ModuleThread:
+	get: return get_module("module_thread")
+	set(value): push_error("module_thread is read-only.")
 #endregion
 
 var _modules: Dictionary[StringName, ModuleBase]
-var _module_scripts: Dictionary[StringName, Script] = {
-	"logger": ModuleLog,
-	"save_manager": ModuleSave,
-	"config_manager": ModuleConfig,
-	"resource_manager": ModuleResource,
-	"entity_manager": ModuleEntity,
-	"scene_manager": ModuleScene,
-	"audio_manager": ModuleAudio,
-	"input_manager": ModuleInput,
-	"time_manager": ModuleTime,
-	"event_manager": ModuleEvent,
-	"tag_manager": ModuleTag,
-	"trigger_manager": ModuleTrigger,
-	"thread_manager": ModuleThread,
-}
+var _module_scripts: Dictionary[StringName, Script]
+
+
+func _init() -> void:
+	_module_scripts = ModuleClass.MODULE_SCRIPTS
+
+
+func _ready() -> void:
+	input_manager.import()
+	config_manager.import()
 
 
 func _input(event: InputEvent) -> void:
@@ -121,9 +99,15 @@ func get_module(module_id: StringName) -> ModuleBase:
 
 ## 检查模块是否启用
 func is_module_enabled(module_id: StringName) -> bool:
-	var setting_name: String = "godot_core_system/module_enable/" + module_id
-	if not ProjectSettings.has_setting(setting_name): return true
-	return ProjectSettings.get_setting(setting_name, true)
+	var setting_name: String = "module_enable/" + module_id
+	var setting_value: Variant = get_setting_value(setting_name)
+	if setting_value == null: return true
+	return setting_value
+
+
+## 设置路径和字典名称里只要填对一个就能得到参数的傻瓜方法
+func get_setting_value(setting_name: StringName, default_value: Variant = null) -> Variant:
+	return Setting.get_setting_value(setting_name, default_value)
 
 
 ## 创建模块实例
@@ -154,8 +138,3 @@ func _unload_module(module_id: StringName) -> void:
 	module._exit()
 	_modules.erase(module_id)
 	print("卸载模块实例：%s id%s" % [module_id, instance_id])
-
-
-## 设置路径和字典名称里只要填对一个就能得到参数的傻瓜方法
-func get_setting_value(setting_name: StringName, default_value: Variant = null) -> Variant:
-	return SETTING_SCRIPT.get_setting_value(setting_name, default_value)

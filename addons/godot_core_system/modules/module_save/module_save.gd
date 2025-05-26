@@ -1,12 +1,12 @@
-extends "res://addons/godot_core_system/modules/module_base.gd"
+extends "../module_base.gd"
 
 ## 存档管理器，负责存档的创建、加载、删除等操作
 
 # 引用类型
 const SaveFormatStrategy = preload("./save_format_strategy/save_format_strategy.gd")
-const ResourceSaveStrategy = preload("./save_format_strategy/resource_save_strategy.gd")
-const BinarySaveStrategy = preload("./save_format_strategy/binary_save_strategy.gd")
 const JSONSaveStrategy = preload("./save_format_strategy/json_save_strategy.gd")
+const BinarySaveStrategy = preload("./save_format_strategy/binary_save_strategy.gd")
+const ResourceSaveStrategy = preload("./save_format_strategy/resource_save_strategy.gd")
 
 # 信号
 signal save_created(save_id: String, metadata: Dictionary)		# 存档创建
@@ -16,60 +16,60 @@ signal auto_save_created(save_id: String)						# 自动存档创建
 
 # 配置属性
 var save_directory: String:
-	get: return _system.get_setting_value("module_save/save_directory", "user://saves")
-	set(value): _system.logger.error("read-only")
+	get: return _system.get_setting_value("module_save/save_directory")
 
 var save_group: String:
-	get: return _system.get_setting_value("module_save/save_group", "savable")
-	set(value): _system.logger.error("read-only")
+	get: return _system.get_setting_value("module_save/save_group")
 
 var default_format: String:
-	get: return _system.get_setting_value("module_save/serialization_format", "resource")
-	set(value): _system.logger.error("read-only")
+	get: return _system.get_setting_value("module_save/serialization_format")
 
 var auto_save_enabled: bool:
-	get: return _system.get_setting_value("module_save/auto_save/enabled", false)
-	set(value): _system.logger.error("read-only")
-
-var auto_save_prefix: String:
-	get: return _system.get_setting_value("module_save/auto_save/name_prefix", "auto_save_")
-	set(value): _system.logger.error("read-only")
+	get: return _system.get_setting_value("module_save/auto_save/enabled")
 
 var max_auto_saves: int:
-	get: return _system.get_setting_value("module_save/auto_save/max_saves", 5)
-	set(value): _system.logger.error("read-only")
+	get: return _system.get_setting_value("module_save/auto_save/max_saves")
 
 var auto_save_interval: float:
-	get: return _system.get_setting_value("module_save/auto_save/interval_seconds", 300.0)
-	set(value): _system.logger.error("read-only")
+	get: return _system.get_setting_value("module_save/auto_save/interval_seconds")
+
+var auto_save_prefix: String:
+	get: return _system.get_setting_value("module_save/auto_save/name_prefix")
 
 # 私有变量
 var _current_save_id: String = ""
-var _auto_save_timer: float = 0
 var _encryption_key: String = ""
+
+var _play_time: float = 0.0
+var _auto_save_timer: float = 0.0
+
 var _save_strategy: SaveFormatStrategy
 var _pending_node_states: Dictionary[NodePath, Dictionary] = {}
 
 var _strategies: Dictionary[StringName, SaveFormatStrategy] = {
-	"resource": ResourceSaveStrategy.new(),
-	"binary": BinarySaveStrategy.new(),
 	"json": JSONSaveStrategy.new(),
+	"binary": BinarySaveStrategy.new(),
+	"resource": ResourceSaveStrategy.new(),
 }
 
 var _logger: ModuleClass.ModuleLog:
 	get: return _system.logger
 
+var _config_manager: ModuleClass.ModuleConfig:
+	get: return _system.config_manager
+
 
 func _init() -> void:
 	# 确保存档目录存在
 	_ensure_save_directory_exists()
+	_set_save_format(default_format)
 
 
 func _process(delta: float) -> void:
 	if auto_save_enabled and not _current_save_id.is_empty():
 		_auto_save_timer += delta
 		if _auto_save_timer >= auto_save_interval:
-			_auto_save_timer = 0
+			_auto_save_timer = 0.0
 			create_auto_save()
 
 
@@ -114,10 +114,10 @@ func create_save(save_id: String = "") -> bool:
 			"save_id": actual_id,
 			"unix_time": Time.get_unix_time_from_system(),
 			"save_date": Time.get_datetime_string_from_system(false, true),
-			"play_time": 0.0,
+			"play_time": _play_time,
 			"game_version": ProjectSettings.get_setting("application/config/version", "1.0.0"),
 		},
-		"nodes": _collect_node_states(),
+		"nodes": await _collect_node_states(),
 	}
 
 	# 存储数据
@@ -151,7 +151,12 @@ func load_save(save_id: String) -> bool:
 
 # 删除存档
 func delete_save(save_id: String) -> bool:
-	var save_path: String = _get_save_path(save_id)
+	var save_dict: Dictionary = await get_save(save_id)
+	if save_dict.is_empty():
+		_logger.error("要删除的存档不存在：%s" % save_id)
+		return false
+
+	var save_path: String = save_dict.save_path
 	var success: bool = _save_strategy.delete_file(save_path)
 
 	if success:
@@ -183,32 +188,68 @@ func create_auto_save() -> String:
 	return auto_save_id
 
 
-# 获取所有存档列表
-func get_save_list() -> Array[Dictionary]:
-	var saves: Array[Dictionary] = []
-
-	var files: Array = _save_strategy.list_files(save_directory)
-	for file in files:
-		var save_id: String = _get_save_id_from_file(file)
-		var save_path: String = _get_save_path(save_id)
-
-		var metadata: Dictionary = await _save_strategy.load_metadata(save_path)
-		if not metadata.is_empty():
-			saves.append({
-				"save_id": save_id,
-				"metadata": metadata
-			})
-
-	# 按时间戳排序
-	saves.sort_custom(func(a, b):
-		return a.metadata.unix_time > b.metadata.unix_time)
-
-	return saves
-
-
 # 注册自定义存档格式策略
 func register_save_format_strategy(format: StringName, strategy: SaveFormatStrategy) -> void:
 	_strategies[format] = strategy
+#endregion
+
+
+#region 获得存档信息
+# 获取所有存档列表
+func get_save_list() -> Array[Dictionary]:
+	var save_list: Array[Dictionary] = []
+
+	var files: Array = _save_strategy.list_files(save_directory)
+	for file in files:
+		var save_path: String = save_directory.path_join(file)
+		var metadata: Dictionary = await _save_strategy.load_metadata(save_path)
+		if not metadata.is_empty():
+			var save_data: Dictionary = {
+				"metadata": metadata,
+				"save_id": metadata.save_id,
+				"save_path": save_path,
+			}
+			save_list.append(save_data)
+
+	# 按时间戳排序
+	save_list.sort_custom(func(a: Dictionary, b: Dictionary):
+		return a.metadata.unix_time > b.metadata.unix_time)
+
+	return save_list
+
+
+func get_save(save_id: String) -> Dictionary:
+	var save_list: Array[Dictionary] = await get_save_list()
+	for save in save_list:
+		if save.save_id == save_id: return save
+	return {}
+
+
+func save_exist(save_id: String) -> bool:
+	var save_dict: Dictionary = await get_save(save_id)
+	return !save_dict.is_empty()
+
+
+func get_latest_auto_save() -> Dictionary:
+	var save_list: Array[Dictionary] = await get_save_list_auto()
+	if save_list.is_empty(): return {}
+	return save_list[0]
+
+
+func get_save_list_normal() -> Array[Dictionary]:
+	var save_list: Array[Dictionary] = await get_save_list()
+	save_list = save_list.filter(func(value: Dictionary):
+		var save_id: String = value.save_id
+		return !save_id.begins_with(auto_save_prefix))
+	return save_list
+
+
+func get_save_list_auto() -> Array[Dictionary]:
+	var save_list: Array[Dictionary] = await get_save_list()
+	save_list = save_list.filter(func(value: Dictionary):
+		var save_id: String = value.save_id
+		return save_id.begins_with(auto_save_prefix))
+	return save_list
 #endregion
 
 
@@ -227,24 +268,22 @@ func _set_save_format(format: StringName) -> void:
 
 ## 获取加密密钥
 func _get_encryption_key() -> String:
-	# 从配置中获取密钥
-	var key: String = System.config_manager.get_value("save_system", "encryption_key", "")
-
-	# 如果配置中没有密钥，生成一个默认的
-	if key.is_empty():
-		key = _generate_default_key()
-		System.config_manager.set_value("save_system", "encryption_key", key)
-		System.config_manager.save_config()
-
-	return key
+	var config_file: ConfigFile = ConfigFile.new()
+	var config_path: String = save_directory + "/save_encryption_key.cfg"
+	var load_result: Error = config_file.load(config_path)
+	if load_result != OK:
+		var new_key: String = _generate_random_key()
+		config_file.set_value("save_system", "encryption_key", new_key)
+		config_file.save(config_path)
+	return config_file.get_value("save_system", "encryption_key")
 
 
-## 生成默认密钥
-func _generate_default_key() -> String:
-	var key: String = ""
-	for i in range(32):
-		key += str(randi() % 10)
-	return key
+## 生成随机密钥
+func _generate_random_key(digits: int = 32) -> String:
+	var new_key: String = ""
+	for i in range(digits):
+		new_key += str(randi() % 10)
+	return new_key
 
 
 # 检查文件是否为有效的存档文件
@@ -259,37 +298,29 @@ func _get_save_id_from_file(file_name: String) -> String:
 
 # 确保存档目录存在
 func _ensure_save_directory_exists() -> void:
-	var save_dir: String = System.get_setting_value("module_save/save_directory")
-	if not DirAccess.dir_exists_absolute(save_dir):
-		DirAccess.make_dir_recursive_absolute(save_dir)
+	if not DirAccess.dir_exists_absolute(save_directory):
+		DirAccess.make_dir_recursive_absolute(save_directory)
 
 
 # 获取存档路径
 func _get_save_path(save_id: String) -> String:
-	return _save_strategy.get_save_path(
-		System.get_setting_value("module_save/save_directory"), save_id)
+	return _save_strategy.get_save_path(save_directory, save_id)
 
 
 # 清理旧的自动存档
 func _clean_old_auto_saves() -> bool:
-	var saves: Array[Dictionary] = await get_save_list()
-	var auto_saves: Array[Dictionary] = saves.filter(
-		func(save: Dictionary):
-			var save_id: String = save.get("save_id")
-			return save_id.begins_with(auto_save_prefix)
-	)
-
+	var auto_saves: Array[Dictionary] = await get_save_list_auto()
 	var success: bool = true
 	if auto_saves.size() > max_auto_saves:
 		for i in range(max_auto_saves, auto_saves.size()):
-			var result: bool = delete_save(auto_saves[i].save_id)
+			var result: bool = await delete_save(auto_saves[i].save_id)
 			if not result: success = false
 	return success
 
 
 # 生成时间戳
 func _get_timestamp() -> String:
-	return str(Time.get_unix_time_from_system())
+	return str(int(Time.get_unix_time_from_system()))
 
 
 # 生成存档ID
@@ -304,7 +335,7 @@ func _collect_node_states() -> Array[Dictionary]:
 	for savable in savables:
 		if savable.has_method("_save_data"):
 			var node_data: Dictionary = {}
-			var savable_data: Dictionary = savable.call("_save_data")
+			var savable_data: Dictionary = await savable.call("_save_data")
 			node_data["node_path"] = savable.get_path()
 			node_data.merge(savable_data)
 			nodes.append(node_data)

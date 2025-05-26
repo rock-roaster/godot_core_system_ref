@@ -1,4 +1,4 @@
-extends "res://addons/godot_core_system/modules/module_base.gd"
+extends "../module_base.gd"
 
 
 signal time_scale_changed(new_scale: float)

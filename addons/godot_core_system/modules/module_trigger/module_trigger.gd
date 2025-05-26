@@ -1,26 +1,25 @@
-extends "res://addons/godot_core_system/modules/module_base.gd"
+extends "../module_base.gd"
 
-
-const SETTING_SCRIPT: Script = preload("res://addons/godot_core_system/setting.gd")
-const SETTING_MODULE_TRIGGER:= SETTING_SCRIPT.SETTING_MODULE_TRIGGER
-const SETTING_SUBSCRIBE_EVENT_BUS := SETTING_MODULE_TRIGGER + "subscribe_event_bus"
 
 signal triggered(trigger: GameplayTrigger, context: Dictionary)
 
+## 是否订阅事件总线的事件
+var subscribe_event_bus : bool = false:
+	get: return _system.get_setting_value("module_trigger/subscribe_event_bus")
+
 ## 触发器集
-@export_storage var _event_triggers : Dictionary[StringName, Array]	## 事件触发器
-@export_storage var _periodic_triggers : Array[GameplayTrigger]	## 周期触发器
+@export_storage
+var _event_triggers : Dictionary[StringName, Array]	## 事件触发器
+@export_storage
+var _periodic_triggers : Array[GameplayTrigger]	## 周期触发器
+
 var _condition_types : Dictionary = {
 	"composite_trigger_condition": CompositeTriggerCondition,
 	"event_type_trigger_condition": EventTypeTriggerCondition,
 	"state_trigger_condition": StateTriggerCondition,
 }
 
-## 是否订阅事件总线的事件
-var subscribe_event_bus : bool = false:
-	get: return _system.get_setting_value(SETTING_SUBSCRIBE_EVENT_BUS)
-
-var _event_bus: System.ModuleEvent:
+var _event_bus: ModuleClass.ModuleEvent:
 	get: return _system.event_manager
 
 

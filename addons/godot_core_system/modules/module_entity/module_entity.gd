@@ -1,4 +1,4 @@
-extends "res://addons/godot_core_system/modules/module_base.gd"
+extends "../module_base.gd"
 
 ## 实体管理器
 ## 负责管理实体的生命周期和资源加载
