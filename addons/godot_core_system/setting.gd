@@ -241,7 +241,7 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = {
 		"hint": PROPERTY_HINT_RANGE,
 		"hint_string": "1,10,1,or_greater",
 		"basic": true,
-		"default": 5,
+		"default": 1,
 	},
 
 	"module_save/auto_save/interval_seconds":

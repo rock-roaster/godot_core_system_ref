@@ -46,6 +46,28 @@ func _exit() -> void:
 	_thread_manager.unload_thread("config_thread")
 
 
+func _setup_config() -> void:
+	var master_volume: float = get_value("audio", "master_volume", 12.0)
+	_system.audio_manager.set_volume(&"Master", master_volume / 12.0)
+	var music_volume: float = get_value("audio", "music_volume", 12.0)
+	_system.audio_manager.set_volume(&"Music", music_volume / 12.0)
+	var sound_volume: float = get_value("audio", "sound_volume", 12.0)
+	_system.audio_manager.set_volume(&"Sound", sound_volume / 12.0)
+	var voice_volume: float = get_value("audio", "voice_volume", 12.0)
+	_system.audio_manager.set_volume(&"Voice", voice_volume / 12.0)
+
+	var resolution: float = get_value("graphics", "resolution", 1.0)
+	var screen_size: Vector2i = DisplayServer.screen_get_size()
+	DisplayServer.window_set_size(screen_size * resolution)
+
+	var fullscreen: bool = get_value("graphics", "fullscreen", true)
+	if fullscreen:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
+	else:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+		_current_root.get_window().move_to_center()
+
+
 ## 设置配置值
 ## [param section] 配置段
 ## [param key] 键
@@ -118,23 +140,3 @@ func _save_config_async() -> void:
 		_modified = false
 		config_saved.emit()
 	_thread_manager.next_step("config_thread")
-
-
-func _setup_config() -> void:
-	var master_volume: float = get_value("audio", "master_volume", 12.0)
-	_system.audio_manager.set_volume(&"Master", master_volume / 12.0)
-	var music_volume: float = get_value("audio", "music_volume", 12.0)
-	_system.audio_manager.set_volume(&"Music", music_volume / 12.0)
-	var sound_volume: float = get_value("audio", "sound_volume", 12.0)
-	_system.audio_manager.set_volume(&"Sound", sound_volume / 12.0)
-
-	var resolution: float = get_value("graphics", "resolution", 1.0)
-	var screen_size: Vector2i = DisplayServer.screen_get_size()
-	DisplayServer.window_set_size(screen_size * resolution)
-
-	var fullscreen: bool = get_value("graphics", "fullscreen", true)
-	if fullscreen:
-		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
-	else:
-		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
-		_current_root.get_window().move_to_center()

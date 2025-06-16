@@ -1,37 +1,14 @@
-extends "./save_format_strategy.gd"
+extends "./json_serialization_strategy.gd"
 
 
-var _io_manager: AsyncIOManager
-var _encryption_key: String = ""
+func serialize(data: Variant) -> PackedByteArray:
+	var processed_data: Variant = _process_variant_for_save(data)
+	return super(processed_data)
 
 
-func _init() -> void:
-	_io_manager = AsyncIOManager.new()
-
-
-## 设置加密密钥
-func set_encryption_key(key: String) -> void:
-	_encryption_key = key
-
-
-## 保存数据
-func save(path: String, data: Dictionary) -> bool:
-	var task_id: String = _io_manager.write_file_async(path, data, _encryption_key)
-	var result: Array = await _io_manager.io_completed
-	return result[1] if result[0] == task_id else false
-
-
-## 加载数据
-func load_save(path: String) -> Dictionary:
-	var task_id: String = _io_manager.read_file_async(path, _encryption_key)
-	var result: Array = await _io_manager.io_completed
-	return result[2] if result[0] == task_id and result[1] else {}
-
-
-## 加载元数据
-func load_metadata(path: String) -> Dictionary:
-	var data: Dictionary = await load_save(path)
-	return data.get("metadata", {}) if data.has("metadata") else {}
+func deserialize(bytes: PackedByteArray) -> Variant:
+	var original_data: Variant = super(bytes)
+	return _process_variant_for_load(original_data)
 
 
 ## 将函数应用在字典的每一个值上，并返回新的字典
@@ -49,11 +26,6 @@ func _process_array(array: Array, process_func: Callable) -> Array:
 
 
 #region process for save
-## 处理数据保存
-func _process_data_for_save(data: Dictionary) -> Dictionary:
-	return _process_dictionary_for_save(data)
-
-
 ## 处理变量保存
 func _process_variant_for_save(value: Variant) -> Variant:
 	var value_type: int = typeof(value)
@@ -161,8 +133,7 @@ func _process_array_for_save(array: Array) -> Variant:
 ## 英文字符串的首字母为大写
 func is_upper_case(text: String) -> bool:
 	var first_letter: String = text.left(1)
-	if first_letter == "_": return false
-	return first_letter == first_letter.to_upper()
+	return first_letter != first_letter.to_lower()
 
 
 ## 处理对象保存
@@ -219,11 +190,6 @@ func _process_object_for_save(value: Object) -> Dictionary:
 
 
 #region process for load
-## 处理数据加载
-func _process_data_for_load(data: Dictionary) -> Dictionary:
-	return _process_dictionary(data, _process_variant_for_load)
-
-
 ## 处理变量加载
 func _process_variant_for_load(value: Variant) -> Variant:
 	if value is Dictionary:

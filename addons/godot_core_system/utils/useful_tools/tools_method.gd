@@ -2,16 +2,20 @@ extends RefCounted
 class_name MethodTools
 
 
-static func get_callable_pack(callable: Callable) -> Dictionary:
+static func get_callable_pack(callable: Callable, arguments: Array = []) -> Dictionary:
 	if !callable.is_valid(): return {}
+
+	var bound_arguments: Array = callable.get_bound_arguments()
+	arguments.append_array(bound_arguments)
+
 	return {
 		"object": callable.get_object(),
 		"method": callable.get_method(),
-		"arguments": callable.get_bound_arguments(),
+		"arguments": arguments,
 	}
 
 
-static func call_callable_pack(pack: Dictionary, bind: Array = []) -> bool:
+static func call_callable_pack(pack: Dictionary, arguments: Array = []) -> bool:
 	if pack.is_empty(): return false
 
 	var callable_object: Object = pack.object
@@ -24,8 +28,8 @@ static func call_callable_pack(pack: Dictionary, bind: Array = []) -> bool:
 		push_error("unfound method: ", callable_method)
 		return false
 
-	var callable_arguments: Array = pack.arguments
-	callable_arguments.append_array(bind)
+	var bound_arguments: Array = pack.arguments
+	arguments.append_array(bound_arguments)
 
-	await callable_object.callv(callable_method, callable_arguments)
+	await callable_object.callv(callable_method, arguments)
 	return true

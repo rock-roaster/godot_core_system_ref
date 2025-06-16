@@ -9,6 +9,7 @@ const BinarySaveStrategy = preload("./save_format_strategy/binary_save_strategy.
 const ResourceSaveStrategy = preload("./save_format_strategy/resource_save_strategy.gd")
 
 # 信号
+signal ready_to_save
 signal save_created(save_id: String, metadata: Dictionary)		# 存档创建
 signal save_loaded(save_id: String, metadata: Dictionary)		# 存档加载
 signal save_deleted(save_id: String)							# 存档删除
@@ -107,6 +108,7 @@ func update_save() -> void:
 # 创建存档
 func create_save(save_id: String = "") -> bool:
 	var actual_id: String = _generate_save_id() if save_id.is_empty() else save_id
+	ready_to_save.emit()
 
 	# 收集数据
 	var save_data: Dictionary = {

@@ -32,9 +32,11 @@ var _preloaded_scenes: Array[String] = []
 
 ## 是否正在切换场景
 var _is_switching: bool = false
+## 转场中有待转场的场景
+var _is_switch_pending: bool = false
+
 ## 转场效果实例
 var _transitions: Dictionary = {}
-
 ## 转场层
 var _transition_layer: CanvasLayer
 
@@ -56,6 +58,10 @@ var _resource_manager: ModuleClass.ModuleResource:
 	get: return _system.resource_manager
 
 
+func _init() -> void:
+	_system.save_manager.ready_to_save.connect(_on_ready_to_save)
+
+
 func _ready() -> void:
 	# 设置默认转场遮罩
 	_setup_transition_layer()
@@ -65,6 +71,10 @@ func _ready() -> void:
 
 func _exit() -> void:
 	clear_scene_stack()
+
+
+func _on_ready_to_save() -> void:
+	get_scene_save(_current_scene)
 
 
 ## 确保所有栈中的孤儿节点均被释放
@@ -201,11 +211,16 @@ func change_scene(
 	) -> void:
 
 	# 防止同时切换多个场景
+	if _is_switch_pending:
+		_logger.warning("Scene switch pending, ignoring request in: %s" % scene_path)
+		return
+
 	if _is_switching:
-		_logger.warning("Scene switching, ignoring request in: %s" % scene_path)
+		_is_switch_pending = true
 		await scene_switching_finished
 
 	_is_switching = true
+	_is_switch_pending = false
 	scene_switching_started.emit(scene_path)
 
 	var new_scene: Node = get_scene_node(scene_path, scene_data)

@@ -63,6 +63,7 @@ var _module_scripts: Dictionary[StringName, Script]
 
 
 func _init() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	_module_scripts = ModuleClass.MODULE_SCRIPTS
 
 
