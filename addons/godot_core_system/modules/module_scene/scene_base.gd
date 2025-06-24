@@ -13,11 +13,11 @@ func _ready() -> void:
 	_on_scene_switch()
 
 
-func get_scene_data(key: String, default: Variant = null) -> Variant:
+func get_scene_data(key: Variant, default: Variant = null) -> Variant:
 	return _scene_save_data.get(key, default)
 
 
-func set_scene_data(key: String, value: Variant) -> void:
+func set_scene_data(key: Variant, value: Variant) -> void:
 	_scene_save_data.set(key, value)
 
 

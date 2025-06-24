@@ -94,6 +94,22 @@ static func get_input_map() -> Dictionary[String, Array]:
 		key_physical(KEY_KP_PERIOD),
 		joypad_button(JOY_BUTTON_BACK),
 	]
+	input_map["move_left"] = [
+		key_physical(KEY_A),
+		joypad_motion(JOY_AXIS_LEFT_X, -1.0),
+	]
+	input_map["move_right"] = [
+		key_physical(KEY_D),
+		joypad_motion(JOY_AXIS_LEFT_X, +1.0),
+	]
+	input_map["move_up"] = [
+		key_physical(KEY_W),
+		joypad_motion(JOY_AXIS_LEFT_Y, -1.0),
+	]
+	input_map["move_down"] = [
+		key_physical(KEY_S),
+		joypad_motion(JOY_AXIS_LEFT_Y, +1.0),
+	]
 	#endregion
 
 	return input_map
@@ -151,8 +167,9 @@ static func joypad_button(joy_button: JoyButton) -> InputEventJoypadButton:
 	return new_input_event
 
 
-static func joypad_motion(joy_axis: JoyAxis) -> InputEventJoypadMotion:
+static func joypad_motion(joy_axis: JoyAxis, value: float) -> InputEventJoypadMotion:
 	var new_input_event: InputEventJoypadMotion = InputEventJoypadMotion.new()
 	new_input_event.axis = joy_axis
+	new_input_event.axis_value = value
 	return new_input_event
 #endregion

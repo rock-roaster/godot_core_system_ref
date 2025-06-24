@@ -15,6 +15,8 @@ signal save_loaded(save_id: String, metadata: Dictionary)		# 存档加载
 signal save_deleted(save_id: String)							# 存档删除
 signal auto_save_created(save_id: String)						# 自动存档创建
 
+#region properties
+
 # 配置属性
 var save_directory: String:
 	get: return _system.get_setting_value("module_save/save_directory")
@@ -58,6 +60,8 @@ var _logger: ModuleClass.ModuleLog:
 
 var _config_manager: ModuleClass.ModuleConfig:
 	get: return _system.config_manager
+
+#endregion
 
 
 func _init() -> void:
@@ -133,6 +137,26 @@ func create_save(save_id: String = "") -> bool:
 	return false
 
 
+# 创建自动存档
+func create_auto_save() -> String:
+	var auto_save_id: String = _get_auto_save_id()
+
+	# 创建新存档
+	var success: bool = await create_save(auto_save_id)
+	if not success:
+		_logger.error("Failed to create auto save: %s" % auto_save_id)
+		return ""
+
+	# 清理旧的自动存档
+	var cleanup_success: bool = await _clean_old_auto_saves()
+	if not cleanup_success:
+		_logger.warning("Failed to clean old auto saves")
+
+	# 发送信号
+	auto_save_created.emit(auto_save_id)
+	return auto_save_id
+
+
 # 加载存档
 func load_save(save_id: String) -> bool:
 	if save_id.is_empty():
@@ -168,26 +192,6 @@ func delete_save(save_id: String) -> bool:
 		return true
 	_logger.error("删除存档失败：%s" % save_path)
 	return false
-
-
-# 创建自动存档
-func create_auto_save() -> String:
-	var auto_save_id: String = _get_auto_save_id()
-
-	# 创建新存档
-	var success: bool = await create_save(auto_save_id)
-	if not success:
-		_logger.error("Failed to create auto save: %s" % auto_save_id)
-		return ""
-
-	# 清理旧的自动存档
-	var cleanup_success: bool = await _clean_old_auto_saves()
-	if not cleanup_success:
-		_logger.warning("Failed to clean old auto saves")
-
-	# 发送信号
-	auto_save_created.emit(auto_save_id)
-	return auto_save_id
 
 
 # 注册自定义存档格式策略
@@ -331,8 +335,8 @@ func _generate_save_id() -> String:
 
 
 # 收集Node状态
-func _collect_node_states() -> Array[Dictionary]:
-	var nodes: Array[Dictionary] = []
+func _collect_node_states() -> Array:
+	var nodes: Array = []
 	var savables: Array[Node] = _current_tree.get_nodes_in_group(save_group)
 	for savable in savables:
 		if savable.has_method("_save_data"):

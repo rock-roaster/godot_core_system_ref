@@ -116,6 +116,7 @@ func _get_property_list() -> Array[Dictionary]: return [
 		"hint_string": "%d:" % [TYPE_STRING],
 		"usage": PROPERTY_USAGE_DEFAULT,
 	},
+
 ]
 
 
@@ -160,10 +161,30 @@ func has_property(property: StringName) -> bool:
 # 只会作用于用 _get_property_list() 定义的变量，以及直接调用 get() 和 set() 的情况。
 
 func _get(property: StringName) -> Variant:
+	var property_list: Array[StringName] = [
+		"sample_node",
+		"sample_enum",
+		"sample_float",
+		"sample_string",
+		"sample_file",
+		"sample_array",
+		"sample_dictionary",
+	]
+	if not property_list.has(property): return null
 	return _get_process(property)
 
 
 func _set(property: StringName, value: Variant) -> bool:
+	var property_list: Array[StringName] = [
+		"sample_node",
+		"sample_enum",
+		"sample_float",
+		"sample_string",
+		"sample_file",
+		"sample_array",
+		"sample_dictionary",
+	]
+	if not property_list.has(property): return false
 	_set_process(property, value)
 	return true
 

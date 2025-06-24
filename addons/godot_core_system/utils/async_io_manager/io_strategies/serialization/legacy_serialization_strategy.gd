@@ -11,15 +11,6 @@ func deserialize(bytes: PackedByteArray) -> Variant:
 	return _process_variant_for_load(original_data)
 
 
-## 将函数应用在字典的每一个值上，并返回新的字典
-func _process_dictionary(dict: Dictionary, process_func: Callable) -> Dictionary:
-	var result: Dictionary = {}
-	for key in dict:
-		var value: Variant = dict[key]
-		result[key] = process_func.call(value)
-	return result
-
-
 ## 将函数应用在数组的每一个值上，并返回新的数组
 func _process_array(array: Array, process_func: Callable) -> Array:
 	return array.map(process_func)
@@ -92,10 +83,20 @@ func _process_variant_for_save(value: Variant) -> Variant:
 
 ## 处理字典保存
 func _process_dictionary_for_save(dict: Dictionary) -> Dictionary:
-	if not dict.is_typed():
-		return _process_dictionary(dict, _process_variant_for_save)
-
 	var value_dict: Dictionary = {}
+
+	value_dict["_type_"] = TYPE_DICTIONARY
+
+	var dictionary_data: Array
+	for key in dict:
+		var p_key: Variant = _process_variant_for_save(key)
+		var p_value: Variant = _process_variant_for_save(dict[key])
+		dictionary_data.append({"key": p_key, "value": p_value})
+	value_dict["dictionary"] = dictionary_data
+	value_dict["is_typed"] = false
+
+	if not dict.is_typed(): return value_dict
+
 	value_dict["key_type"] = dict.get_typed_key_builtin()
 	value_dict["key_class"] = dict.get_typed_key_class_name()
 
@@ -107,9 +108,8 @@ func _process_dictionary_for_save(dict: Dictionary) -> Dictionary:
 
 	var typed_value_script: Script = dict.get_typed_value_script() as Script
 	value_dict["value_script"] = typed_value_script.get_path() if typed_value_script != null else ""
+	value_dict["is_typed"] = true
 
-	value_dict["dictionary"] = _process_dictionary(dict, _process_variant_for_save)
-	value_dict["_type_"] = TYPE_DICTIONARY
 	return value_dict
 
 
@@ -265,12 +265,21 @@ func _process_dictionary_for_load(dict: Dictionary) -> Variant:
 			return _process_typed_dictionary_for_load(dict)
 		TYPE_ARRAY:
 			return _process_typed_array_for_load(dict)
-	return _process_dictionary(dict, _process_variant_for_load)
+	return dict
 
 
 ## 处理类型字典加载
 func _process_typed_dictionary_for_load(dict: Dictionary) -> Dictionary:
-	var dict_value: Dictionary = _process_dictionary_for_load(dict.dictionary)
+	var dict_value: Dictionary = {}
+
+	for dict_data in dict.dictionary:
+		var p_key: Variant = _process_variant_for_load(dict_data.key)
+		var p_value: Variant = _process_variant_for_load(dict_data.value)
+		dict_value.set(p_key, p_value)
+
+	if not dict.is_typed:
+		return dict_value
+
 	var dict_key_type: int = int(dict.key_type)
 	var dict_key_class: StringName = ""
 	var dict_key_script: Script = null

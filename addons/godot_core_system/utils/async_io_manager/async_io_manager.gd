@@ -6,7 +6,7 @@ const IOThread = preload("./io_thread.gd")
 
 const SerializationStrategy = preload("./io_strategies/serialization/serialization_strategy.gd")
 const JSONSerializationStrategy = preload("./io_strategies/serialization/json_serialization_strategy.gd")
-const GodotSerializationStrategy = preload("./io_strategies/serialization/godot_serialization_strategy.gd")
+const NativeSerializationStrategy = preload("./io_strategies/serialization/native_serialization_strategy.gd")
 
 const CompressionStrategy = preload("./io_strategies/compression/compression_strategy.gd")
 const NoCompressionStrategy = preload("./io_strategies/compression/no_compression_strategy.gd")
@@ -37,7 +37,7 @@ var _logger: ModuleClass.ModuleLog:
 
 
 func _init(p_serializer = null, p_compressor = null, p_encryptor = null) -> void:
-	set_serialization_strategy(p_serializer if p_serializer else GodotSerializationStrategy.new())
+	set_serialization_strategy(p_serializer if p_serializer else NativeSerializationStrategy.new())
 	set_compression_strategy(p_compressor if p_compressor else NoCompressionStrategy.new())
 	set_encryption_strategy(p_encryptor if p_encryptor else NoEncryptionStrategy.new())
 

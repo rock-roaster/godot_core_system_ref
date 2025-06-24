@@ -2,7 +2,7 @@
 extends EditorPlugin
 
 
-const SYSTEM_NAME: String = "System"
+const SINGLETON_NAME: String = "System"
 
 const SETTING_SCRIPT: Script = preload("setting.gd")
 const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = SETTING_SCRIPT.SETTING_INFO_DICT
@@ -11,18 +11,20 @@ const SETTING_INFO_DICT: Dictionary[StringName, Dictionary] = SETTING_SCRIPT.SET
 ## 在插件运行时添加项目设置
 func _enter_tree() -> void:
 	_add_project_settings()
-	add_autoload_singleton(SYSTEM_NAME, "singleton.gd")
 	ProjectSettings.save()
 
 
 ## 在启用插件时添加脚本模板
 func _enable_plugin() -> void:
+	add_autoload_singleton(SINGLETON_NAME, "singleton.gd")
+	add_autoload_singleton("Database", "database.gd")
 	_add_template()
 
 
 ## 在禁用插件时恢复项目配置
 func _disable_plugin() -> void:
-	remove_autoload_singleton(SYSTEM_NAME)
+	remove_autoload_singleton(SINGLETON_NAME)
+	remove_autoload_singleton("Database")
 	_remove_project_settings()
 	ProjectSettings.save()
 

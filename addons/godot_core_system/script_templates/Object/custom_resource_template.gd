@@ -6,7 +6,7 @@ extends Resource
 
 # Tips:
 # 脚本内定义的变量与通过 _get_property_list() 定义的变量会出现在 get_property_list() 中。
-# 直接用 _get_property_list() 定义的变量无法直接在脚本内调用，只能用 get() 方法获得。
+# 用 _get_property_list() 定义的变量无法直接在脚本内调用，只能用 get() 方法获得。
 # 另一方面，直接在脚本内定义的变量无法调用 _get() 和 _set() 内覆写的方法。
 # 总结下来，最佳的实践就是在脚本内定义变量后，再用 _get_property_list() 复写一次。
 
@@ -16,10 +16,6 @@ extends Resource
 # 注意：
 # 在定义 get set 方法时，不能直接使用 get: return get() 定义方法，否则就会造成无限循环引用。
 # 正确做法是使用 get: return _get() 或 get: return _get_process() 等自定义函数。
-
-var sample_float: float:
-	get: return _get_process(&"sample_float")
-	set(value): _set_process(&"sample_float", value)
 
 # 内部自定义储存变量
 var _internal_properties: Dictionary[StringName, Variant]
@@ -107,12 +103,12 @@ func _get_property_list() -> Array[Dictionary]: return [
 		"hint_string": "%d:" % [TYPE_STRING],
 		"usage": PROPERTY_USAGE_DEFAULT,
 	},
+
 ]
 
 
 func _property_can_revert(property: StringName) -> bool:
 	var prop_dict_can_revert: Dictionary[StringName, bool] = {
-		"sample_node": true,
 		"sample_enum": true,
 		"sample_float": true,
 		"sample_string": true,
@@ -125,7 +121,6 @@ func _property_can_revert(property: StringName) -> bool:
 
 func _property_get_revert(property: StringName) -> Variant:
 	var prop_dict_get_revert: Dictionary[StringName, Variant] = {
-		"sample_node": null,
 		"sample_enum": 0,
 		"sample_float": 5.0,
 		"sample_string": "",
@@ -151,10 +146,28 @@ func has_property(property: StringName) -> bool:
 # 只会作用于用 _get_property_list() 定义的变量，以及直接调用 get() 和 set() 的情况。
 
 func _get(property: StringName) -> Variant:
+	var property_list: Array[StringName] = [
+		"sample_enum",
+		"sample_float",
+		"sample_string",
+		"sample_file",
+		"sample_array",
+		"sample_dictionary",
+	]
+	if not property_list.has(property): return null
 	return _get_process(property)
 
 
 func _set(property: StringName, value: Variant) -> bool:
+	var property_list: Array[StringName] = [
+		"sample_enum",
+		"sample_float",
+		"sample_string",
+		"sample_file",
+		"sample_array",
+		"sample_dictionary",
+	]
+	if not property_list.has(property): return false
 	_set_process(property, value)
 	return true
 

@@ -141,7 +141,7 @@ func get_scene_node(scene_path: String, scene_data: Dictionary = {}) -> Node:
 
 
 func get_scene_save(scene: Node) -> Dictionary:
-	var scene_data: Dictionary = scene.call("_on_scene_save") as Dictionary\
+	var scene_data: Dictionary = scene.call("_on_scene_save")\
 		if scene.has_method("_on_scene_save") else {}
 	if not scene_data.is_empty():
 		scene_saved.emit(scene.scene_file_path, scene_data)
